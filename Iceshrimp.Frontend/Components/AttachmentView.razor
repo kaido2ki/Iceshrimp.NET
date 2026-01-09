@@ -1,6 +1,8 @@
 @using Iceshrimp.Assets.PhosphorIcons
+@using Iceshrimp.Frontend.Core.Services
 @using Iceshrimp.Shared.Schemas.Web
 @inject IJSRuntime Js
+@inject JsService  JsSvc
 
 <dialog class="attachment-view" @onkeydown="OnKeyDown" @ref="Dialog">
     <button @onclick="CloseDialog" @onclick:stopPropagation="true" class="close">
@@ -82,7 +84,7 @@
         }
 
         Focused += 1;
-        await Module.InvokeVoidAsync("scrollTo", _refs[Focused]);
+        await JsSvc.ScrollToElementAsync(_refs[Focused]);
     }
 
     private async Task Prev()
@@ -93,20 +95,20 @@
         }
 
         Focused -= 1;
-        await Module.InvokeVoidAsync("scrollTo", _refs[Focused]);
+        await JsSvc.ScrollToElementAsync(_refs[Focused]);
     }
 
     public async Task OpenDialog(NoteAttachment attachment)
     {
-        await Module.InvokeVoidAsync("openDialog", Dialog);
+        await JsSvc.ShowDialogAsync(Dialog);
         ScrollWidth = await Module.InvokeAsync<int>("getScrollWidth", Scroller);
         var index = Attachments.IndexOf(attachment);
-        await Module.InvokeVoidAsync("scrollTo", _refs[index]);
+        await JsSvc.ScrollToElementAsync(_refs[index]);
     }
 
     private async Task CloseDialog()
     {
-        await Module.InvokeVoidAsync("closeDialog", Dialog);
+        await JsSvc.CloseDialogAsync(Dialog);
     }
 
     protected override async Task OnAfterRenderAsync(bool firstRender)

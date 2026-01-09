@@ -12,7 +12,7 @@
 @layout ModerationLayout
 @inject ApiService                     Api;
 @inject GlobalComponentSvc             Global;
-@inject IJSRuntime                     Js;
+@inject JsService                      Js;
 @inject IStringLocalizer<Localization> Loc;
 
 <HeadTitle Text="@Loc["Custom Emojis"]"/>
@@ -115,7 +115,6 @@
     private IBrowserFile                            ImportFile     { get; set; } = null!;
     private bool                                    BatchSelection { get; set; }
     private List<EmojiResponse>                     Selected       { get; set; } = [];
-    private IJSObjectReference                      _module = null!;
 
     private void FilterEmojis()
     {
@@ -173,12 +172,14 @@
     // That way we get it's functionality, without the styling limitations of the InputFile component
     private async Task OpenUpload()
     {
-        await _module.InvokeVoidAsync("openUpload", UploadInput.Element);
+        if (UploadInput.Element is not { } element) return;
+        await Js.ClickElementAsync(element);
     }
 
     private async Task OpenImport()
     {
-        await _module.InvokeVoidAsync("openUpload", ImportInput.Element);
+        if (ImportInput.Element is not { } element) return;
+        await Js.ClickElementAsync(element);
     }
 
     private void ToggleBatchSelection()
@@ -317,8 +318,6 @@
 
     protected override async Task OnInitializedAsync()
     {
-        _module = await Js.InvokeAsync<IJSObjectReference>("import",
-                                                           "./Pages/Moderation/CustomEmojis.razor.js");
         await GetEmojis();
     }
 }

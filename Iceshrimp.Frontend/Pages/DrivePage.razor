@@ -12,7 +12,7 @@
 @using Iceshrimp.Frontend.Components
 @inject ApiService                     Api;
 @inject GlobalComponentSvc             Global;
-@inject IJSRuntime                     Js;
+@inject JsService                      Js;
 @inject IStringLocalizer<Localization> Loc;
 @inject ILogger<DrivePage>             Logger;
 @inject NavigationManager              Nav;
@@ -121,7 +121,6 @@
     private            DriveStatusResponse? Status      { get; set; }
     private            State                State       { get; set; }
     private            InputFile            UploadInput { get; set; } = null!;
-    private            IJSObjectReference   _module = null!;
 
     private async Task Load()
     {
@@ -152,8 +151,6 @@
     protected override async Task OnInitializedAsync()
     {
         await Load();
-        _module = await Js.InvokeAsync<IJSObjectReference>("import",
-                                                           "./Pages/DrivePage.razor.js");
     }
     
     protected override async Task OnParametersSetAsync()
@@ -195,7 +192,8 @@
     // That way we get it's functionality, without the styling limitations of the InputFile component
     private async Task OpenUpload()
     {
-        await _module.InvokeVoidAsync("openUpload", UploadInput.Element);
+        if (UploadInput.Element is not { } element) return;
+        await Js.ClickElementAsync(element);
     }
     
     private async Task Upload(InputFileChangeEventArgs e)

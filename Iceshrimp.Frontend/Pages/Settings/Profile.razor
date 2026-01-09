@@ -14,7 +14,7 @@
 @inject ApiService                     Api;
 @inject ILogger<Profile>               Logger;
 @inject IStringLocalizer<Localization> Loc;
-@inject IJSRuntime                     Js
+@inject JsService                      Js
 @inject GlobalComponentSvc             GlobalComponentSvc
 @inject SessionService                 Session;
 
@@ -197,8 +197,6 @@
     private string                     PronounsLanguage { get; set; } = "";
     private string                     PronounsValue    { get; set; } = "";
     private Dictionary<string, string> _languages = LanguageHelper.Bcp47Languages;
-    
-    private IJSObjectReference _module = null!;
 
     private class UserPronouns
     {
@@ -208,8 +206,6 @@
 
     protected override async Task OnInitializedAsync()
     {
-        _module = await Js.InvokeAsync<IJSObjectReference>("import",
-                                                           "./Pages/Settings/Profile.razor.js");
         try
         {
             UserProfile = await Api.Profile.GetProfileAsync();
@@ -323,7 +319,7 @@
 
     private async Task AddEmoji(EmojiResponse emoji)
     {
-        var pos         = await _module.InvokeAsync<int>("getSelectionStart", Description);
+        var pos         = await Js.GetSelectionStartAsync(Description);
         var text        = UserProfile.Description ?? "";
         var emojiString = $":{emoji.Name}: ";
         UserProfile.Description = text.Insert(pos, emojiString);

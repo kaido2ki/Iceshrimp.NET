@@ -5,7 +5,7 @@
 @using Microsoft.Extensions.Localization
 @inject EmojiService       EmojiService
 @inject GlobalComponentSvc GlobalComponentSvc
-@inject IJSRuntime         Js
+@inject JsService          Js
 @inject IStringLocalizer<Localization> Loc;
 
 <dialog class="dialog" @ref="EmojiPickerRef">
@@ -34,29 +34,26 @@
     private EventCallback<EmojiResponse> OnEmojiSelect  { get; set; }
     private List<EmojiResponse>          EmojiList      { get; set; } = [];
     private ElementReference             EmojiPickerRef { get; set; }
-    private float                        _top;
-    private float                        _left;
-    private IJSInProcessObjectReference  _module = null!;
+    private double                       _top;
+    private double                       _left;
 
     private string                                  EmojiFilter { get; set; } = "";
     private Dictionary<string, List<EmojiResponse>> Categories  { get; set; } = [];
 
-    protected override async Task OnInitializedAsync()
+    protected override void OnInitialized()
     {
         GlobalComponentSvc.EmojiPicker = this;
-        _module = (IJSInProcessObjectReference)await Js.InvokeAsync<IJSObjectReference>("import",
-                                                                                        "./Components/EmojiPicker.razor.js");
     }
 
     private async Task Select(EmojiResponse emoji)
     {
         await OnEmojiSelect.InvokeAsync(emoji);
-        Close();
+        await Close();
     }
 
-    private void Close()
+    private async Task Close()
     {
-        _module.InvokeVoid("closeDialog", EmojiPickerRef);
+        await Js.CloseDialogAsync(EmojiPickerRef);
     }
 
     public async Task Open(ElementReference root, EventCallback<EmojiResponse> func)
@@ -68,11 +65,9 @@
         }
 
         OnEmojiSelect = func;
-        var pos = _module.Invoke<List<float>>("getPosition", root);
-        _left = pos[0];
-        _top  = pos[1];
+        (_left, _top) = await Js.GetPositionAsync(root, true);
+        await Js.ShowDialogAsync(EmojiPickerRef, false);
         StateHasChanged();
-        _module.InvokeVoid("openDialog", EmojiPickerRef);
     }
 
     private void FilterEmojis()

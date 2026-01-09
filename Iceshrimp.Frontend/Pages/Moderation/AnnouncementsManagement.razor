@@ -13,7 +13,7 @@
 @inject ApiService                     Api;
 @inject EmojiService                   EmojiSvc;
 @inject GlobalComponentSvc             Global;
-@inject IJSRuntime                     Js;
+@inject JsService                      Js;
 @inject IStringLocalizer<Localization> Loc;
 
 <HeadTitle Text="@Loc["Manage announcements"]"/>
@@ -146,16 +146,10 @@
     private          AnnouncementRequest            Draft          { get; set; }
     private          string?                        Editing        { get; set; }
     private          bool                           Preview        { get; set; }
-    private readonly Lazy<Task<IJSObjectReference>> _moduleTask;
 
     public AnnouncementsManagement()
     {
         Draft = new AnnouncementRequest { Title = "", Text = "", ImageUrl = null, ShowPopup = true };
-        _moduleTask = new Lazy<Task<IJSObjectReference>>(() =>
-                                                             Js.InvokeAsync<IJSObjectReference>(
-                                                                                                "import",
-                                                                                                "./Pages/Moderation/AnnouncementsManagement.razor.js")
-                                                               .AsTask());
     }
 
     private async Task NewAnnouncement()
@@ -167,8 +161,7 @@
         if (EmojiList.Count == 0)
             EmojiList = await EmojiSvc.GetEmojiAsync();
 
-        var module = await _moduleTask.Value;
-        await module.InvokeVoidAsync("openDialog", ComposeDialog);
+        await Js.ShowDialogAsync(ComposeDialog, false);
     }
 
     private async Task EditAnnouncement(string id)
@@ -183,14 +176,12 @@
         if (EmojiList.Count == 0)
             EmojiList = await EmojiSvc.GetEmojiAsync();
 
-        var module = await _moduleTask.Value;
-        await module.InvokeVoidAsync("openDialog", ComposeDialog);
+        await Js.ShowDialogAsync(ComposeDialog);
     }
 
     private async Task CloseDialog()
     {
-        var module = await _moduleTask.Value;
-        await module.InvokeVoidAsync("closeDialog", ComposeDialog);
+        await Js.CloseDialogAsync(ComposeDialog);
     }
 
     private async Task Send()
@@ -227,8 +218,8 @@
 
     private async Task OpenUploadImage()
     {
-        var module = await _moduleTask.Value;
-        await module.InvokeVoidAsync("openUpload", ImageInput.Element);
+        if (ImageInput.Element is not { } element) return;
+        await Js.ClickElementAsync(element);
     }
 
     private async Task UploadImage(InputFileChangeEventArgs e)
@@ -253,8 +244,7 @@
 
     private async Task AddEmoji(EmojiResponse emoji)
     {
-        var module      = await _moduleTask.Value;
-        var pos         = await module.InvokeAsync<int>("getSelectionStart", Textarea);
+        var pos         = await Js.GetSelectionStartAsync(Textarea);
         var text        = Draft.Text;
         var emojiString = $":{emoji.Name}: ";
         Draft.Text = text.Insert(pos, emojiString);

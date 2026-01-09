@@ -8,6 +8,7 @@
 @using Iceshrimp.Shared.Schemas.Web
 @using Microsoft.Extensions.Localization
 @inject IJSRuntime                     Js
+@inject JsService                      JsSvc
 @inject ApiService                     ApiService
 @inject ComposeService                 ComposeService
 @inject EmojiService                   EmojiService
@@ -303,7 +304,8 @@
     // That way we get it's functionality, without the styling limitations of the InputFile component
     private async Task OpenUpload()
     {
-        await _module.InvokeVoidAsync("openUpload", UploadInput.Element);
+        if (UploadInput.Element is not { } element) return;
+        await JsSvc.ClickElementAsync(element);
     }
 
     public async Task OpenDialogRedraft(NoteResponse note)
@@ -317,7 +319,7 @@
         NoteDraft.ReplyId    = note.ReplyId;
         UploadingFiles       = 0;
         StateHasChanged();
-        await _module.InvokeVoidAsync("openDialog", Dialog);
+        await JsSvc.ShowDialogAsync(Dialog, false);
     }
 
     public async Task OpenDialog(NoteBase? replyTo = null, NoteBase? quote = null)
@@ -352,7 +354,7 @@
 
         StateHasChanged();
 
-        await _module.InvokeVoidAsync("openDialog", Dialog);
+        await JsSvc.ShowDialogAsync(Dialog, false);
     }
 
     private async Task<List<string>> EnumerateMentions(NoteBase noteBase)
@@ -403,7 +405,7 @@
 
     private async Task CloseDialog()
     {
-        await _module.InvokeVoidAsync("closeDialog", Dialog);
+        await JsSvc.CloseDialogAsync(Dialog);
     }
 
     private async Task SendNote()

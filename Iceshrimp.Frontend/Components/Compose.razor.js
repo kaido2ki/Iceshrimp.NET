@@ -1,19 +1,3 @@
-export function openDialog(element) {
-    element.show()
-}
-
-export function closeDialog(element) {
-    element.close()
-}
-
-export function getSelectionStart(element) {
-    return element.selectionStart;
-}
-
-export function openUpload(element) {
-    element.click();
-}
-
 /**
  * Sets up paste handling in the main compose textarea to allow pasting quotes and media attachments.
  * Is called by Blazor when the compose dialog is opened.

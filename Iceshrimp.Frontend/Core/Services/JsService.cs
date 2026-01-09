@@ -10,7 +10,60 @@ public class JsService
 {
     public IJSObjectReference? Module { private get; set; }
 
-    public ValueTask ShowDialogAsync(ElementReference dialog) => Module!.InvokeVoidAsync("showDialog", dialog);
+    /// <summary>
+    /// Displays a dialog
+    /// </summary>
+    /// <param name="dialog">Dialog element</param>
+    /// <param name="modal">Show as a modal</param>
+    public ValueTask ShowDialogAsync(ElementReference dialog, bool modal = true) =>
+        Module!.InvokeVoidAsync("showDialog", dialog, modal);
 
-    public ValueTask CloseDialogAsync(ElementReference dialog, string? returnValue = null) => Module!.InvokeVoidAsync("closeDialog", dialog, returnValue);
+    /// <summary>
+    /// Closes a dialog
+    /// </summary>
+    /// <param name="dialog">Dialog element</param>
+    /// <param name="returnValue">Return value for the dialog element</param>
+    public ValueTask CloseDialogAsync(ElementReference dialog, string? returnValue = null) =>
+        Module!.InvokeVoidAsync("closeDialog", dialog, returnValue);
+
+    /// <summary>
+    /// Scrolls an element into view
+    /// </summary>
+    /// <param name="element">Element to scroll to</param>
+    /// <param name="behavior">Smoothing behavior</param>
+    public ValueTask ScrollToElementAsync(ElementReference element, ScrollBehavior behavior = ScrollBehavior.Auto) =>
+        Module!.InvokeVoidAsync("scrollToElement", element, behavior.ToString().ToLower());
+
+    /// <summary>
+    /// Simulates a mouse click on an element
+    /// </summary>
+    /// <param name="element">Element to click</param>
+    public ValueTask ClickElementAsync(ElementReference element) => Module!.InvokeVoidAsync("clickElement", element); 
+
+    /// <summary>
+    /// Gets the position of an element
+    /// </summary>
+    /// <param name="element">Element</param>
+    /// <param name="includeScroll">Include window scroll in position</param>
+    /// <returns>Element X and Y coordinates</returns>
+    public async ValueTask<(double, double)> GetPositionAsync(ElementReference element, bool includeScroll)
+    {
+        var pos = await Module!.InvokeAsync<double[]>("getPosition", element, includeScroll);
+        return (pos[0], pos[1]);
+    }
+
+    /// <summary>
+    /// Get the selection start of an element
+    /// </summary>
+    /// <param name="element">Selected element</param>
+    /// <returns>Selection start index</returns>
+    public ValueTask<int> GetSelectionStartAsync(ElementReference element) =>
+        Module!.InvokeAsync<int>("getSelectionStart", element);
+
+    public enum ScrollBehavior
+    {
+        Auto,
+        Instant,
+        Smooth,
+    }
 }
