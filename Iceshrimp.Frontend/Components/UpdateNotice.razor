@@ -2,7 +2,7 @@
 @using Iceshrimp.Frontend.Localization
 @using Microsoft.Extensions.Localization
 @inject UpdateService                  UpdateSvc;
-@inject IJSRuntime                     Js;
+@inject JsService                      Js;
 @inject IStringLocalizer<Localization> Loc;
 @inject NavigationManager              Nav;
 @implements IDisposable
@@ -38,9 +38,8 @@
 </dialog>
 
 @code {
-    private ElementReference   Dialog { get; set; }
-    private IJSObjectReference _module = null!;
-    private StateButton        UpdateButton { get; set; } = null!;
+    private ElementReference Dialog       { get; set; }
+    private StateButton      UpdateButton { get; set; } = null!;
 
     private void OnUpdateStatusChange(object? _, UpdateService.UpdateStates newState)
     {
@@ -56,16 +55,13 @@
 
     private void OpenDialog()
     {
-        var module = (IJSInProcessObjectReference)_module;
-        module.InvokeVoid("openDialog", Dialog);
+        Js.ShowDialogAsync(Dialog);
 
         UpdateSvc.DialogOpen = true;
     }
 
     protected override async Task OnInitializedAsync()
     {
-        _module = await Js.InvokeAsync<IJSObjectReference>("import",
-                                                           "./Components/UpdateNotice.razor.js");
         UpdateSvc.UpdateStatusEvent += OnUpdateStatusChange;
         await UpdateSvc.ServiceWorkerUpdateAsync();
     }

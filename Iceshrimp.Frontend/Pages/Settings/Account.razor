@@ -15,7 +15,7 @@
 @inject GlobalComponentSvc             Global;
 @inject ILogger<Profile>               Logger;
 @inject IStringLocalizer<Localization> Loc;
-@inject IJSRuntime                     Js;
+@inject JsService                      Js;
 
 <HeadTitle Text="@Loc["Account settings"]"/>
 
@@ -177,16 +177,6 @@
     private          TwoFactorEnrollmentResponse?   TwoFactorResponse { get; set; }
     private          string?                        OtpEnable         { get; set; }
     private          string?                        OtpDisable        { get; set; }
-    private readonly Lazy<Task<IJSObjectReference>> _moduleTask;
-
-    public Account()
-    {
-        _moduleTask = new Lazy<Task<IJSObjectReference>>(() =>
-                                                             Js.InvokeAsync<IJSObjectReference>(
-                                                                                                "import",
-                                                                                                "./Pages/Settings/Account.razor.js")
-                                                               .AsTask());
-    }
 
     protected override async Task OnInitializedAsync()
     {
@@ -245,20 +235,17 @@
 
     private async Task Enroll2FA()
     {
-        var module = await _moduleTask.Value;
         TwoFactorResponse = await Api.Settings.EnrollTwoFactorAsync();
-        await module.InvokeVoidAsync("openDialog", EnrollDialog);
+        await Js.ShowDialogAsync(EnrollDialog);
     }
 
     private async Task Disable2FAMenu()
     {
-        var module = await _moduleTask.Value;
-        await module.InvokeVoidAsync("openDialog", DisableDialog);
+        await Js.ShowDialogAsync(DisableDialog);
     }
 
     private async Task Disable2FA()
     {
-        var module = await _moduleTask.Value;
         if (OtpDisable is null)
         {
             return;
@@ -273,7 +260,7 @@
             StateHasChanged();
             await Task.Delay(1000);
             SettingsForm = await Api.Settings.GetSettingsAsync();
-            await module.InvokeVoidAsync("closeDialog", DisableDialog);
+            await Js.CloseDialogAsync(DisableDialog);
         }
 
         catch (ApiException e)
@@ -285,7 +272,6 @@
 
     private async Task Confirm2FA()
     {
-        var module = await _moduleTask.Value;
         if (OtpEnable is null)
         {
             return;
@@ -300,7 +286,7 @@
             StateHasChanged();
             await Task.Delay(1000);
             SettingsForm = await Api.Settings.GetSettingsAsync();
-            await module.InvokeVoidAsync("closeDialog", EnrollDialog);
+            await Js.CloseDialogAsync(EnrollDialog);
         }
 
         catch (ApiException e)
@@ -312,7 +298,6 @@
 
     private async Task CloseDialog(ElementReference dialog)
     {
-        var module = await _moduleTask.Value;
-        await module.InvokeVoidAsync("closeDialog", dialog);
+        await Js.CloseDialogAsync(dialog);
     }
 }

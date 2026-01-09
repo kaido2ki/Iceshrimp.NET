@@ -13,7 +13,7 @@
 @inject NavigationManager              Navigation
 @inject IStringLocalizer<Localization> Loc;
 @inject MetadataService                Metadata;
-@inject IJSRuntime                     Js;
+@inject JsService                      Js;
 @inject ILogger<Login>                 Logger;
 @layout UnauthLayout
 
@@ -94,21 +94,10 @@
     private          ElementReference               Dialog    { get; set; }
     private          string?                        Otp       { get; set; }
     private          StateButton                    OtpButton { get; set; } = null!;
-    private readonly Lazy<Task<IJSObjectReference>> _moduleTask;
     private          Registrations                  Registration { get; set; }
-
-    public Login()
-    {
-        _moduleTask = new Lazy<Task<IJSObjectReference>>(() =>
-                                                             Js.InvokeAsync<IJSObjectReference>(
-                                                                                                "import",
-                                                                                                "./Pages/Settings/Account.razor.js")
-                                                               .AsTask());
-    }
 
     private async Task Submit()
     {
-        var module = await _moduleTask.Value;
         Loading = true;
         try
         {
@@ -148,7 +137,7 @@
                     Loading = false;
                     break;
                 case AuthStatusEnum.TwoFactor:
-                    await module.InvokeVoidAsync("openDialog", Dialog);
+                    await Js.ShowDialogAsync(Dialog);
                     Api.SetBearerToken(res.Token!);
                     break;
             }
@@ -163,7 +152,6 @@
 
     private async Task TwoFactorLogin()
     {
-        var module = await _moduleTask.Value;
         if (Otp is null)
         {
             return;
@@ -200,7 +188,7 @@
                 Failure         = true;
                 Loading         = false;
                 OtpButton.State = StateButton.StateEnum.Failed;
-                await module.InvokeVoidAsync("closeDialog", Dialog);
+                await Js.CloseDialogAsync(Dialog);
                 OtpButton.State = StateButton.StateEnum.Initial;
             }
         }
@@ -228,7 +216,6 @@
 
     private async Task CloseDialog(ElementReference dialog)
     {
-        var module = await _moduleTask.Value;
-        await module.InvokeVoidAsync("closeDialog", dialog);
+        await Js.CloseDialogAsync(Dialog);
     }
 }

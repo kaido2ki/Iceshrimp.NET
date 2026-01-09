@@ -6,7 +6,7 @@
 @using Microsoft.Extensions.Localization
 @inject AnnouncementService            AnnouncementService;
 @inject ApiService                     Api;
-@inject IJSRuntime                     Js;
+@inject JsService                      Js;
 @inject IStringLocalizer<Localization> Loc;
 
 <dialog @onkeyup="HandleKeys" class="dialog" @ref="Dialog">
@@ -82,7 +82,6 @@
 
 @code {
     private ElementReference           Dialog { get; set; }
-    private IJSObjectReference         _module = null!;
     private StateButton?               NextButton     { get; set; }
     private int                        Current        { get; set; }
     private PaginationData?            PaginationData { get; set; }
@@ -91,7 +90,7 @@
     private async Task CloseDialog()
     {
         Announcements = [];
-        await _module.InvokeVoidAsync("closeDialog", Dialog);
+        await Js.CloseDialogAsync(Dialog);
     }
 
     public async Task Display()
@@ -111,7 +110,7 @@
 
         StateHasChanged();
 
-        await _module.InvokeVoidAsync("openDialog", Dialog);
+        await Js.ShowDialogAsync(Dialog);
     }
 
     private void Previous()
@@ -172,10 +171,8 @@
         }
     }
 
-    protected override async Task OnInitializedAsync()
+    protected override void OnInitialized()
     {
-        _module = await Js.InvokeAsync<IJSObjectReference>("import",
-                                                           "./Components/AnnouncementsDialog.razor.js");
         AnnouncementService.AnnouncementsDialog = this;
     }
 }

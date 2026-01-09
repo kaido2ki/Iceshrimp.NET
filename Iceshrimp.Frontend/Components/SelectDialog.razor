@@ -2,7 +2,7 @@
 @using Iceshrimp.Frontend.Localization
 @using Microsoft.Extensions.Localization
 @inject GlobalComponentSvc             GlobalComponentSvc;
-@inject IJSRuntime                     Js;
+@inject JsService                      Js;
 @inject IStringLocalizer<Localization> Loc;
 
 <dialog @onkeyup="HandleKeys" class="dialog" @ref="Dialog">
@@ -29,8 +29,7 @@
 </dialog>
 
 @code {
-    private ElementReference                   Dialog { get; set; }
-    private IJSObjectReference                 _module = null!;
+    private ElementReference                   Dialog     { get; set; }
     private EventCallback<object?>             Action     { get; set; }
     private string                             Text       { get; set; } = "";
     private List<(string Label, object Value)> Options    { get; set; } = [];
@@ -40,7 +39,7 @@
 
     private async Task CloseDialog()
     {
-        await _module.InvokeVoidAsync("closeDialog", Dialog);
+        await Js.CloseDialogAsync(Dialog);
     }
 
     public async Task Select(EventCallback<object?> action, string text, List<(string, object)> options, string? buttonText = null)
@@ -54,7 +53,7 @@
 
         StateHasChanged();
 
-        await _module.InvokeVoidAsync("openDialog", Dialog);
+        await Js.ShowDialogAsync(Dialog);
     }
 
     private async Task ConfirmAction()
@@ -84,10 +83,8 @@
         }
     }
     
-    protected override async Task OnInitializedAsync()
+    protected override void OnInitialized()
     {
-        _module = await Js.InvokeAsync<IJSObjectReference>("import",
-                                                           "./Components/SelectDialog.razor.js");
         GlobalComponentSvc.SelectDialog = this;
     }
 }

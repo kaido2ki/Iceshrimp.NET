@@ -6,7 +6,7 @@
 @using Microsoft.Extensions.Localization
 @inject ApiService                     Api;
 @inject GlobalComponentSvc             GlobalComponentSvc;
-@inject IJSRuntime                     Js;
+@inject JsService                      Js;
 @inject IStringLocalizer<Localization> Loc;
 
 <dialog class="dialog" @ref="Dialog">
@@ -86,8 +86,7 @@
 </dialog>
 
 @code {
-    private ElementReference   Dialog { get; set; }
-    private IJSObjectReference _module = null!;
+    private ElementReference   Dialog       { get; set; }
     private List<RuleResponse> Rules        { get; set; } = [];
     private string             Comment      { get; set; } = "";
     private List<string>       RuleIds      { get; set; } = [];
@@ -99,7 +98,7 @@
 
     private async Task CloseDialog()
     {
-        await _module.InvokeVoidAsync("closeDialog", Dialog);
+        await Js.CloseDialogAsync(Dialog);
     }
 
     public async Task ReportNote(NoteBase note)
@@ -113,7 +112,7 @@
 
         StateHasChanged();
 
-        await _module.InvokeVoidAsync("openDialog", Dialog);
+        await Js.ShowDialogAsync(Dialog);
     }
 
     public async Task ReportUser(UserResponse user)
@@ -127,7 +126,7 @@
 
         StateHasChanged();
 
-        await _module.InvokeVoidAsync("openDialog", Dialog);
+        await Js.ShowDialogAsync(Dialog);
     }
 
     private async Task Submit()
@@ -223,8 +222,6 @@
 
     protected override async Task OnInitializedAsync()
     {
-        _module = await Js.InvokeAsync<IJSObjectReference>("import",
-                                                           "./Components/ReportDialog.razor.js");
         Rules                           = await Api.Instance.GetRulesAsync();
         GlobalComponentSvc.ReportDialog = this;
     }

@@ -3,7 +3,7 @@
 @using Iceshrimp.Frontend.Localization
 @using Microsoft.Extensions.Localization
 @inject GlobalComponentSvc             GlobalComponentSvc;
-@inject IJSRuntime                     Js;
+@inject JsService                      Js;
 @inject IStringLocalizer<Localization> Loc;
 
 <dialog @onkeyup="HandleKeys" class="dialog" @ref="Dialog">
@@ -25,8 +25,7 @@
 </dialog>
 
 @code {
-    private ElementReference    Dialog { get; set; }
-    private IJSObjectReference  _module = null!;
+    private ElementReference    Dialog      { get; set; }
     private EventCallback<bool> Action      { get; set; }
     private string              Question    { get; set; } = "";
     private IconName?           ConfirmIcon { get; set; }
@@ -35,7 +34,7 @@
 
     private async Task CloseDialog()
     {
-        await _module.InvokeVoidAsync("closeDialog", Dialog);
+        await Js.CloseDialogAsync(Dialog);
     }
 
     public async Task Confirm(EventCallback<bool> action, string question, IconName? icon = null, string? buttonText = null)
@@ -48,7 +47,7 @@
 
         StateHasChanged();
 
-        await _module.InvokeVoidAsync("openDialog", Dialog);
+        await Js.ShowDialogAsync(Dialog);
     }
 
     private async Task ConfirmAction()
@@ -78,10 +77,8 @@
         }
     }
     
-    protected override async Task OnInitializedAsync()
+    protected override void OnInitialized()
     {
-        _module = await Js.InvokeAsync<IJSObjectReference>("import",
-                                                           "./Components/ConfirmDialog.razor.js");
         GlobalComponentSvc.ConfirmDialog = this;
     }
 }

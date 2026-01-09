@@ -5,7 +5,7 @@
 @using Microsoft.Extensions.Localization
 @inject ApiService                     Api;
 @inject GlobalComponentSvc             GlobalComponentSvc;
-@inject IJSRuntime                     Js;
+@inject JsService                      Js;
 @inject IStringLocalizer<Localization> Loc;
 
 <dialog @onkeyup="HandleKeys" class="dialog" @ref="Dialog">
@@ -44,8 +44,7 @@
 </dialog>
 
 @code {
-    private ElementReference             Dialog { get; set; }
-    private IJSObjectReference           _module = null!;
+    private ElementReference             Dialog      { get; set; }
     private EventCallback<UserResponse?> Action      { get; set; }
     private string                       Text        { get; set; } = "";
     private List<UserResponse>           Users       { get; set; } = [];
@@ -59,7 +58,7 @@
 
     private async Task CloseDialog()
     {
-        await _module.InvokeVoidAsync("closeDialog", Dialog);
+        await Js.CloseDialogAsync(Dialog);
     }
 
     public async Task Select(EventCallback<UserResponse?> action, string text, string? buttonText = null)
@@ -77,7 +76,7 @@
 
         StateHasChanged();
 
-        await _module.InvokeVoidAsync("openDialog", Dialog);
+        await Js.ShowDialogAsync(Dialog);
         await Search();
     }
 
@@ -140,10 +139,8 @@
         }
     }
 
-    protected override async Task OnInitializedAsync()
+    protected override void OnInitialized()
     {
-        _module = await Js.InvokeAsync<IJSObjectReference>("import",
-                                                           "./Components/UserDialog.razor.js");
         GlobalComponentSvc.UserDialog = this;
     }
 }
