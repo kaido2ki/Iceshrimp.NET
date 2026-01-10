@@ -493,13 +493,30 @@
         UploadingFiles += e.FileCount;
         foreach (var file in e.GetMultipleFiles())
         {
-            try {
+            try
+            {
                 var res = await ApiService.Drive.UploadFileAsync(file);
                 Attachments.Add(res);
             }
-            catch (IOException exception)
+            catch (ApiException ex) when (ex.Response.StatusCode is 413 && ex.Response.Details is { Length: > 0 } details)
             {
-                await GlobalComponentSvc.NoticeDialog?.Display(exception.Message, NoticeDialog.NoticeType.Error)!;
+                const string prefix = "The media upload size limit is set to ";
+                const string suffix = " bytes.";
+                string       msg;
+                if (details.StartsWith(prefix) && long.TryParse(details[prefix.Length..^suffix.Length], out var bytes))
+                    msg = Loc["Attachment is too large. The server set this limit to {0} bytes.", bytes.ToString()]; //TODO: fix grammar
+                else
+                    msg = Loc["Attachment is too large."];
+
+                await GlobalComponentSvc.NoticeDialog?.Display(msg, NoticeDialog.NoticeType.Error)!;
+            }
+            catch (ApiException ex)
+            { 
+                await GlobalComponentSvc.NoticeDialog?.Display(ex.Response.Message ?? ex.Message, NoticeDialog.NoticeType.Error)!;
+            }
+            catch (Exception ex)
+            { 
+                await GlobalComponentSvc.NoticeDialog?.Display(ex.Message, NoticeDialog.NoticeType.Error)!;
             }
 
             UploadingFiles -= 1;
