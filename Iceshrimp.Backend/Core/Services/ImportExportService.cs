@@ -67,6 +67,7 @@ public class ImportExportService(
 			try
 			{
 				var blockee = await userResolver.ResolveAsync($"acct:{fqn}", ResolveFlags.Acct);
+				if (blockee.Id == user.Id) continue; // don't block self
 				await userSvc.BlockUserAsync(user, blockee);
 			}
 			catch (Exception e)
@@ -85,6 +86,7 @@ public class ImportExportService(
 			try
 			{
 				var followee = await userResolver.ResolveAsync($"acct:{fqn}", ResolveFlags.Acct);
+				if (followee.Id == user.Id) continue;
 				await userSvc.FollowUserAsync(user, followee);
 			}
 			catch (Exception e)
@@ -104,6 +106,7 @@ public class ImportExportService(
 			try
 			{
 				var mutee = await userResolver.ResolveAsync($"acct:{fqn}", ResolveFlags.Acct);
+				if (mutee.Id == user.Id) continue;
 				await userSvc.MuteUserAsync(user, mutee, null);
 			}
 			catch (Exception e)
