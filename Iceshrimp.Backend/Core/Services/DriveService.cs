@@ -110,7 +110,7 @@ public class DriveService(
 					Filename    = filename,
 					IsSensitive = sensitive,
 					Comment     = description,
-					MimeType    = CleanMimeType(res.Content.Headers.ContentType?.MediaType ?? mimeType)
+					MimeType    = CleanMimeType(mimeType ?? res.Content.Headers.ContentType?.MediaType)
 				};
 
 				var input = await res.Content.ReadAsStreamAsync();
