@@ -274,16 +274,19 @@ public static class WebApplicationExtensions
 
 			if (args.FirstOrDefault(userMgmtCommands.Contains) is { } cmd)
 			{
-				if (args is not [not null, var username])
+				if (args is not [not null, var username, ..])
 				{
-					app.Logger.LogError("Invalid syntax. Usage: {cmd} <username>", cmd);
+					app.Logger.LogError("Invalid syntax. Usage: {cmd} <username> [--password <password>]", cmd);
 					Environment.Exit(1);
 					return null!;
 				}
 
 				if (cmd is "--create-user" or "--create-admin-user")
 				{
-					var password = CryptographyHelpers.GenerateRandomString(16);
+					if (args is not [_, _, "--password", var password])
+					{
+						password = CryptographyHelpers.GenerateRandomString(16);
+					}
 					app.Logger.LogInformation("Creating user {username}...", username);
 					var userSvc = provider.GetRequiredService<UserService>();
 					await userSvc.CreateLocalUserAsync(username, password, null, force: true);
