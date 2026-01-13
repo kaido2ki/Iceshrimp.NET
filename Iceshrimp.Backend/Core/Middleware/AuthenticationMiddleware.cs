@@ -1,9 +1,9 @@
 using Iceshrimp.Backend.Controllers.Mastodon.Attributes;
 using Iceshrimp.Backend.Core.Database;
 using Iceshrimp.Backend.Core.Database.Tables;
-using Iceshrimp.Backend.Core.Extensions;
 using Iceshrimp.Backend.Core.Helpers;
 using Iceshrimp.Backend.Core.Services;
+using Iceshrimp.Utils.DependencyInjection;
 using Microsoft.AspNetCore.Components.Endpoints;
 using Microsoft.EntityFrameworkCore;
 

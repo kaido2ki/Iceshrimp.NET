@@ -8,6 +8,7 @@ using Iceshrimp.Backend.Core.Configuration;
 using Iceshrimp.Backend.Core.Extensions;
 using Iceshrimp.Backend.Pages.Shared;
 using Iceshrimp.Shared.Schemas.Web;
+using Iceshrimp.Utils.DependencyInjection;
 using Microsoft.AspNetCore.Http.HttpResults;
 using Microsoft.Extensions.Options;
 

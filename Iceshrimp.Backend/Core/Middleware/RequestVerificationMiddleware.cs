@@ -1,5 +1,6 @@
 using Iceshrimp.Backend.Core.Configuration;
 using Iceshrimp.Backend.Core.Extensions;
+using Iceshrimp.Utils.DependencyInjection;
 using Microsoft.Extensions.Options;
 
 namespace Iceshrimp.Backend.Core.Middleware;

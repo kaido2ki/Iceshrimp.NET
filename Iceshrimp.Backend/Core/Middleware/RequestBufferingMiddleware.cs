@@ -1,4 +1,4 @@
-using Iceshrimp.Backend.Core.Extensions;
+using Iceshrimp.Utils.DependencyInjection;
 using JetBrains.Annotations;
 
 namespace Iceshrimp.Backend.Core.Middleware;

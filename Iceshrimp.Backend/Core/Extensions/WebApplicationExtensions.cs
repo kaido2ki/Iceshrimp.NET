@@ -1,4 +1,3 @@
-using System.Collections.Concurrent;
 using System.Diagnostics.CodeAnalysis;
 using System.Runtime.InteropServices;
 using Iceshrimp.Backend.Core.Configuration;
@@ -8,6 +7,7 @@ using Iceshrimp.Backend.Core.Helpers;
 using Iceshrimp.Backend.Core.Middleware;
 using Iceshrimp.Backend.Core.Services;
 using Iceshrimp.Backend.Core.Services.ImageProcessing;
+using Iceshrimp.Utils.DependencyInjection;
 using Iceshrimp.WebPush;
 using Microsoft.AspNetCore.Components;
 using Microsoft.AspNetCore.Http.HttpResults;
@@ -41,10 +41,6 @@ public static class WebApplicationExtensions
 			          .UseOutputCache()
 			          .UseMiddleware<BlazorSsrHandoffMiddleware>();
 		}
-
-		// Prevents conditional middleware from being invoked on non-matching requests
-		private IApplicationBuilder UseMiddleware<T>() where T : IConditionalMiddleware
-			=> app.UseWhen(T.Predicate, builder => UseMiddlewareExtensions.UseMiddleware<T>(builder));
 	}
 
 	extension(WebApplication app)
@@ -557,32 +553,4 @@ public static class WebApplicationExtensions
             return endpoints.MapGroup(string.Empty).WithMetadata(new ResourceAssetCollection(new ResourceAssetCollection(resources)));
         }
 	}
-}
-
-public interface IConditionalMiddleware
-{
-	public static abstract bool Predicate(HttpContext ctx);
-}
-
-public interface IMiddlewareService : IMiddleware
-{
-	public static abstract ServiceLifetime Lifetime { get; }
-}
-
-public class ConditionalMiddleware<T> : IConditionalMiddleware where T : Attribute
-{
-	[SuppressMessage("ReSharper", "StaticMemberInGenericType", Justification = "Intended behavior")]
-	private static readonly ConcurrentDictionary<Endpoint, bool> Cache = [];
-
-	public static bool Predicate(HttpContext ctx)
-		=> ctx.GetEndpoint() is { } endpoint && Cache.GetOrAdd(endpoint, e => GetAttribute(e) != null);
-
-	private static T? GetAttribute(Endpoint? endpoint)
-		=> endpoint?.Metadata.GetMetadata<T>();
-
-	private static T? GetAttribute(HttpContext ctx)
-		=> GetAttribute(ctx.GetEndpoint());
-
-	protected static T GetAttributeOrFail(HttpContext ctx)
-		=> GetAttribute(ctx) ?? throw new Exception("Failed to get middleware filter attribute");
 }

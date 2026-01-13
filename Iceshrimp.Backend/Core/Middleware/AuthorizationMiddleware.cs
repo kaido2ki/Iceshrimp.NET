@@ -1,6 +1,6 @@
 using Iceshrimp.Backend.Controllers.Mastodon.Attributes;
-using Iceshrimp.Backend.Core.Extensions;
 using Iceshrimp.Backend.Core.Helpers;
+using Iceshrimp.Utils.DependencyInjection;
 
 namespace Iceshrimp.Backend.Core.Middleware;
 

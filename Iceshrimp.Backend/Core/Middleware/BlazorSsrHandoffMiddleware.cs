@@ -1,7 +1,7 @@
 using System.Collections.Concurrent;
 using System.Reflection;
 using System.Runtime.CompilerServices;
-using Iceshrimp.Backend.Core.Extensions;
+using Iceshrimp.Utils.DependencyInjection;
 using Microsoft.AspNetCore.Components.Endpoints;
 
 namespace Iceshrimp.Backend.Core.Middleware;
