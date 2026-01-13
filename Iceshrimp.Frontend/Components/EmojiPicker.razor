@@ -70,10 +70,16 @@
         StateHasChanged();
     }
 
+    private bool FilterName(EmojiResponse emoji)
+    {
+        var split = EmojiFilter.StripLeadingTrailingSpaces().SplitSpaces();
+        return split.All(x => emoji.Name.Contains(x));
+    }
+
     private void FilterEmojis()
     {
         Categories = EmojiList
-            .Where(p => p.Name.Contains(EmojiFilter.StripLeadingTrailingSpaces()) || p.Tags.Count(a => a.Contains(EmojiFilter.StripLeadingTrailingSpaces())) != 0)
+            .Where(p => FilterName(p) || p.Tags.Count(a => a.Contains(EmojiFilter.StripLeadingTrailingSpaces())) != 0)
             .OrderBy(p => p.Name)
             .ThenBy(p => p.Id)
             .GroupBy(p => p.Category)
