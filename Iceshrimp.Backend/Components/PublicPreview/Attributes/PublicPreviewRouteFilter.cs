@@ -1,5 +1,5 @@
 using AngleSharp.Io;
-using Iceshrimp.Backend.Core.Extensions;
+using Iceshrimp.Utils.DependencyInjection;
 using Microsoft.AspNetCore.Routing.Matching;
 
 namespace Iceshrimp.Backend.Components.PublicPreview.Attributes;

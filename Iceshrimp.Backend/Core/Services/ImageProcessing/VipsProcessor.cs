@@ -1,17 +1,16 @@
-using System.Runtime.InteropServices;
 using CommunityToolkit.HighPerformance;
 using Iceshrimp.Backend.Core.Configuration;
-using Iceshrimp.Backend.Core.Extensions;
 using Iceshrimp.Backend.Core.Helpers;
 using NetVips;
 using Iceshrimp.MimeTypes;
+using Iceshrimp.Utils.DependencyInjection;
 using SixLabors.ImageSharp.PixelFormats;
 using Enums = NetVips.Enums;
 
 namespace Iceshrimp.Backend.Core.Services.ImageProcessing;
 
 public class VipsProcessor : ImageProcessorBase, IImageProcessor,
-                             ISingletonService, IConditionalService, IService<IImageProcessor>
+                             ISingletonService, IConditionalService<Config>, IService<IImageProcessor>
 {
 	private readonly ILogger<VipsProcessor> _logger;
 

@@ -18,6 +18,7 @@ using Iceshrimp.Backend.Core.Queues;
 using Iceshrimp.EntityFrameworkCore.Extensions;
 using Iceshrimp.MfmSharp;
 using Iceshrimp.Shared.Configuration;
+using Iceshrimp.Utils.DependencyInjection;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Options;
 

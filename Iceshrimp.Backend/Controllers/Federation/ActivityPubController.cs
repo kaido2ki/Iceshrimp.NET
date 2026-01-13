@@ -12,6 +12,7 @@ using Iceshrimp.Backend.Core.Federation.ActivityStreams.Types;
 using Iceshrimp.Backend.Core.Middleware;
 using Iceshrimp.Backend.Core.Queues;
 using Iceshrimp.Backend.Core.Services;
+using Iceshrimp.Utils.DependencyInjection;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.OutputCaching;
 using Microsoft.EntityFrameworkCore;

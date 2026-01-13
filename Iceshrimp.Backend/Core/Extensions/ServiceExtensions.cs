@@ -1,11 +1,8 @@
 using System.Diagnostics.CodeAnalysis;
-using System.Reflection;
 using System.Threading.RateLimiting;
 using System.Xml.Linq;
-using Iceshrimp.AssemblyUtils;
 using Iceshrimp.Backend.Core.Configuration;
 using Iceshrimp.Backend.Core.Database;
-using Iceshrimp.Backend.Core.Helpers;
 using Iceshrimp.Backend.Core.Middleware;
 using Iceshrimp.Backend.SignalR.Authentication;
 using Iceshrimp.Shared.Configuration;
@@ -31,88 +28,8 @@ public static class ServiceExtensions
 {
 	extension(IServiceCollection services)
 	{
-		public void AddServices(IConfiguration configuration)
+		public void ConfigureServices()
 		{
-			var config = configuration.Get<Config>() ?? throw new Exception("Failed to read storage config section");
-
-			var serviceTypes = PluginLoader
-			                   .Assemblies.Prepend(Assembly.GetExecutingAssembly())
-			                   .SelectMany(AssemblyLoader.GetImplementationsOfInterface<IService>)
-			                   .OrderBy(type => type.GetInterfaceProperty<IService, int?>(nameof(IService.Priority)) ?? 0)
-			                   .ToArray();
-
-			foreach (var type in serviceTypes)
-			{
-				if (type.GetInterfaceProperty<IService, ServiceLifetime?>(nameof(IService.Lifetime)) is not { } lifetime)
-					continue;
-
-				if (type.GetInterface(nameof(IConditionalService)) != null)
-					if (type.CallInterfaceMethod(nameof(IConditionalService.Predicate), config) is not true)
-						continue;
-
-				var serviceType = type.GetInterfaceProperty<IService, Type>(nameof(IService.ServiceType)) ?? type;
-				services.Add(new ServiceDescriptor(serviceType, type, lifetime));
-			}
-
-			var hostedServiceTypes = PluginLoader
-			                         .Assemblies.Prepend(Assembly.GetExecutingAssembly())
-			                         .SelectMany(AssemblyLoader.GetImplementationsOfInterface<IHostedService>)
-			                         .ToArray();
-
-			foreach (var type in hostedServiceTypes)
-			{
-				if (type.GetInterface(nameof(IService)) == null)
-					services.Add(new ServiceDescriptor(type, type, ServiceLifetime.Singleton));
-
-				services.Add(new ServiceDescriptor(typeof(IHostedService), provider => provider.GetRequiredService(type),
-				                                   ServiceLifetime.Singleton));
-			}
-		}
-
-		public void AddMiddleware()
-		{
-			var types = PluginLoader
-			            .Assemblies.Prepend(Assembly.GetExecutingAssembly())
-			            .SelectMany(p => AssemblyLoader.GetImplementationsOfInterface(p, typeof(IMiddlewareService)));
-
-			foreach (var type in types)
-			{
-				if (type.GetProperty(nameof(IMiddlewareService.Lifetime))?.GetValue(null) is not ServiceLifetime lifetime)
-					continue;
-
-				services.Add(new ServiceDescriptor(type, type, lifetime));
-			}
-		}
-
-		public void ConfigureServices(IConfiguration configuration)
-		{
-			// @formatter:off
-			services.ConfigureWithValidation<Config>(configuration)
-			        .ConfigureWithValidation<Config.InstanceSection>(configuration, "Instance")
-			        .ConfigureWithValidation<Config.SecuritySection>(configuration, "Security")
-			        .ConfigureWithValidation<Config.NetworkSection>(configuration, "Network")
-			        .ConfigureWithValidation<Config.PerformanceSection>(configuration, "Performance")
-			        .ConfigureWithValidation<Config.QueueConcurrencySection>(configuration, "Performance:QueueConcurrency")
-			        .ConfigureWithValidation<Config.BackfillSection>(configuration, "Backfill")
-			        .ConfigureWithValidation<Config.BackfillRepliesSection>(configuration, "Backfill:Replies")
-			        .ConfigureWithValidation<Config.BackfillUserSection>(configuration, "Backfill:User")
-			        .ConfigureWithValidation<Config.QueueSection>(configuration, "Queue")
-			        .ConfigureWithValidation<Config.JobRetentionSection>(configuration, "Queue:JobRetention")
-			        .ConfigureWithValidation<Config.DatabaseSection>(configuration, "Database")
-			        .ConfigureWithValidation<Config.StorageSection>(configuration, "Storage")
-			        .ConfigureWithValidation<Config.LocalStorageSection>(configuration, "Storage:Local")
-			        .ConfigureWithValidation<Config.ObjectStorageSection>(configuration, "Storage:ObjectStorage")
-			        .ConfigureWithValidation<Config.MediaProcessingSection>(configuration, "Storage:MediaProcessing")
-			        .ConfigureWithValidation<Config.ImagePipelineSection>(configuration, "Storage:MediaProcessing:ImagePipeline")
-			        .ConfigureWithValidation<Config.ImageFormatConfiguration>(configuration, "Storage:MediaProcessing:ImagePipeline:Original:Local")
-			        .ConfigureWithValidation<Config.ImageFormatConfiguration>(configuration, "Storage:MediaProcessing:ImagePipeline:Original:Remote")
-			        .ConfigureWithValidation<Config.ImageFormatConfiguration>(configuration, "Storage:MediaProcessing:ImagePipeline:Thumbnail:Local")
-			        .ConfigureWithValidation<Config.ImageFormatConfiguration>(configuration, "Storage:MediaProcessing:ImagePipeline:Thumbnail:Remote")
-			        .ConfigureWithValidation<Config.ImageFormatConfiguration>(configuration, "Storage:MediaProcessing:ImagePipeline:Public:Local")
-			        .ConfigureWithValidation<Config.ImageFormatConfiguration>(configuration, "Storage:MediaProcessing:ImagePipeline:Public:Remote")
-			        .ConfigureWithValidation<Config.OpenTelemetrySection>(configuration, "OpenTelemetry");
-			// @formatter:on
-
 			services.Configure<JsonOptions>(options =>
 			{
 				options.SerializerOptions.PropertyNamingPolicy = JsonSerialization.Options.PropertyNamingPolicy;
@@ -129,28 +46,6 @@ public static class ServiceExtensions
 			});
 
 			services.PostConfigure<RazorComponentsServiceOptions>(BlazorSsrHandoffMiddleware.DisableBlazorJsInitializers);
-		}
-
-		private IServiceCollection ConfigureWithValidation<T>(
-			IConfiguration config
-		) where T : class
-		{
-			services.AddOptionsWithValidateOnStart<T>()
-			        .Bind(config)
-			        .ValidateDataAnnotations();
-
-			return services;
-		}
-
-		private IServiceCollection ConfigureWithValidation<T>(
-			IConfiguration config, string name
-		) where T : class
-		{
-			services.AddOptionsWithValidateOnStart<T>()
-			        .Bind(config.GetSection(name))
-			        .ValidateDataAnnotations();
-
-			return services;
 		}
 
 		public void AddDatabaseContext(IConfiguration configuration)
@@ -389,51 +284,6 @@ public static partial class HttpContextExtensions
 		public bool ShouldCacheOutput() =>
 			ctx.Items.TryGetValue(CacheKey, out var s) && s is true;
 	}
-}
-
-public interface IService
-{
-	// This should be abstract instead of virtual but the runtime team said https://github.com/dotnet/runtime/issues/79331
-	public static virtual ServiceLifetime Lifetime => throw new Exception("Missing IService.Lifetime override");
-
-	public static virtual Type? ServiceType => null;
-	public static virtual int   Priority    => 0;
-}
-
-/// <summary>
-/// Instantiated per request and class
-/// </summary>
-public interface ITransientService : IService
-{
-	static ServiceLifetime IService.Lifetime => ServiceLifetime.Transient;
-}
-
-/// <summary>
-/// Instantiated per request
-/// </summary>
-public interface IScopedService : IService
-{
-	static ServiceLifetime IService.Lifetime => ServiceLifetime.Scoped;
-}
-
-/// <summary>
-/// Instantiated once across application lifetime
-/// </summary>
-public interface ISingletonService : IService
-{
-	static ServiceLifetime IService.Lifetime => ServiceLifetime.Singleton;
-}
-
-public interface IService<TService> : IService
-{
-	static Type IService.ServiceType => typeof(TService);
-}
-
-public interface IConditionalService : IService
-{
-	// This should be abstract instead of virtual but the runtime team said https://github.com/dotnet/runtime/issues/79331
-	public static virtual bool Predicate(Config ctx) =>
-		throw new Exception("Missing IConditionalService.Predicate override");
 }
 
 #region AsyncDataProtection handlers

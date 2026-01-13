@@ -1,10 +1,13 @@
+using System.Diagnostics.CodeAnalysis;
 using System.Security.Cryptography;
+using Iceshrimp.Backend.Core.Configuration;
 using Iceshrimp.Backend.Core.Database.Tables;
 using Iceshrimp.Backend.Core.Extensions;
 using Iceshrimp.Backend.Core.Federation.ActivityStreams.Types;
 using Iceshrimp.Backend.Core.Helpers;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
+using Iceshrimp.Utils.DependencyInjection;
 
 namespace Iceshrimp.Tests;
 
@@ -37,14 +40,16 @@ public static class MockObjects
 	private static readonly ServiceProvider  DefaultServiceProvider = GetServiceProvider();
 	public static           IServiceProvider ServiceProvider => DefaultServiceProvider.CreateScope().ServiceProvider;
 
+	[SuppressMessage("ReSharper", "RedundantSuppressNullableWarningExpression")]
 	private static ServiceProvider GetServiceProvider()
 	{
 		var config = new ConfigurationManager();
 		config.AddIniStream(AssemblyHelpers.GetEmbeddedResourceStream("configuration.ini"));
 
-		var collection = new ServiceCollection();
-		collection.AddServices(config);
-		collection.ConfigureServices(config);
+		IServiceCollection collection = new ServiceCollection();
+		collection.AddServicesFromAssembly<Config>(config, typeof(Config).Assembly!);
+		collection.ConfigureServicesWithValidation<Config>(config);
+		collection.ConfigureServices();
 
 		return collection.BuildServiceProvider();
 	}

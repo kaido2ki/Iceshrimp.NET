@@ -1,9 +1,9 @@
 using Iceshrimp.Backend.Core.Configuration;
 using Iceshrimp.Backend.Core.Database;
 using Iceshrimp.Backend.Core.Database.Tables;
-using Iceshrimp.Backend.Core.Extensions;
 using Iceshrimp.Backend.Core.Services;
 using Iceshrimp.Shared.Schemas.Web;
+using Iceshrimp.Utils.DependencyInjection;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Options;
 

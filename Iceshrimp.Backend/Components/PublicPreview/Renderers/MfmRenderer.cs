@@ -1,9 +1,9 @@
 using Iceshrimp.Backend.Components.PublicPreview.Schemas;
 using Iceshrimp.Backend.Core.Database.Tables;
-using Iceshrimp.Backend.Core.Extensions;
 using Iceshrimp.Backend.Core.Helpers.LibMfm.Conversion;
 using Iceshrimp.Backend.Core.Services;
 using Iceshrimp.MfmSharp;
+using Iceshrimp.Utils.DependencyInjection;
 using JetBrains.Annotations;
 using Microsoft.AspNetCore.Components;
 

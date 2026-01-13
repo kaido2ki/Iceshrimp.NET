@@ -1,12 +1,12 @@
 using System.Collections.Concurrent;
 using Iceshrimp.Backend.Controllers.Web.Renderers;
 using Iceshrimp.Backend.Core.Database.Tables;
-using Iceshrimp.Backend.Core.Extensions;
 using Iceshrimp.Backend.SignalR;
 using Iceshrimp.Backend.SignalR.Helpers;
 using Iceshrimp.Shared.Helpers;
 using Iceshrimp.Shared.Schemas.SignalR;
 using Iceshrimp.Shared.Schemas.Web;
+using Iceshrimp.Utils.DependencyInjection;
 using Microsoft.AspNetCore.SignalR;
 
 namespace Iceshrimp.Backend.Core.Services;

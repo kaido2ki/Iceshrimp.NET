@@ -1,10 +1,12 @@
 using System.Diagnostics;
 using System.Net;
+using Iceshrimp.Backend.Core.Configuration;
 using Iceshrimp.Backend.Core.Extensions;
 using Iceshrimp.Backend.Core.Helpers;
 using Iceshrimp.Backend.Pages.Shared;
 using Iceshrimp.Backend.SignalR;
 using Iceshrimp.Backend.SignalR.Authentication;
+using Iceshrimp.Utils.DependencyInjection;
 using Microsoft.AspNetCore.HttpOverrides;
 using IPNetwork = System.Net.IPNetwork;
 
@@ -38,9 +40,10 @@ builder.Services.AddSignalR().AddMessagePackProtocol();
 builder.Services.AddResponseCompression();
 builder.Services.AddRazorComponents();
 builder.Services.AddAntiforgery(o => o.Cookie.Name = "CSRF-Token");
-builder.Services.AddMiddleware();
-builder.Services.AddServices(builder.Configuration);
-builder.Services.ConfigureServices(builder.Configuration);
+builder.Services.AddMiddlewareFromAssembly(PluginLoader.Assemblies);
+builder.Services.AddServicesFromAssembly<Config>(builder.Configuration, PluginLoader.Assemblies);
+builder.Services.ConfigureServicesWithValidation<Config>(builder.Configuration);
+builder.Services.ConfigureServices();
 builder.AddOpenTelemetry();
 
 builder.WebHost.ConfigureKestrel(builder.Configuration);

@@ -1,8 +1,8 @@
 using Iceshrimp.Backend.Core.Database;
 using Iceshrimp.Backend.Core.Database.Tables;
-using Iceshrimp.Backend.Core.Extensions;
 using Iceshrimp.Backend.Core.Helpers;
 using Iceshrimp.Backend.Core.Middleware;
+using Iceshrimp.Utils.DependencyInjection;
 using Microsoft.EntityFrameworkCore;
 
 namespace Iceshrimp.Backend.Core.Services;

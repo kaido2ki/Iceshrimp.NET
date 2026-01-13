@@ -3,6 +3,7 @@ using System.Net;
 using System.Net.Sockets;
 using Iceshrimp.Backend.Core.Configuration;
 using Iceshrimp.Backend.Core.Extensions;
+using Iceshrimp.Utils.DependencyInjection;
 using JetBrains.Annotations;
 using Microsoft.Extensions.Options;
 

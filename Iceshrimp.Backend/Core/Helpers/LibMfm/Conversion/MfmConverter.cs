@@ -10,6 +10,7 @@ using Iceshrimp.Backend.Core.Helpers.LibMfm.Parsing;
 using Iceshrimp.MfmSharp;
 using Iceshrimp.Backend.Core.Services;
 using Iceshrimp.MfmSharp.Helpers;
+using Iceshrimp.Utils.DependencyInjection;
 using Microsoft.Extensions.Options;
 using MfmHtmlParser = Iceshrimp.Backend.Core.Helpers.LibMfm.Parsing.HtmlParser;
 using HtmlParser = AngleSharp.Html.Parser.HtmlParser;

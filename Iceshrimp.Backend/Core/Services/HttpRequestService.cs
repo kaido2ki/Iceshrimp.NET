@@ -3,8 +3,8 @@ using System.Net.Http.Headers;
 using System.Security.Cryptography;
 using Iceshrimp.Backend.Core.Configuration;
 using Iceshrimp.Backend.Core.Database.Tables;
-using Iceshrimp.Backend.Core.Extensions;
 using Iceshrimp.Backend.Core.Federation.Cryptography;
+using Iceshrimp.Utils.DependencyInjection;
 using Microsoft.Extensions.Options;
 
 namespace Iceshrimp.Backend.Core.Services;

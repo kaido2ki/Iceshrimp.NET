@@ -1,7 +1,7 @@
 using System.Diagnostics;
 using System.Diagnostics.Metrics;
-using Iceshrimp.Backend.Core.Extensions;
 using Iceshrimp.Shared.Helpers;
+using Iceshrimp.Utils.DependencyInjection;
 
 namespace Iceshrimp.Backend.Core.Helpers;
 

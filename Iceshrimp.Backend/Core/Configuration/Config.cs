@@ -3,6 +3,7 @@ using System.Diagnostics.CodeAnalysis;
 using Iceshrimp.Backend.Core.Middleware;
 using Iceshrimp.Backend.Core.Services.ImageProcessing;
 using Iceshrimp.Shared.Helpers;
+using Iceshrimp.Utils.DependencyInjection;
 
 namespace Iceshrimp.Backend.Core.Configuration;
 
@@ -12,7 +13,7 @@ namespace Iceshrimp.Backend.Core.Configuration;
 [SuppressMessage("ReSharper", "UnusedAutoPropertyAccessor.Global")]
 [SuppressMessage("ReSharper", "RedundantDefaultMemberInitializer")]
 [SuppressMessage("ReSharper", "ClassNeverInstantiated.Global")]
-public sealed class Config
+public sealed class Config : IServiceConfiguration
 {
 	public required InstanceSection      Instance      { get; init; } = new();
 	public required DatabaseSection      Database      { get; init; } = new();
@@ -24,6 +25,7 @@ public sealed class Config
 	public required BackfillSection      Backfill      { get; init; } = new();
 	public required OpenTelemetrySection OpenTelemetry { get; init; } = new();
 
+	[ConfigurationSection("Instance")]
 	public sealed class InstanceSection
 	{
 		private readonly VersionInfo _versionInfo = VersionHelpers.VersionInfo.Value;
@@ -53,6 +55,7 @@ public sealed class Config
 		public string[] AdditionalDomainsArray { get; private init; } = [];
 	}
 
+	[ConfigurationSection("Security")]
 	public sealed class SecuritySection
 	{
 		public bool                 AuthorizedFetch           { get; init; } = true;
@@ -70,6 +73,7 @@ public sealed class Config
 		public Enums.PublicPreview  PublicPreview             { get; init; } = Enums.PublicPreview.Public;
 	}
 
+	[ConfigurationSection("Network")]
 	public sealed class NetworkSection
 	{
 		public string? HttpProxy     { get; init; } = null;
@@ -77,6 +81,7 @@ public sealed class Config
 		public string? HttpProxyPass { get; init; } = null!;
 	}
 
+	[ConfigurationSection("Database")]
 	public sealed class DatabaseSection
 	{
 		[Required]        public string  Host             { get; init; } = "localhost";
@@ -89,6 +94,7 @@ public sealed class Config
 		public                   bool    ParameterLogging { get; init; } = false;
 	}
 
+	[ConfigurationSection("Storage")]
 	public sealed class StorageSection
 	{
 		public readonly long?     MaxCacheSizeBytes;
@@ -181,11 +187,13 @@ public sealed class Config
 		public MediaProcessingSection MediaProcessing { get; init; } = new();
 	}
 
+	[ConfigurationSection("Storage:Local")]
 	public sealed class LocalStorageSection
 	{
 		public string? Path { get; init; }
 	}
 
+	[ConfigurationSection("Storage:ObjectStorage")]
 	public sealed class ObjectStorageSection
 	{
 		public string? Endpoint          { get; init; }
@@ -199,6 +207,7 @@ public sealed class Config
 		public bool    DisableValidation { get; init; } = false;
 	}
 
+	[ConfigurationSection("Storage:MediaProcessing")]
 	public sealed class MediaProcessingSection : IValidatableObject
 	{
 		public ImagePipelineSection ImagePipeline { get; init; } = new();
@@ -282,6 +291,7 @@ public sealed class Config
 		}
 	}
 
+	[ConfigurationSection("Storage:MediaProcessing:ImagePipeline")]
 	public sealed class ImagePipelineSection
 	{
 		public ImageVersion Original { get; init; } = new()
@@ -330,6 +340,7 @@ public sealed class Config
 		[Range(1, 9)]  public int  JxlEffort    { get; init; } = 7;
 	}
 
+	[ConfigurationSection("Performance")]
 	public sealed class PerformanceSection
 	{
 		public QueueConcurrencySection QueueConcurrency { get; init; } = new();
@@ -337,6 +348,7 @@ public sealed class Config
 		[Range(0, int.MaxValue)] public int FederationRequestHandlerConcurrency { get; init; } = 0;
 	}
 
+	[ConfigurationSection("Performance:QueueConcurrency")]
 	public sealed class QueueConcurrencySection
 	{
 		[Range(1, int.MaxValue)] public int Inbox          { get; init; } = 4;
@@ -347,23 +359,27 @@ public sealed class Config
 		[Range(1, int.MaxValue)] public int BackfillUser   { get; init; } = 10;
 	}
 
+	[ConfigurationSection("Queue")]
 	public sealed class QueueSection
 	{
 		public JobRetentionSection JobRetention { get; init; } = new();
 	}
 
+	[ConfigurationSection("Queue:JobRetention")]
 	public sealed class JobRetentionSection
 	{
 		[Range(-1, int.MaxValue)] public int Completed { get; init; } = 100;
 		[Range(-1, int.MaxValue)] public int Failed    { get; init; } = 10;
 	}
 
+	[ConfigurationSection("Backfill")]
 	public sealed class BackfillSection
 	{
 		public BackfillRepliesSection Replies { get; init; } = new();
 		public BackfillUserSection    User    { get; init; } = new();
 	}
 
+	[ConfigurationSection("Backfill:Replies")]
 	public sealed class BackfillRepliesSection
 	{
 		public bool Enabled     { get; init; } = false;
@@ -387,6 +403,7 @@ public sealed class Config
 		public TimeSpan RefreshAfterTimeSpan = TimeSpan.FromMinutes(15);
 	}
 
+	[ConfigurationSection("Backfill:User")]
 	public sealed class BackfillUserSection
 	{
 		public bool Enabled { get; init; } = false;
@@ -403,6 +420,7 @@ public sealed class Config
 		public TimeSpan RefreshAfterTimeSpan = TimeSpan.FromDays(30);
 	}
 	
+	[ConfigurationSection("OpenTelemetry")]
 	public sealed class OpenTelemetrySection
 	{
 		public bool Enabled { get; init; } = false;

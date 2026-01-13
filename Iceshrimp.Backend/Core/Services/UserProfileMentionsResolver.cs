@@ -6,6 +6,7 @@ using Iceshrimp.Backend.Core.Extensions;
 using Iceshrimp.Backend.Core.Federation.ActivityStreams.Types;
 using Iceshrimp.Backend.Core.Helpers.LibMfm.Conversion;
 using Iceshrimp.MfmSharp;
+using Iceshrimp.Utils.DependencyInjection;
 using Microsoft.Extensions.Options;
 using static Iceshrimp.Backend.Core.Federation.ActivityPub.UserResolver;
 

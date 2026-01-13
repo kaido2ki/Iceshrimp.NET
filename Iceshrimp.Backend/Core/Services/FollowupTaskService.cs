@@ -1,4 +1,4 @@
-using Iceshrimp.Backend.Core.Extensions;
+using Iceshrimp.Utils.DependencyInjection;
 
 namespace Iceshrimp.Backend.Core.Services;
 

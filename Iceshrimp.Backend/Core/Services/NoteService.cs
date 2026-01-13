@@ -12,6 +12,7 @@ using Iceshrimp.Backend.Core.Helpers.LibMfm.Conversion;
 using Iceshrimp.Backend.Core.Middleware;
 using Iceshrimp.Backend.Core.Queues;
 using Iceshrimp.MfmSharp;
+using Iceshrimp.Utils.DependencyInjection;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Options;
 using static Iceshrimp.Backend.Core.Federation.ActivityPub.UserResolver;

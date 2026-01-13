@@ -5,6 +5,7 @@ using Iceshrimp.Backend.Core.Extensions;
 using Iceshrimp.Backend.Core.Services;
 using Iceshrimp.EntityFrameworkCore.Extensions;
 using Iceshrimp.Shared.Schemas.Web;
+using Iceshrimp.Utils.DependencyInjection;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Options;
 using static Iceshrimp.Shared.Schemas.Web.NotificationResponse;

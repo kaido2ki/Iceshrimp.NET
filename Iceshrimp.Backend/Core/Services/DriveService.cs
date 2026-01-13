@@ -9,6 +9,7 @@ using Iceshrimp.Backend.Core.Helpers;
 using Iceshrimp.Backend.Core.Middleware;
 using Iceshrimp.Backend.Core.Queues;
 using Iceshrimp.Backend.Core.Services.ImageProcessing;
+using Iceshrimp.Utils.DependencyInjection;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Options;
 using static Iceshrimp.Backend.Core.Services.ImageProcessing.ImageVersion;

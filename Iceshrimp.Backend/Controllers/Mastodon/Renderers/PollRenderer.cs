@@ -2,6 +2,7 @@ using Iceshrimp.Backend.Controllers.Mastodon.Schemas.Entities;
 using Iceshrimp.Backend.Core.Database;
 using Iceshrimp.Backend.Core.Database.Tables;
 using Iceshrimp.Backend.Core.Extensions;
+using Iceshrimp.Utils.DependencyInjection;
 using Microsoft.EntityFrameworkCore;
 
 namespace Iceshrimp.Backend.Controllers.Mastodon.Renderers;

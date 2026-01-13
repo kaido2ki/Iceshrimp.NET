@@ -1,6 +1,6 @@
 using Iceshrimp.Backend.Core.Database.Tables;
 using Iceshrimp.Backend.Core.Events;
-using Iceshrimp.Backend.Core.Extensions;
+using Iceshrimp.Utils.DependencyInjection;
 
 namespace Iceshrimp.Backend.Core.Services;
 

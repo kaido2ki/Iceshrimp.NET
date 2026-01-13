@@ -1,7 +1,7 @@
 using CommunityToolkit.HighPerformance;
 using Iceshrimp.Backend.Core.Configuration;
-using Iceshrimp.Backend.Core.Extensions;
 using Iceshrimp.Backend.Core.Helpers;
+using Iceshrimp.Utils.DependencyInjection;
 using Microsoft.Extensions.Options;
 using SixLabors.ImageSharp;
 using SixLabors.ImageSharp.Formats;
@@ -15,7 +15,7 @@ using ImageSharpConfig = SixLabors.ImageSharp.Configuration;
 namespace Iceshrimp.Backend.Core.Services.ImageProcessing;
 
 public class ImageSharpProcessor : ImageProcessorBase, IImageProcessor,
-                                   ISingletonService, IConditionalService, IService<IImageProcessor>
+                                   ISingletonService, IConditionalService<Config>, IService<IImageProcessor>
 {
 	private readonly ILogger<ImageSharpProcessor> _logger;
 	private readonly ImageSharpConfig             _sharpConfig;

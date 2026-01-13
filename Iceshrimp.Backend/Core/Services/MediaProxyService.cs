@@ -1,6 +1,6 @@
 using Iceshrimp.Backend.Core.Configuration;
 using Iceshrimp.Backend.Core.Database.Tables;
-using Iceshrimp.Backend.Core.Extensions;
+using Iceshrimp.Utils.DependencyInjection;
 using JetBrains.Annotations;
 using Microsoft.Extensions.Options;
 

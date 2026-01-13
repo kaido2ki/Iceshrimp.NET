@@ -1,8 +1,8 @@
 using System.IO.Compression;
 using System.Net;
 using System.Text.Json;
-using Iceshrimp.Backend.Core.Extensions;
 using Iceshrimp.Backend.Core.Middleware;
+using Iceshrimp.Utils.DependencyInjection;
 using Microsoft.AspNetCore.StaticFiles;
 
 namespace Iceshrimp.Backend.Core.Services;

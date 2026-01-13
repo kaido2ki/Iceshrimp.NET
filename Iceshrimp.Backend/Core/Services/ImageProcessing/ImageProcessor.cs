@@ -2,8 +2,8 @@ using System.Collections.Immutable;
 using System.Diagnostics.CodeAnalysis;
 using Iceshrimp.Backend.Core.Configuration;
 using Iceshrimp.Backend.Core.Database.Tables;
-using Iceshrimp.Backend.Core.Extensions;
 using Iceshrimp.Backend.Core.Helpers;
+using Iceshrimp.Utils.DependencyInjection;
 using Microsoft.Extensions.Options;
 using static Iceshrimp.Backend.Core.Services.ImageProcessing.ImageVersion;
 

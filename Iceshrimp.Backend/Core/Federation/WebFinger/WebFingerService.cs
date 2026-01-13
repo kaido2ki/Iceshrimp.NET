@@ -5,10 +5,10 @@ using System.Text.Encodings.Web;
 using System.Xml;
 using System.Xml.Serialization;
 using Iceshrimp.Backend.Core.Configuration;
-using Iceshrimp.Backend.Core.Extensions;
 using Iceshrimp.Backend.Core.Helpers;
 using Iceshrimp.Backend.Core.Middleware;
 using Iceshrimp.Backend.Core.Services;
+using Iceshrimp.Utils.DependencyInjection;
 using Microsoft.Extensions.Options;
 
 namespace Iceshrimp.Backend.Core.Federation.WebFinger;
