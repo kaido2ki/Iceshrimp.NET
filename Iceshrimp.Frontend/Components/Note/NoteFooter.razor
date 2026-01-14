@@ -146,7 +146,7 @@
             <hr class="rule"/>
             @if (Note.User.Id == Session.Current?.Id)
             {
-                <MenuElement Icon="Icons.Pencil" OnSelect="Edit" Danger>
+                <MenuElement Icon="Icons.Pencil" OnSelect="Edit">
                     <Text>@Loc["Edit"]</Text>
                 </MenuElement>
                 <MenuElement Icon="Icons.Eraser" OnSelect="Redraft" Danger>

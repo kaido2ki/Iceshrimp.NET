@@ -54,14 +54,14 @@ public class NoteBase
 
 public class NoteAttachment
 {
-	[JI] public required string  Id;
-	public required      string  Url          { get; set; }
-	public required      string  ThumbnailUrl { get; set; }
-	public required      string  ContentType  { get; set; }
-	public required      bool    IsSensitive  { get; set; }
-	public required      string? Blurhash     { get; set; }
-	public required      string? AltText      { get; set; }
-	public required      string  FileName     { get; set; }
+	public required string  Id           { get; set; }
+	public required string  Url          { get; set; }
+	public required string  ThumbnailUrl { get; set; }
+	public required string  ContentType  { get; set; }
+	public required bool    IsSensitive  { get; set; }
+	public required string? Blurhash     { get; set; }
+	public required string? AltText      { get; set; }
+	public required string  FileName     { get; set; }
 }
 
 public class NotePollSchema

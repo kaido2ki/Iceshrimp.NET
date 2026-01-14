@@ -732,15 +732,28 @@ public class NoteController(
 		                   .FirstOrDefaultAsync(p => p.Id == id && p.User == user)
 		           ?? throw GracefulException.RecordNotFound();
 
-		if (note.Text == request.Text && note.Cw == request.Cw)
-			throw GracefulException.BadRequest("Text and CW are unchanged");
-
 		note.Text = request.Text ?? note.Text;
 		note.Cw   = request.Cw ?? note.Cw;
+		
+		var attachments = request.MediaIds != null
+			? await db.DriveFiles.Where(p => request.MediaIds.Contains(p.Id)).ToListAsync()
+			: null;
 
+		var minPollExpire = DateTime.UtcNow.AddMinutes(5);
+		var poll = request.Poll != null
+			? new Poll
+			{
+				ExpiresAt = request.Poll.ExpiresAt != null
+					? request.Poll.ExpiresAt <= minPollExpire ? minPollExpire : request.Poll.ExpiresAt
+					: null,
+				Multiple = request.Poll.Multiple,
+				Choices  = request.Poll.Choices,
+			}
+			: null;
+		
 		await noteSvc.UpdateNoteAsync(new NoteService.NoteUpdateData
 		{
-			Note = note, Text = request.Text, Cw = request.Cw
+			Note = note, Text = request.Text, Cw = request.Cw, Attachments = attachments, Poll = poll
 		});
 
 		return await noteRenderer.RenderOne(note, user);

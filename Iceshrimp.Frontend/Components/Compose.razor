@@ -315,7 +315,21 @@
         NoteDraft.Text       = note.Text ?? "";
         NoteDraft.Cw         = note.Cw;
         NoteDraft.Visibility = note.Visibility;
-        NoteDraft.MediaIds   = note.Attachments.Select(p => p.Id).ToList();
+        foreach (var attachment in note.Attachments)
+        {
+            Attachments.Add(new DriveFileResponse
+            {
+                Id           = attachment.Id,
+                ContentType  = attachment.ContentType,
+                Description  = attachment.AltText,
+                Filename     = attachment.FileName,
+                IsAvatar     = false,
+                IsBanner     = false,
+                Sensitive    = attachment.IsSensitive,
+                ThumbnailUrl = attachment.ThumbnailUrl,
+                Url          = attachment.Url
+            });
+        }
         NoteDraft.RenoteId   = note.RenoteId;
         NoteDraft.ReplyId    = note.ReplyId;
         UploadingFiles       = 0;
@@ -326,10 +340,35 @@
     public async Task OpenDialogEdit(NoteBase note)
     {
         await ResetState();
-        NoteId               = note.Id;
-        NoteDraft.Text       = note.Text ?? "";
-        NoteDraft.Cw         = note.Cw;
-        UploadingFiles       = 0;
+        NoteId             = note.Id;
+        NoteDraft.Text     = note.Text ?? "";
+        NoteDraft.Cw       = note.Cw;
+        if (note.Poll != null)
+        {
+            NoteDraft.Poll = new PollRequest { ExpiresAt = note.Poll.ExpiresAt, Choices = note.Poll.Choices.Select(x => x.Value).ToList(), Multiple = note.Poll.Multiple };
+            PollChoices    = note.Poll.Choices.Select(x => new Choice {Value = x.Value}).ToList();
+            PollEntry      = "";
+            PollExpires    = note.Poll.ExpiresAt is null ? PollExpire.Never : PollExpire.ExpiresAt;
+            PollExpireTime = note.Poll.ExpiresAt ?? DateTime.Now;
+            PollExpireLen  = ((note.Poll.ExpiresAt ?? DateTime.Now) - DateTime.Now).Days;
+            PollExpiresAft = PollExpireAfter.Days;
+        }
+        UploadingFiles     = 0;
+        foreach (var attachment in note.Attachments)
+        {
+            Attachments.Add(new DriveFileResponse
+            {
+                Id = attachment.Id,
+                ContentType = attachment.ContentType,
+                Description = attachment.AltText,
+                Filename = attachment.FileName,
+                IsAvatar = false,
+                IsBanner = false,
+                Sensitive = attachment.IsSensitive,
+                ThumbnailUrl = attachment.ThumbnailUrl,
+                Url = attachment.Url
+            });
+        }
         StateHasChanged();
         await JsSvc.ShowDialogAsync(Dialog, false);
     }
@@ -408,6 +447,7 @@
         PastedText       = null;
         SendButton.State = StateButton.StateEnum.Initial;
         AttachedQuote    = null;
+        NoteId           = null;
 
         if (EmojiList.Count == 0)
             EmojiList = await EmojiService.GetEmojiAsync();
@@ -452,7 +492,13 @@
         try
         {
             if (NoteId != null)
-                await ApiService.Notes.EditNoteAsync(NoteId, NoteDraft);
+                await ApiService.Notes.EditNoteAsync(NoteId, new NoteUpdateRequest
+                {
+                    Text = NoteDraft.Text,
+                    Cw = NoteDraft.Cw,
+                    Poll = NoteDraft.Poll,
+                    MediaIds = NoteDraft.MediaIds
+                });
             else
                 await ApiService.Notes.CreateNoteAsync(NoteDraft);
         }
