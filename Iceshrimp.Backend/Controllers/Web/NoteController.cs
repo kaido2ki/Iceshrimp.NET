@@ -716,6 +716,35 @@ public class NoteController(
 
 		return await noteRenderer.RenderOne(note, user);
 	}
+	
+	[HttpPut("{id}")]
+	[Authenticate]
+	[Authorize]
+	[Consumes(MediaTypeNames.Application.Json)]
+	[ProducesResults(HttpStatusCode.OK)]
+	[ProducesErrors(HttpStatusCode.NotFound)]
+	public async Task<NoteResponse> UpdateNote(string id, NoteUpdateRequest request)
+	{
+		var user = HttpContext.GetUserOrFail();
+		var note = await db.Notes
+		                   .Include(p => p.Poll)
+		                   .IncludeCommonProperties()
+		                   .FirstOrDefaultAsync(p => p.Id == id && p.User == user)
+		           ?? throw GracefulException.RecordNotFound();
+
+		if (note.Text == request.Text && note.Cw == request.Cw)
+			throw GracefulException.BadRequest("Text and CW are unchanged");
+
+		note.Text = request.Text ?? note.Text;
+		note.Cw   = request.Cw ?? note.Cw;
+
+		await noteSvc.UpdateNoteAsync(new NoteService.NoteUpdateData
+		{
+			Note = note, Text = request.Text, Cw = request.Cw
+		});
+
+		return await noteRenderer.RenderOne(note, user);
+	}
 
 	[HttpPost("{id}/report")]
 	[Authenticate]
