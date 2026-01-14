@@ -146,6 +146,9 @@
             <hr class="rule"/>
             @if (Note.User.Id == Session.Current?.Id)
             {
+                <MenuElement Icon="Icons.Pencil" OnSelect="Edit" Danger>
+                    <Text>@Loc["Edit"]</Text>
+                </MenuElement>
                 <MenuElement Icon="Icons.Eraser" OnSelect="Redraft" Danger>
                     <Text>@Loc["Delete & redraft"]</Text>
                 </MenuElement>
@@ -218,6 +221,11 @@
     private void Reply()
     {
         NoteActions.Reply(Note);
+    }
+
+    private void Edit()
+    {
+        NoteActions.Edit(Note);
     }
 
     private void ToggleRenoteMenu()

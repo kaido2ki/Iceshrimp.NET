@@ -172,6 +172,11 @@ internal class NoteActions(
 	{
 		composeService.ComposeDialog?.OpenDialog(null, note);
 	}
+	
+	public void Edit(NoteBase note)
+	{
+		composeService.ComposeDialog?.OpenDialogEdit(note);
+	}
 
 	public async Task BiteAsync(NoteBase note)
 	{

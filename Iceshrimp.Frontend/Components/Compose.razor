@@ -216,6 +216,7 @@
     private int                      PollExpireLen   { get; set; }
     private PollExpireAfter          PollExpiresAft  { get; set; }
     private (string, string)?        PastedText      { get; set; }
+    private string?                  NoteId          { get; set; }
 
     private DotNetObjectReference<Compose> _objRef = null!;
 
@@ -317,6 +318,17 @@
         NoteDraft.MediaIds   = note.Attachments.Select(p => p.Id).ToList();
         NoteDraft.RenoteId   = note.RenoteId;
         NoteDraft.ReplyId    = note.ReplyId;
+        UploadingFiles       = 0;
+        StateHasChanged();
+        await JsSvc.ShowDialogAsync(Dialog, false);
+    }
+
+    public async Task OpenDialogEdit(NoteBase note)
+    {
+        await ResetState();
+        NoteId               = note.Id;
+        NoteDraft.Text       = note.Text ?? "";
+        NoteDraft.Cw         = note.Cw;
         UploadingFiles       = 0;
         StateHasChanged();
         await JsSvc.ShowDialogAsync(Dialog, false);
@@ -439,7 +451,10 @@
 
         try
         {
-            await ApiService.Notes.CreateNoteAsync(NoteDraft);
+            if (NoteId != null)
+                await ApiService.Notes.EditNoteAsync(NoteId, NoteDraft);
+            else
+                await ApiService.Notes.CreateNoteAsync(NoteDraft);
         }
         catch (ApiException e)
         {
@@ -451,6 +466,11 @@
         if (ReplyOrQuote != null)
         {
             await NoteActions.RefetchNoteAsync(ReplyOrQuote.Id);
+        }
+
+        if (NoteId != null)
+        {
+            await NoteActions.RefetchNoteAsync(NoteId);
         }
 
         SendButton.State = StateButton.StateEnum.Success;
