@@ -194,11 +194,11 @@ public class UserRenderer(
 		               .ToListAsync();
 	}
 
-	public async Task<AccountEntity> RenderAsync(User user, User? localUser, List<EmojiEntity>? emoji = null)
+	public async Task<AccountEntity> RenderAsync(User user, User? localUser)
 	{
 		var data = new UserRendererDto
 		{
-			Emoji     = emoji ?? await GetEmojiAsync([user]),
+			Emoji     = await GetEmojiAsync([user]),
 			AvatarAlt = await GetAvatarAltAsync([user]),
 			BannerAlt = await GetBannerAltAsync([user]),
 			Instance  = await GetInstanceAsync([user])
