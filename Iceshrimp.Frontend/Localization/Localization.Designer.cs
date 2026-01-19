@@ -110,5 +110,11 @@ namespace Iceshrimp.Frontend.Localization {
                 return ResourceManager.GetString("ComposeNote", resourceCulture);
             }
         }
+        
+        internal static string SaveEdit {
+            get {
+                return ResourceManager.GetString("SaveEdit", resourceCulture);
+            }
+        }
     }
 }

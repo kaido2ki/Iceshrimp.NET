@@ -24,11 +24,23 @@
             <button class="btn" title="@Loc["Close"]" @onclick="CloseDialog" aria-label="close" disabled="@(SendLock || UploadingFiles != 0)">
                 <Icon Name="Icons.X"/>
             </button>
-            <Dropdown TBind="NoteVisibility" Elements="@DropDownCreate()" @bind-Value="NoteDraft.Visibility"/>
+            @if (string.IsNullOrEmpty(NoteId))
+            {
+                <Dropdown TBind="NoteVisibility" Elements="@DropDownCreate()" @bind-Value="NoteDraft.Visibility"/>
+            }
             <StateButton OnClick="SendNote" @ref="SendButton" ExtraClasses="post-btn" AriaLabel="post"
                          Disabled="@SendingDisabled()">
                 <Initial>
-                    @Loc["ComposeNote"]<Icon Name="Icons.PaperPlaneRight"/>
+                    @if(string.IsNullOrEmpty(NoteId))
+                    {
+                        @Loc["ComposeNote"]
+                        <Icon Name="Icons.PaperPlaneRight"/>
+                    }
+                    else
+                    {
+                        @Loc["SaveEdit"]
+                        <Icon Name="Icons.Pencil"/>
+                    }
                 </Initial>
                 <Loading>
                     @Loc["Sending"]<LoadingSpinner />

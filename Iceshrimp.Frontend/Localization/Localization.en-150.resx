@@ -48,4 +48,7 @@
     <data name="ComposeNote" xml:space="preserve">
         <value>Note</value>
     </data>
+    <data name="SaveEdit" xml:space="preserve">
+        <value>Edit Note</value>
+    </data>
 </root>
