@@ -77,9 +77,9 @@
 {
     @foreach (var category in Categories)
     {
-        <span class="category-name">@category.Item1</span>
+        <span class="category-name">@category.Category</span>
         <div class="emoji-list">
-            @foreach (var emoji in category.Item2)
+            @foreach (var emoji in category.Emojis)
             {
                 <EmojiManagementEntry Emoji="@emoji" DeleteEmoji="DeleteEmoji"
                                           FilterEmojis="FilterEmojis" ToggleEmoji="SelectEmoji" BatchSelection="BatchSelection"
@@ -105,16 +105,16 @@
 </div>
 
 @code {
-    private List<EmojiResponse>                  Emojis         { get; set; } = [];
-    private List<(string?, List<EmojiResponse>)> Categories     { get; set; } = new();
-    private string                               EmojiFilter    { get; set; } = "";
-    private State                                State          { get; set; }
-    private InputFile                            UploadInput    { get; set; } = null!;
-    private IBrowserFile                         UploadFile     { get; set; } = null!;
-    private InputFile                            ImportInput    { get; set; } = null!;
-    private IBrowserFile                         ImportFile     { get; set; } = null!;
-    private bool                                 BatchSelection { get; set; }
-    private List<EmojiResponse>                  Selected       { get; set; } = [];
+    private List<EmojiResponse>                                  Emojis         { get; set; } = [];
+    private List<(string? Category, List<EmojiResponse> Emojis)> Categories     { get; set; } = new();
+    private string                                               EmojiFilter    { get; set; } = "";
+    private State                                                State          { get; set; }
+    private InputFile                                            UploadInput    { get; set; } = null!;
+    private IBrowserFile                                         UploadFile     { get; set; } = null!;
+    private InputFile                                            ImportInput    { get; set; } = null!;
+    private IBrowserFile                                         ImportFile     { get; set; } = null!;
+    private bool                                                 BatchSelection { get; set; }
+    private List<EmojiResponse>                                  Selected       { get; set; } = [];
 
     private void FilterEmojis()
     {

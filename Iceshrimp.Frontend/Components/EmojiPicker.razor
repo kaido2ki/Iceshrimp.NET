@@ -14,9 +14,9 @@
         @foreach (var category in Categories)
         {
             <details open>
-                <summary aria-label="category">@category.Item1</summary>
+                <summary aria-label="category">@category.Category</summary>
                 <div class="emoji-list">
-                    @foreach (var emoji in category.Item2)
+                    @foreach (var emoji in category.Emojis)
                     {
                         <div @onclick="() => Select(emoji)" class="emoji" title=":@emoji.Name:">
                             <InlineEmoji Name="@emoji.Name" Url="@emoji.PublicUrl" Size="2rem"/>
@@ -38,7 +38,7 @@
     private double                       _left;
 
     private string                               EmojiFilter { get; set; } = "";
-    private List<(string?, List<EmojiResponse>)> Categories  { get; set; } = [];
+    private List<(string? Category, List<EmojiResponse> Emojis)> Categories  { get; set; } = [];
 
     protected override void OnInitialized()
     {
