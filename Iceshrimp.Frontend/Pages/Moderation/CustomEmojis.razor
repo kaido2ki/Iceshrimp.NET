@@ -120,12 +120,17 @@
     {
         Categories = Emojis
                      .Where(p => p.Name.Contains(EmojiFilter.Trim()) || p.Tags.Count(a => a.Contains(EmojiFilter.Trim())) != 0)
+                     .Select(p =>
+                     {
+                         p.Category ??= Loc["Other"];
+                         return p;
+                     })
                      .OrderBy(p => p.Name)
                      .ThenBy(p => p.Id)
                      .GroupBy(p => p.Category)
                      .OrderBy(p => string.IsNullOrEmpty(p.Key))
                      .ThenBy(p => p.Key)
-                     .ToDictionary(p => p.Key ?? Loc["Other"], p => p.ToList());
+                     .ToDictionary(p => p.Key!, p => p.ToList());
         StateHasChanged();
     }
 
