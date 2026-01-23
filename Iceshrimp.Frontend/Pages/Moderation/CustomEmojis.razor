@@ -77,9 +77,9 @@
 {
     @foreach (var category in Categories)
     {
-        <span class="category-name">@category.Key</span>
+        <span class="category-name">@category.Item1</span>
         <div class="emoji-list">
-            @foreach (var emoji in category.Value)
+            @foreach (var emoji in category.Item2)
             {
                 <EmojiManagementEntry Emoji="@emoji" DeleteEmoji="DeleteEmoji"
                                           FilterEmojis="FilterEmojis" ToggleEmoji="SelectEmoji" BatchSelection="BatchSelection"
@@ -105,16 +105,16 @@
 </div>
 
 @code {
-    private List<EmojiResponse>                     Emojis         { get; set; } = [];
-    private Dictionary<string, List<EmojiResponse>> Categories     { get; set; } = new();
-    private string                                  EmojiFilter    { get; set; } = "";
-    private State                                   State          { get; set; }
-    private InputFile                               UploadInput    { get; set; } = null!;
-    private IBrowserFile                            UploadFile     { get; set; } = null!;
-    private InputFile                               ImportInput    { get; set; } = null!;
-    private IBrowserFile                            ImportFile     { get; set; } = null!;
-    private bool                                    BatchSelection { get; set; }
-    private List<EmojiResponse>                     Selected       { get; set; } = [];
+    private List<EmojiResponse>                  Emojis         { get; set; } = [];
+    private List<(string?, List<EmojiResponse>)> Categories     { get; set; } = new();
+    private string                               EmojiFilter    { get; set; } = "";
+    private State                                State          { get; set; }
+    private InputFile                            UploadInput    { get; set; } = null!;
+    private IBrowserFile                         UploadFile     { get; set; } = null!;
+    private InputFile                            ImportInput    { get; set; } = null!;
+    private IBrowserFile                         ImportFile     { get; set; } = null!;
+    private bool                                 BatchSelection { get; set; }
+    private List<EmojiResponse>                  Selected       { get; set; } = [];
 
     private void FilterEmojis()
     {
@@ -130,7 +130,8 @@
                      .GroupBy(p => p.Category)
                      .OrderBy(p => string.IsNullOrEmpty(p.Key))
                      .ThenBy(p => p.Key)
-                     .ToDictionary(p => p.Key!, p => p.ToList());
+                     .Select(p => (p.Key?.ToString(), p.ToList()))
+                     .ToList();
         StateHasChanged();
     }
 

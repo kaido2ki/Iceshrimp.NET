@@ -14,9 +14,9 @@
         @foreach (var category in Categories)
         {
             <details open>
-                <summary aria-label="category">@category.Key</summary>
+                <summary aria-label="category">@category.Item1</summary>
                 <div class="emoji-list">
-                    @foreach (var emoji in category.Value)
+                    @foreach (var emoji in category.Item2)
                     {
                         <div @onclick="() => Select(emoji)" class="emoji" title=":@emoji.Name:">
                             <InlineEmoji Name="@emoji.Name" Url="@emoji.PublicUrl" Size="2rem"/>
@@ -37,8 +37,8 @@
     private double                       _top;
     private double                       _left;
 
-    private string                                  EmojiFilter { get; set; } = "";
-    private Dictionary<string, List<EmojiResponse>> Categories  { get; set; } = [];
+    private string                               EmojiFilter { get; set; } = "";
+    private List<(string?, List<EmojiResponse>)> Categories  { get; set; } = [];
 
     protected override void OnInitialized()
     {
@@ -90,6 +90,7 @@
             .GroupBy(p => p.Category)
             .OrderBy(p => string.IsNullOrEmpty(p.Key))
             .ThenBy(p => p.Key)
-            .ToDictionary(p => p.Key!, p => p.ToList());
+            .Select(p => (p.Key?.ToString(), p.ToList()))
+            .ToList();
     }
 }
