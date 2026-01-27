@@ -48,27 +48,22 @@ public class ActivityDeliverService(
 		// @formatter:on
 	}
 
-	public async Task DeliverToConditionalAsync(ASActivity activity, User actor, Note note)
+	public async Task DeliverToConditionalAsync(ASActivity activity, User actor, Note note, IEnumerable<User> recipients)
 	{
-		var recipientIds = note.VisibleUserIds.Prepend(note.User.Id);
-		await DeliverToConditionalAsync(activity, actor, note, recipientIds);
-	}
-
-	public async Task DeliverToConditionalAsync(
-		ASActivity activity, User actor, Note note, IEnumerable<string> recipientIds
-	)
-	{
-		var recipients = await db.Users
-		                         .Where(p => recipientIds.Contains(p.Id))
-		                         .Where(p => p.IsRemoteUser)
-		                         .Select(p => new User { Id = p.Id })
-		                         .ToArrayAsync();
-
 		if (note.Visibility == Note.NoteVisibility.Specified)
-			await DeliverToAsync(activity, actor, recipients.ToArray());
+			await DeliverToAsync(activity, actor, recipients);
 		else
 			await DeliverToFollowersAsync(activity, actor, recipients);
 	}
+
+	public Task<User[]> GetRecipientsAsync(Note note) => GetRecipientsAsync(note.VisibleUserIds.Prepend(note.User.Id));
+	
+	public async Task<User[]> GetRecipientsAsync(IEnumerable<string> recipientIds)
+		=> await db.Users
+		           .Where(p => recipientIds.Contains(p.Id))
+		           .Where(p => p.IsRemoteUser)
+		           .Select(p => new User { Id = p.Id })
+		           .ToArrayAsync();
 
 	public async Task DeliverToAsync(ASActivity activity, User actor, string recipientInbox)
 	{

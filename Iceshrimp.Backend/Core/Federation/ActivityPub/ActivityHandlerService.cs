@@ -409,14 +409,14 @@ public class ActivityHandlerService(
 				                                      && p.Id == Bite.GetIdFromPublicUri(targetBite.Id, config.Value))
 			},
 			null => throw GracefulException.UnprocessableEntity($"Failed to resolve bite target {activity.Target.Id}"),
-			_ when activity.To?.Id != null => new Bite
+			_ when activity.To?.FirstOrDefault()?.Id is {} actor => new Bite
 			{
 				Id         = IdHelpers.GenerateSnowflakeId(activity.PublishedAt),
 				CreatedAt  = activity.PublishedAt ?? DateTime.UtcNow,
 				Uri        = activity.Id,
 				User       = resolvedActor,
 				UserHost   = resolvedActor.Host,
-				TargetUser = await userResolver.ResolveAsync(activity.To.Id, EnforceUriFlags)
+				TargetUser = await userResolver.ResolveAsync(actor, EnforceUriFlags)
 			},
 			_ => throw GracefulException.UnprocessableEntity($"Invalid bite target {target.Id} with type {target.Type}")
 

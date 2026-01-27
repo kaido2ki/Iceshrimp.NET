@@ -508,17 +508,6 @@ public class NoteService(
 
 		if (note.LocalOnly) return;
 
-		var actor = userRenderer.RenderLite(note.User);
-		ASActivity activity = note is { IsPureRenote: true, Renote: not null }
-			? ActivityPub.ActivityRenderer.RenderAnnounce(note.Renote.User == note.User
-				                                              ? await noteRenderer.RenderAsync(note.Renote)
-				                                              : noteRenderer.RenderLite(note.Renote),
-			                                              note.GetPublicUri(config.Value), actor,
-			                                              note.Visibility,
-			                                              note.User.GetPublicUri(config.Value) + "/followers",
-			                                              note.CreatedAt)
-			: ActivityPub.ActivityRenderer.RenderCreate(await noteRenderer.RenderAsync(note), actor);
-
 		List<string> additionalUserIds =
 			note is { IsPureRenote: true, Renote: not null, Visibility: < Note.NoteVisibility.Followers }
 				? [note.Renote.User.Id]
@@ -527,8 +516,17 @@ public class NoteService(
 		if (note.Reply?.ReplyUserId is { } replyUserId)
 			additionalUserIds.Add(replyUserId);
 
-		var recipientIds = note.VisibleUserIds.Concat(additionalUserIds);
-		await deliverSvc.DeliverToConditionalAsync(activity, note.User, note, recipientIds);
+		var recipients = await deliverSvc.GetRecipientsAsync(note.Mentions.Concat(additionalUserIds));
+		var actor      = userRenderer.RenderLite(note.User);
+		ASActivity activity = note is { IsPureRenote: true, Renote: not null }
+			? activityRenderer.RenderAnnounce(note.Renote.User == note.User
+				                                  ? await noteRenderer.RenderAsync(note.Renote)
+				                                  : noteRenderer.RenderLite(note.Renote),
+			                                  note.GetPublicUri(config.Value), actor,
+			                                  note, recipients)
+			: ActivityPub.ActivityRenderer.RenderCreate(await noteRenderer.RenderAsync(note), actor);
+
+		await deliverSvc.DeliverToConditionalAsync(activity, note.User, note, recipients);
     }
 
     private async Task ScheduleNoteAsync(Note note, DateTime scheduledAt)
@@ -911,11 +909,7 @@ public class NoteService(
 		await notificationSvc.GenerateEditNotificationsAsync(note);
 
 		if (note.LocalOnly || note.User.IsRemoteUser) return note;
-
-		var actor    = userRenderer.RenderLite(note.User);
-		var obj      = await noteRenderer.RenderAsync(note, mentions);
-		var activity = ActivityPub.ActivityRenderer.RenderUpdate(obj, actor);
-
+		
 		List<string> additionalUserIds =
 			note is { IsPureRenote: true, Renote: not null, Visibility: < Note.NoteVisibility.Followers }
 				? [note.Renote.User.Id]
@@ -924,9 +918,15 @@ public class NoteService(
 		if (note.Reply?.ReplyUserId is { } replyUserId)
 			additionalUserIds.Add(replyUserId);
 
-		var recipientIds = mentionedUserIds.Concat(additionalUserIds);
+		var actor    = userRenderer.RenderLite(note.User);
+		var obj      = await noteRenderer.RenderAsync(note, mentions);
+		var activity = ActivityPub.ActivityRenderer.RenderUpdate(obj, actor);
 
-		await deliverSvc.DeliverToConditionalAsync(activity, note.User, note, recipientIds);
+		{
+			var recipients = await deliverSvc.GetRecipientsAsync(mentionedUserIds.Concat(additionalUserIds));
+			await deliverSvc.DeliverToConditionalAsync(activity, note.User, note, recipients);
+		}
+
 		return note;
 	}
 
@@ -965,12 +965,10 @@ public class NoteService(
 		var actor = userRenderer.RenderLite(note.User);
 		// @formatter:off
 		ASActivity activity = note.IsPureRenote
-			? activityRenderer.RenderUndo(actor, ActivityPub.ActivityRenderer.RenderAnnounce(
+			? activityRenderer.RenderUndo(actor, activityRenderer.RenderAnnounce(
 			                               noteRenderer.RenderLite(note.Renote ?? throw new Exception("Refusing to undo renote without renote")),
-			                               note.GetPublicUri(config.Value), actor, note.Visibility,
-			                               note.User.GetPublicUri(config.Value) + "/followers",
-			                              note.CreatedAt))
-			: ActivityPub.ActivityRenderer.RenderDelete(actor, new ASTombstone { Id = note.GetPublicUri(config.Value) });
+			                               note.GetPublicUri(config.Value), actor, note, recipients))
+			: activityRenderer.RenderDelete(actor, new ASTombstone { Id = note.GetPublicUri(config.Value) }, note, recipients);
 		// @formatter:on
 
 		if (note.Visibility == Note.NoteVisibility.Specified)
@@ -1616,8 +1614,9 @@ public class NoteService(
 
 			if (user.IsLocalUser && note.UserHost != null)
 			{
-				var activity = activityRenderer.RenderLike(like);
-				await deliverSvc.DeliverToConditionalAsync(activity, user, note);
+				var recipients = await deliverSvc.GetRecipientsAsync(note);
+				var activity   = activityRenderer.RenderLike(like, recipients);
+				await deliverSvc.DeliverToConditionalAsync(activity, user, note, recipients);
 			}
 
 			eventSvc.RaiseNoteLiked(note, user);
@@ -1643,9 +1642,10 @@ public class NoteService(
 
 		if (user.IsLocalUser && note.UserHost != null)
 		{
+			var recipients = await deliverSvc.GetRecipientsAsync(note);
 			var activity =
-				activityRenderer.RenderUndo(userRenderer.RenderLite(user), activityRenderer.RenderLike(like));
-			await deliverSvc.DeliverToConditionalAsync(activity, user, note);
+				activityRenderer.RenderUndo(userRenderer.RenderLite(user), activityRenderer.RenderLike(like, recipients));
+			await deliverSvc.DeliverToConditionalAsync(activity, user, note, recipients);
 		}
 
 		eventSvc.RaiseNoteUnliked(note, user);
@@ -1881,9 +1881,10 @@ public class NoteService(
 
 		if (user.IsLocalUser)
 		{
-			var emoji    = await emojiSvc.ResolveEmojiAsync(reaction.Reaction);
-			var activity = activityRenderer.RenderReact(reaction, emoji);
-			await deliverSvc.DeliverToConditionalAsync(activity, user, note);
+			var emoji      = await emojiSvc.ResolveEmojiAsync(reaction.Reaction);
+			var recipients = await deliverSvc.GetRecipientsAsync(note);
+			var activity   = activityRenderer.RenderReact(reaction, emoji, recipients);
+			await deliverSvc.DeliverToConditionalAsync(activity, user, note, recipients);
 		}
 
 		return (name, true);
@@ -1918,10 +1919,11 @@ public class NoteService(
 
 		if (user.IsLocalUser)
 		{
-			var actor    = userRenderer.RenderLite(user);
-			var emoji    = await emojiSvc.ResolveEmojiAsync(reaction.Reaction);
-			var activity = activityRenderer.RenderUndo(actor, activityRenderer.RenderReact(reaction, emoji));
-			await deliverSvc.DeliverToConditionalAsync(activity, user, note);
+			var actor      = userRenderer.RenderLite(user);
+			var emoji      = await emojiSvc.ResolveEmojiAsync(reaction.Reaction);
+			var recipients = await deliverSvc.GetRecipientsAsync(note);
+			var activity   = activityRenderer.RenderUndo(actor, activityRenderer.RenderReact(reaction, emoji, recipients));
+			await deliverSvc.DeliverToConditionalAsync(activity, user, note, recipients);
 		}
 
 		if (note.User.IsLocalUser && note.User != user)

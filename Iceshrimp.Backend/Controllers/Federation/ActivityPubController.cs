@@ -31,6 +31,8 @@ public class ActivityPubController(
 	ActivityPub.NoteRenderer noteRenderer,
 	ActivityPub.UserRenderer userRenderer,
 	ActivityPub.StampRenderer stampRenderer,
+	ActivityPub.ActivityRenderer activityRenderer,
+	ActivityPub.ActivityDeliverService deliverSvc,
 	IOptions<Config.InstanceSection> config,
 	IOptionsSnapshot<Config.SecuritySection> security
 ) : ControllerBase, IScopedService
@@ -73,12 +75,12 @@ public class ActivityPubController(
 		                   .FirstOrDefaultAsync() ??
 		           throw GracefulException.NotFound("Note not found");
 
+		var recipients = await deliverSvc.GetRecipientsAsync(note);
+
 		var noteActor = userRenderer.RenderLite(note.User);
 		ASActivity activity = note is { IsPureRenote: true, Renote: not null }
-			? ActivityPub.ActivityRenderer.RenderAnnounce(noteRenderer.RenderLite(note.Renote),
-			                                              note.GetPublicUri(config.Value), noteActor, note.Visibility,
-			                                              note.User.GetPublicUri(config.Value) + "/followers",
-			                                              note.CreatedAt)
+			? activityRenderer.RenderAnnounce(noteRenderer.RenderLite(note.Renote),
+			                                              note.GetPublicUri(config.Value), noteActor, note, recipients)
 			: ActivityPub.ActivityRenderer.RenderCreate(await noteRenderer.RenderAsync(note), noteActor);
 
 		return activity.Compact();
@@ -249,10 +251,8 @@ public class ActivityPubController(
 
 		var noteActor = userRenderer.RenderLite(user);
 		var rendered = notes.Select(note => note is { IsPureRenote: true, Renote: not null }
-			                            ? (ASObject)ActivityPub.ActivityRenderer.RenderAnnounce(noteRenderer.RenderLite(note.Renote),
-					                             note.GetPublicUri(config.Value), noteActor,
-					                             note.Visibility,
-					                             note.User.GetPublicUri(config.Value) + "/followers", note.CreatedAt)
+			                            ? (ASObject)activityRenderer.RenderAnnounce(noteRenderer.RenderLite(note.Renote),
+					                             note.GetPublicUri(config.Value), noteActor, note, [/* TODO */])
 			                            : ActivityPub.ActivityRenderer.RenderCreate(noteRenderer.RenderLite(note), noteActor))
 		                    .ToList();
 

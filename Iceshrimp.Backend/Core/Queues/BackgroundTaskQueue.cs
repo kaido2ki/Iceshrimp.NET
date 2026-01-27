@@ -201,12 +201,13 @@ public class BackgroundTaskQueue(int parallelism)
 		CancellationToken token
 	)
 	{
-		var db              = scope.GetRequiredService<DatabaseContext>();
-		var queue           = scope.GetRequiredService<QueueService>();
-		var logger          = scope.GetRequiredService<ILogger<BackgroundTaskQueue>>();
-		var renderer        = scope.GetRequiredService<ActivityPub.UserRenderer>();
-		var deliver         = scope.GetRequiredService<ActivityPub.ActivityDeliverService>();
-		var followupTaskSvc = scope.GetRequiredService<FollowupTaskService>();
+		var db               = scope.GetRequiredService<DatabaseContext>();
+		var queue            = scope.GetRequiredService<QueueService>();
+		var logger           = scope.GetRequiredService<ILogger<BackgroundTaskQueue>>();
+		var renderer         = scope.GetRequiredService<ActivityPub.UserRenderer>();
+		var activityRenderer = scope.GetRequiredService<ActivityPub.ActivityRenderer>();
+		var deliver          = scope.GetRequiredService<ActivityPub.ActivityDeliverService>();
+		var followupTaskSvc  = scope.GetRequiredService<FollowupTaskService>();
 
 		logger.LogDebug("Processing delete for user {id}", jobData.UserId);
 
@@ -220,7 +221,7 @@ public class BackgroundTaskQueue(int parallelism)
 		if (user.IsLocalUser)
 		{
 			var actor    = renderer.RenderLite(user);
-			var activity = ActivityPub.ActivityRenderer.RenderDelete(actor, actor);
+			var activity = activityRenderer.RenderDelete(actor, actor);
 			await deliver.DeliverToFollowersAsync(activity, user, []);
 		}
 

@@ -10,6 +10,12 @@ namespace Iceshrimp.Backend.Core.Federation.ActivityStreams.Types;
 
 public class ASActivity : ASObjectWithId
 {
+	[J($"{Constants.ActivityStreamsNs}#to")]
+	public List<ASObjectBase>? To { get; set; }
+
+	[J($"{Constants.ActivityStreamsNs}#cc")]
+	public List<ASObjectBase>? Cc { get; set; }
+	
 	[J($"{Constants.ActivityStreamsNs}#actor")]
 	[JC(typeof(ASActorConverter))]
 	public ASActor? Actor { get; set; }
@@ -63,12 +69,6 @@ public class ASCreate : ASActivity
 {
 	public ASCreate() => Type = Types.Create;
 
-	[J($"{Constants.ActivityStreamsNs}#to")]
-	public List<ASObjectBase>? To { get; set; }
-
-	[J($"{Constants.ActivityStreamsNs}#cc")]
-	public List<ASObjectBase>? Cc { get; set; }
-
 	[JI]
 	public new ASNote? Object
 	{
@@ -85,12 +85,6 @@ public class ASCreate : ASActivity
 public class ASAnnounce : ASActivity
 {
 	public ASAnnounce() => Type = Types.Announce;
-
-	[J($"{Constants.ActivityStreamsNs}#to")]
-	public List<ASObjectBase>? To { get; set; }
-
-	[J($"{Constants.ActivityStreamsNs}#cc")]
-	public List<ASObjectBase>? Cc { get; set; }
 	
 	[J($"{Constants.ActivityStreamsNs}#published")]
 	[JC(typeof(VC))]
@@ -114,9 +108,6 @@ public class ASAnnounce : ASActivity
 public class ASDelete : ASActivity
 {
 	public ASDelete() => Type = Types.Delete;
-
-	[J($"{Constants.ActivityStreamsNs}#to")]
-	public List<ASObjectBase>? To { get; set; }
 }
 
 public class ASFollow : ASActivity
@@ -183,12 +174,6 @@ public class ASUpdate : ASActivity
 {
 	public ASUpdate() => Type = Types.Update;
 
-	[J($"{Constants.ActivityStreamsNs}#to")]
-	public List<ASObjectBase>? To { get; set; }
-
-	[J($"{Constants.ActivityStreamsNs}#cc")]
-	public List<ASObjectBase>? Cc { get; set; }
-
 	[JI]
 	public new ASObject? Object
 	{
@@ -212,10 +197,6 @@ public class ASBite : ASActivity
 	[J($"{Constants.ActivityStreamsNs}#target")]
 	[JC(typeof(ASObjectBaseConverter))]
 	public required ASObjectBase Target { get; set; }
-
-	[J($"{Constants.ActivityStreamsNs}#to")]
-	[JC(typeof(ASObjectBaseConverter))]
-	public ASObjectBase? To { get; set; }
 
 	[J($"{Constants.ActivityStreamsNs}#published")]
 	[JC(typeof(VC))]

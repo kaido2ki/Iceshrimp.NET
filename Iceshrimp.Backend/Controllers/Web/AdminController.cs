@@ -46,6 +46,8 @@ public class AdminController(
 	ActivityPub.ActivityFetcherService fetchSvc,
 	ActivityPub.NoteRenderer noteRenderer,
 	ActivityPub.UserRenderer userRenderer,
+	ActivityPub.ActivityRenderer activityRenderer,
+	ActivityPub.ActivityDeliverService deliverSvc,
 	IOptions<Config.InstanceSection> config,
 	[SuppressMessage("ReSharper", "ParameterOnlyUsedForPreconditionCheck.Local")]
 	IOptionsSnapshot<Config.SecuritySection> security,
@@ -680,13 +682,13 @@ public class AdminController(
 		                   .FirstOrDefaultAsync() ??
 		           throw GracefulException.NotFound("Note not found");
 
-		return ActivityPub.ActivityRenderer
+		var recipients = await deliverSvc.GetRecipientsAsync(note);
+
+		return activityRenderer
 		                  .RenderAnnounce(noteRenderer.RenderLite(note.Renote!),
 		                                  note.GetPublicUri(config.Value),
 		                                  userRenderer.RenderLite(note.User),
-		                                  note.Visibility,
-		                                  note.User.GetPublicUri(config.Value) + "/followers",
-		                                  note.CreatedAt)
+		                                  note, recipients)
 		                  .Compact();
 	}
 

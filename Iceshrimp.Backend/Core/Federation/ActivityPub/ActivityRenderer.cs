@@ -45,18 +45,28 @@ public class ActivityRenderer(
 		To     = [new ASObjectBase($"{Constants.ActivityStreamsNs}#Public")]
 	};
 
-	public static ASDelete RenderDelete(ASActor actor, ASObject obj) => new()
+	public ASDelete RenderDelete(ASActor actor, ASObject obj, Note? note = null, List<User>? recipients = null)
 	{
-		Id     = $"{obj.Id}#Delete",
-		Actor  = actor.Compact(),
-		Object = obj
-	};
+		var (to, cc) = note != null 
+			? RenderVisibility(note, recipients ?? []) 
+			: ([], [new ASObjectBase($"{Constants.ActivityStreamsNs}#Public")]);
+
+		return new ASDelete
+		{
+			Id = $"{obj.Id}#Delete",
+			Actor = actor.Compact(),
+			Object = obj,
+			To = to,
+			Cc = cc,
+		};
+	}
 
 	public ASAccept RenderAccept(User followee, User follower, string requestId) => new()
 	{
 		Id     = GenerateActivityId(),
 		Actor  = userRenderer.RenderLite(followee),
-		Object = RenderFollow(userRenderer.RenderLite(follower), userRenderer.RenderLite(followee), requestId)
+		Object = RenderFollow(userRenderer.RenderLite(follower), userRenderer.RenderLite(followee), requestId),
+		To     = [userRenderer.RenderLite(follower)]
 	};
 	
 	public ASAccept RenderAcceptStamp(InteractionStamp stamp, ASObject request) => new()
@@ -65,41 +75,49 @@ public class ActivityRenderer(
 		Actor  = userRenderer.RenderLite(stamp.TargetNote.User),
 		Object = request,
 		Result = new ASObjectBase(stampRenderer.StampId(stamp)),
+		To     = [userRenderer.RenderLite(stamp.Note.User)]
 	};
 	
 	public ASReject RenderRejectStamp(InteractionStamp stamp, ASObject request) => new()
 	{
 		Id     = GenerateActivityId(),
 		Actor  = userRenderer.RenderLite(stamp.TargetNote.User),
-		Object = request
+		Object = request,
+		To     = [userRenderer.RenderLite(stamp.Note.User)]
 	};
 	
-	public ASLike RenderLike(NoteLike like)
+	public ASLike RenderLike(NoteLike like, IEnumerable<User> recipients)
 	{
-		if (like.Note.UserHost == null)
-			throw GracefulException.BadRequest("Refusing to render like activity: note user must be remote");
 		if (like.User.IsRemoteUser)
 			throw GracefulException.BadRequest("Refusing to render like activity: actor must be local");
+
+		var (to, cc) = RenderVisibility(like.Note, recipients);
 
 		return new ASLike
 		{
 			Id     = $"https://{config.Value.WebDomain}/likes/{like.Id}",
 			Actor  = userRenderer.RenderLite(like.User),
-			Object = noteRenderer.RenderLite(like.Note)
+			Object = noteRenderer.RenderLite(like.Note),
+			To     = to,
+			Cc     = cc,
 		};
 	}
 
-	public ASEmojiReact RenderReact(NoteReaction reaction, Emoji? emoji)
+	public ASEmojiReact RenderReact(NoteReaction reaction, Emoji? emoji, IEnumerable<User> recipients)
 	{
 		if (reaction.User.IsRemoteUser)
 			throw GracefulException.BadRequest("Refusing to render like activity: actor must be local");
+		
+		var (to, cc) = RenderVisibility(reaction.Note, recipients);
 
 		var res = new ASEmojiReact
 		{
 			Id      = $"https://{config.Value.WebDomain}/reactions/{reaction.Id}",
 			Actor   = userRenderer.RenderLite(reaction.User),
 			Object  = noteRenderer.RenderLite(reaction.Note),
-			Content = reaction.Reaction
+			Content = reaction.Reaction,
+			To      = to,
+			Cc      = cc,
 		};
 
 		if (emoji == null) return res;
@@ -135,7 +153,7 @@ public class ActivityRenderer(
 		{
 			Id     = $"https://{config.Value.WebDomain}/activities/follow-relay/{relay.Id}",
 			Actor  = userRenderer.RenderLite(actor),
-			Object = new ASObject { Id = "https://www.w3.org/ns/activitystreams#Public" }
+			Object = new ASObject { Id = $"{Constants.ActivityStreamsNs}#Public" },
 		};
 	}
 
@@ -164,35 +182,42 @@ public class ActivityRenderer(
 	{
 		Id     = requestId,
 		Actor  = ASActor.FromObject(followerActor),
-		Object = ASActor.FromObject(followeeActor)
+		Object = ASActor.FromObject(followeeActor),
+		To = [new ASObjectBase(followerActor.Id)]
 	};
 
-	public ASUndo RenderUndo(ASActor actor, ASObject obj) => new()
+	public ASUndo RenderUndo(ASActor actor, ASActivity obj) => new()
 	{
 		Id     = GenerateActivityId(),
 		Actor  = actor.Compact(),
-		Object = obj
+		Object = obj,
+		To     = obj.To,
+		Cc     = obj.Cc
 	};
 
-	public ASReject RenderReject(ASActor actor, ASObject obj) => new()
+	public ASReject RenderReject(ASActor actor, ASActivity obj) => new()
 	{
 		Id     = GenerateActivityId(),
 		Actor  = actor.Compact(),
-		Object = obj
+		Object = obj,
+		To     = obj.To,
+		Cc     = obj.Cc
 	};
 
 	public ASReject RenderReject(User followee, User follower, string requestId) => new()
 	{
 		Id     = GenerateActivityId(),
 		Actor  = userRenderer.RenderLite(followee),
-		Object = RenderFollow(userRenderer.RenderLite(follower), userRenderer.RenderLite(followee), requestId)
+		Object = RenderFollow(userRenderer.RenderLite(follower), userRenderer.RenderLite(followee), requestId),
+		To     = [userRenderer.RenderLite(follower)],
 	};
 
 	public ASBlock RenderBlock(ASActor actor, ASActor obj, string blockId) => new()
 	{
 		Id     = $"https://{config.Value.WebDomain}/blocks/{blockId}",
 		Actor  = actor.Compact(),
-		Object = obj.Compact()
+		Object = obj.Compact(),
+		To     = [new ASObjectBase(obj.Id)],
 	};
 
 	[SuppressMessage("ReSharper", "SuggestBaseTypeForParameter", Justification = "This only makes sense for users")]
@@ -211,25 +236,42 @@ public class ActivityRenderer(
 		Cc     = cc
 	};
 
-	public static ASAnnounce RenderAnnounce(
-		ASNote note, string renoteUri, ASActor actor, Note.NoteVisibility visibility, string followersUri, DateTime publishedAt
-	)
+	public ASAnnounce RenderAnnounce(ASNote asNote, string renoteUri, ASActor actor, Note note, IEnumerable<User> recipients)
 	{
-		List<ASObjectBase> to = visibility switch
+		var (to, cc) = RenderVisibility(note, recipients);
+
+		return RenderAnnounce(asNote, actor, to, cc, $"{renoteUri}/activity", note.CreatedAt);
+	}
+
+	private (List<ASObjectBase> to, List<ASObjectBase> cc) RenderVisibility(Note note, IEnumerable<User> recipients, User? interactingUser = null)
+	{
+		var authorFollowersUri = note.User.FollowersUri ?? note.User.GetPublicUri(config.Value) + "/followers";
+		var interactingUserFollowersUri = interactingUser != null 
+			? interactingUser.FollowersUri ?? interactingUser.GetPublicUri(config.Value) + "/followers" 
+			: null;
+
+		List<ASObjectBase> to = note.Visibility switch
 		{
 			Note.NoteVisibility.Public    => [new ASLink($"{Constants.ActivityStreamsNs}#Public")],
-			Note.NoteVisibility.Followers => [new ASLink(followersUri)],
-			Note.NoteVisibility.Specified => throw new Exception("Announce cannot be specified"),
+			Note.NoteVisibility.Followers => [new ASLink(authorFollowersUri)],
 			_                             => []
 		};
 
-		List<ASObjectBase> cc = visibility switch
+		to.AddRange(recipients.Select(userRenderer.RenderLite));
+
+		List<ASObjectBase> cc = note.Visibility switch
 		{
-			Note.NoteVisibility.Home => [new ASLink($"{Constants.ActivityStreamsNs}#Public")],
-			_                        => []
+			Note.NoteVisibility.Public when interactingUserFollowersUri != null => [new ASLink(interactingUserFollowersUri)],
+
+			Note.NoteVisibility.Home when interactingUserFollowersUri == null => [new ASLink($"{Constants.ActivityStreamsNs}#Public")],
+			Note.NoteVisibility.Home => [
+				new ASLink($"{Constants.ActivityStreamsNs}#Public"),
+				new ASLink(interactingUserFollowersUri)
+			],
+			_ => []
 		};
 
-		return RenderAnnounce(note, actor, to, cc, $"{renoteUri}/activity", publishedAt);
+		return (to, cc);
 	}
 
 	public ASNote RenderVote(PollVote vote, Poll poll, Note note) => new()
@@ -255,7 +297,7 @@ public class ActivityRenderer(
 		Actor       = userRenderer.RenderLite(bite.User),
 		Target      = new ASObjectBase(target),
 		PublishedAt = bite.CreatedAt,
-		To          = userRenderer.RenderLite(fallbackTo)
+		To          = [userRenderer.RenderLite(fallbackTo)]
 	};
 
 	public ASFlag RenderFlag(User actor, User user, IEnumerable<Note> notes, string comment) => new()
