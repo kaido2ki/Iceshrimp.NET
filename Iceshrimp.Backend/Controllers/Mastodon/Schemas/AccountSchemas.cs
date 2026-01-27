@@ -1,6 +1,8 @@
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.Mvc.ModelBinding;
 using B = Microsoft.AspNetCore.Mvc.BindPropertyAttribute;
 using J = System.Text.Json.Serialization.JsonPropertyNameAttribute;
+using JI = System.Text.Json.Serialization.JsonIgnoreAttribute;
 
 namespace Iceshrimp.Backend.Controllers.Mastodon.Schemas;
 
@@ -37,9 +39,15 @@ public abstract class AccountSchemas
 		[B(Name = "indexable")]
 		public bool? IsIndexable { get; set; }
 
-		[J("fields_attributes")]
 		[B(Name = "fields_attributes")]
+		[JI]
 		public List<AccountUpdateField>? Fields { get; set; }
+		
+		/// Note that the integer index does not actually matter -- fields will be populated by the order in which they are provided.
+		/// https://github.com/mastodon/mastodon/issues/22174
+		[J("fields_attributes")]
+		[BindNever]
+		public OrderedDictionary<string, AccountUpdateField>? JsonFields { get; set; }
 
 		[J("permit_followback")]
 		[B(Name = "permit_followback")]

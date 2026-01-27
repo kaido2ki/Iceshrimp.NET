@@ -86,7 +86,10 @@ public class AccountController(
 		if (request.PermitFollowback.HasValue)
 			user.UserSettings.AutoAcceptFollowed = request.PermitFollowback.Value;
 
-		if (request.Fields?.Where(p => p is { Name: not null, Value: not null }).ToList() is { Count: > 0 } fields)
+		var requestFields = request.JsonFields?.Values as IEnumerable<AccountSchemas.AccountUpdateField> 
+		             ?? request.Fields;
+
+		if (requestFields?.Where(p => p is { Name: not null, Value: not null }).ToList() is { Count: > 0 } fields)
 		{
 			user.UserProfile.Fields =
 				fields.Select(p => new UserProfile.Field
