@@ -32,7 +32,8 @@ public class DriveController(
 	HttpClient httpClient
 ) : ControllerBase
 {
-	private const string CacheControl = "max-age=31536000, immutable";
+	private const string ImmutableCacheControl = "max-age=31536000, immutable";
+	private const string TemporaryCacheControl = "max-age=3600";
 
 	[EnableCors("drive")]
 	[EnableRateLimiting("proxy")]
@@ -55,7 +56,10 @@ public class DriveController(
 		            ?? throw GracefulException.NotFound("Emoji not found");
 
 		if (!options.Value.ProxyRemoteMedia || emoji.Host == null)
+		{
+			Response.Headers.CacheControl = TemporaryCacheControl;
 			return Redirect(emoji.RawPublicUrl);
+		}
 
 		return await ProxyAsync(emoji.RawPublicUrl, null, null);
 	}
@@ -71,10 +75,16 @@ public class DriveController(
 		               ?? throw GracefulException.NotFound("Instance not found");
 
 		if (instance.FaviconUrl == null)
+		{
+			Response.Headers.CacheControl = TemporaryCacheControl;
 			return NoContent();
+		}
 
 		if (!options.Value.ProxyRemoteMedia)
+		{
+			Response.Headers.CacheControl = TemporaryCacheControl;
 			return Redirect(instance.FaviconUrl);
+		}
 
 		return await ProxyAsync(instance.FaviconUrl, null, null);
 	}
@@ -92,12 +102,15 @@ public class DriveController(
 		if (user.Avatar is null)
 		{
 			var stream = await IdenticonHelper.GetIdenticonAsync(user.Id);
-			Response.Headers.CacheControl = CacheControl;
+			Response.Headers.CacheControl = ImmutableCacheControl;
 			return new InlineFileStreamResult(stream, "image/png", $"{user.Id}.png", false);
 		}
 
 		if (!options.Value.ProxyRemoteMedia)
+		{
+			Response.Headers.CacheControl = TemporaryCacheControl;
 			return Redirect(user.Avatar.RawThumbnailAccessUrl);
+		}
 
 		return await GetFileByAccessKey(user.Avatar.AccessKey, "thumbnail", user.Avatar);
 	}
@@ -113,10 +126,16 @@ public class DriveController(
 		           ?? throw GracefulException.NotFound("User not found");
 
 		if (user.Banner is null)
+		{
+			Response.Headers.CacheControl = TemporaryCacheControl;
 			return NoContent();
+		}
 
 		if (!options.Value.ProxyRemoteMedia)
+		{
+			Response.Headers.CacheControl = TemporaryCacheControl;
 			return Redirect(user.Banner.RawThumbnailAccessUrl);
+		}
 
 		return await GetFileByAccessKey(user.Banner.AccessKey, "thumbnail", user.Banner);
 	}
@@ -130,7 +149,7 @@ public class DriveController(
 	public async Task<IActionResult> GetIdenticonByUserId(string userId)
 	{
 		var stream = await IdenticonHelper.GetIdenticonAsync(userId);
-		Response.Headers.CacheControl = CacheControl;
+		Response.Headers.CacheControl = ImmutableCacheControl;
 		return new InlineFileStreamResult(stream, "image/png", $"{userId}.png", false);
 	}
 
@@ -523,7 +542,7 @@ public class DriveController(
 		                                                      || p.ThumbnailAccessKey == accessKey);
 		if (file == null)
 		{
-			Response.Headers.CacheControl = "max-age=86400";
+			Response.Headers.CacheControl = TemporaryCacheControl;
 			throw GracefulException.NotFound("File not found");
 		}
 
@@ -534,7 +553,10 @@ public class DriveController(
 				: file.RawAccessUrl;
 
 			if (!options.Value.ProxyRemoteMedia)
+			{
+				Response.Headers.CacheControl = TemporaryCacheControl;
 				return Redirect(fetchUrl);
+			}
 
 			try
 			{
@@ -562,7 +584,7 @@ public class DriveController(
 			var path   = Path.Join(pathBase, accessKey);
 			var stream = System.IO.File.OpenRead(path);
 
-			Response.Headers.CacheControl        = CacheControl;
+			Response.Headers.CacheControl        = ImmutableCacheControl;
 			Response.Headers.XContentTypeOptions = "nosniff";
 
 			return Constants.BrowserSafeMimeTypes.Contains(file.Type)
@@ -578,7 +600,7 @@ public class DriveController(
 				throw GracefulException.NotFound("File not found");
 			}
 
-			Response.Headers.CacheControl        = CacheControl;
+			Response.Headers.CacheControl        = ImmutableCacheControl;
 			Response.Headers.XContentTypeOptions = "nosniff";
 
 			return Constants.BrowserSafeMimeTypes.Contains(file.Type)
@@ -601,7 +623,7 @@ public class DriveController(
 				throw GracefulException.BadGateway("Failed to proxy request: content type mismatch", suppressLog: true);
 			// @formatter:on
 
-			Response.Headers.CacheControl        = CacheControl;
+			Response.Headers.CacheControl        = ImmutableCacheControl;
 			Response.Headers.XContentTypeOptions = "nosniff";
 
 			var stream = await res.Content.ReadAsStreamAsync();
