@@ -1,7 +1,9 @@
 using AngleSharp.Dom;
 using AngleSharp.Html.Dom;
+using AngleSharp.Mathml.Dom;
 using Iceshrimp.Backend.Core.Database.Tables;
 using Iceshrimp.Backend.Core.Helpers.LibMfm.Conversion;
+using System.Text;
 
 namespace Iceshrimp.Backend.Core.Helpers.LibMfm.Parsing;
 
@@ -133,6 +135,33 @@ internal class HtmlParser(
 				media.Add(new MfmInlineMedia(type, src, alt));
 
 				return $"$[media {src}]";
+			}
+
+			case "math":
+			{
+				if (node is not MathElement el) return node.TextContent;
+
+				var display = el.GetAttribute("display");
+				var displayStyle = display != null && String.Equals(display, "block", StringComparison.OrdinalIgnoreCase);
+
+				var semanticsAll = node.ChildNodes.QuerySelectorAll("semantics");
+				var mfm = new StringBuilder();
+				var fallback = "remote MathML typeset; see source instance";
+				Func<string, string> asCode = (text) => displayStyle ? $"\n```\n{text}\n```\n" : $"`{text}`";
+
+				foreach(INode semantics in semanticsAll) {
+					var texNode = semantics.ChildNodes.QuerySelector("annotation[encoding=\"application/x-tex\"]");
+
+					if (texNode != null && texNode.TextContent != null) {
+						mfm.Append(displayStyle ? $"\\[{texNode.TextContent}\\]" : $"\\({texNode.TextContent}\\)");
+						continue;
+					}
+
+					var plainNode = semantics.ChildNodes.QuerySelector("annotation[encoding=\"text/plain\"]");
+					mfm.Append(asCode(plainNode?.TextContent ?? fallback));
+				}
+
+				return mfm.Length > 0 ? mfm.ToString() : asCode(fallback);
 			}
 
 			case "P":
