@@ -173,6 +173,12 @@ public class UserService(
 
 		var tags = ResolveHashtags(MfmParser.Parse(bio), actor);
 
+		User.BiteControl? canBite = null;
+		if (actor.CanBite?.Link == $"{Constants.ActivityStreamsNs}#Public")
+			canBite = User.BiteControl.Public;
+		else if (actor.Followers?.Id != null && actor.CanBite?.Link == actor.Followers?.Id)
+			canBite = User.BiteControl.Followers;
+
 		user = new User
 		{
 			Id                  = IdHelpers.GenerateSnowflakeId(),
@@ -199,7 +205,8 @@ public class UserService(
 			//TODO: FollowersCount
 			//TODO: FollowingCount
 			Emojis = emoji.Select(p => p.Id).ToList(),
-			Tags   = tags
+			Tags   = tags,
+			CanBite = canBite
 		};
 
 		var profile = new UserProfile
@@ -312,6 +319,13 @@ public class UserService(
 		user.IsCat         = actor.IsCat ?? false;
 		user.SpeakAsCat    = actor.SpeakAsCat ?? actor.IsCat ?? false;
 		user.Featured      = actor.Featured?.Id;
+
+		User.BiteControl? canBite = null;
+		if (actor.CanBite?.Link == $"{Constants.ActivityStreamsNs}#Public")
+			canBite = User.BiteControl.Public;
+		else if (user.FollowersUri != null && actor.CanBite?.Link == user.FollowersUri)
+			canBite = User.BiteControl.Followers;
+		user.CanBite = canBite;
 
 		var emoji = await emojiSvc.ProcessEmojiAsync(actor.Tags?.OfType<ASEmoji>().ToList(),
 		                                             user.Host
