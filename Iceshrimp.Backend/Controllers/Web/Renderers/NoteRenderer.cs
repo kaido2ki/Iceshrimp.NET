@@ -86,8 +86,9 @@ public class NoteRenderer(
 		                 ?? await db.NoteBookmarks.AnyAsync(p => p.Note == note && p.User == user);
 		var pinned = data?.PinnedNotes?.Contains(note.Id)
 		                 ?? await db.UserNotePins.AnyAsync(p => p.Note == note && p.User == user);
-		var emoji = data?.Emoji?.Where(p => note.Emojis.Contains(p.Id)).ToList() ?? await GetEmojiAsync([note]);
-		var poll  = (data?.Polls ?? await GetPollsAsync([note], user)).FirstOrDefault(p => p.NoteId == note.Id);
+		var emoji   = data?.Emoji?.Where(p => note.Emojis.Contains(p.Id)).ToList() ?? await GetEmojiAsync([note]);
+		var poll    = (data?.Polls ?? await GetPollsAsync([note], user)).FirstOrDefault(p => p.NoteId == note.Id);
+		var canBite = (data?.CanBite ?? await GetCanBiteAsync([note], user)).Any(p => p == note.Id) && note.UserId != user?.Id;
 
 		return new NoteResponse
 		{
@@ -110,6 +111,7 @@ public class NoteRenderer(
 			Pinned      = pinned,
 			Liked       = liked,
 			Renoted     = renoted,
+			CanBite     = canBite,
 			Emoji       = emoji,
 			Poll        = poll
 		};
@@ -281,6 +283,21 @@ public class NoteRenderer(
 		       .ToList();
 	}
 
+	private async Task<List<string>> GetCanBiteAsync(IEnumerable<Note> notes, User? user)
+	{
+		if (user == null)
+			return [];
+
+		var ids = notes.Select(p => p.Id).ToList();
+
+		return await db.Notes.Where(p => ids.Contains(p.Id))
+		               .Where(p => p.User.CanBite == User.BiteControl.Public
+		                           || (p.User.CanBite == User.BiteControl.Followers
+		                               && db.Followings.Any(f => f.Followee == p.User && f.Follower == user)))
+		               .Select(p => p.Id)
+		               .ToListAsync();
+	}
+
 	public async Task<IEnumerable<NoteResponse>> RenderManyAsync(
 		IEnumerable<Note> notes, User? user, Filter.FilterContext? filterContext = null
 	)
@@ -299,7 +316,8 @@ public class NoteRenderer(
 			LikedNotes      = await GetLikedNotesAsync(allNotes, user),
 			Renotes         = await GetRenotesAsync(allNotes, user),
 			Emoji           = await GetEmojiAsync(allNotes),
-			Polls           = await GetPollsAsync(allNotes, user)
+			Polls           = await GetPollsAsync(allNotes, user),
+			CanBite         = await GetCanBiteAsync(allNotes, user)
 		};
 
 		return await notesList.Select(p => RenderOne(p, user, filterContext, data)).AwaitAllAsync();
@@ -317,5 +335,6 @@ public class NoteRenderer(
 		public List<NoteReactionSchema>? Reactions;
 		public List<UserResponse>?       Users;
 		public List<NotePollSchema>?     Polls;
+		public List<string>?             CanBite;
 	}
 }
