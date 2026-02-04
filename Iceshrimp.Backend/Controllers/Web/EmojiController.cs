@@ -239,7 +239,7 @@ public class EmojiController(
 	/// Import emoji pack
 	/// </summary>
 	/// <remarks>
-	/// <para>Import a Misskey-style emoji pack.</para>
+	/// <para>Import a Misskey-style emoji pack. This operation may take a while to return as it is not run in the background. Receiving a timeout response does not mean the operation is canceled.</para>
 	/// <para>Requires role: <b>Moderator</b></para>
 	/// </remarks>
 	/// <param name="file">Emoji pack ZIP file</param>
