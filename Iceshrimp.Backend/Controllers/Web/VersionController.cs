@@ -10,11 +10,6 @@ using Microsoft.AspNetCore.RateLimiting;
 
 namespace Iceshrimp.Backend.Controllers.Web;
 
-#if DEBUG
-[ApiExplorerSettings(IgnoreApi = false)]
-#else
-[ApiExplorerSettings(IgnoreApi = true)]
-#endif  
 [ApiController]
 [Authenticate]
 [EnableRateLimiting("sliding")]
@@ -23,6 +18,10 @@ namespace Iceshrimp.Backend.Controllers.Web;
 [EnableCors("iceshrimp")]
 public class VersionController : ControllerBase
 {
+	/// <summary>
+	/// Get version
+	/// </summary>
+	/// <response code="200">Version information</response>
 	[HttpGet]
 	[ProducesResults(HttpStatusCode.OK)]
 	public VersionResponse GetVersion()
