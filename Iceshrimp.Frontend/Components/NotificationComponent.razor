@@ -4,6 +4,10 @@
 @using Iceshrimp.Shared.Schemas.Web
 @using Microsoft.Extensions.Localization
 @using Iceshrimp.Assets.PhosphorIcons
+@using Iceshrimp.Frontend.Core.Miscellaneous
+@using Iceshrimp.Frontend.Core.Services
+@inject ApiService                     Api;
+@inject GlobalComponentSvc             Global;
 @inject IStringLocalizer<Localization> Loc;
 @inject NavigationManager              NavigationManager
 
@@ -108,6 +112,18 @@
             <NoteComponent Note="NotificationResponse.Note" AsQuote="@(NotificationResponse is not { Type: "mention" } or { Type: "reply" })" OpenNote="true"/>
         </div>
     }
+
+    @switch (NotificationResponse)
+    {
+        case { Type: "bite", Bite: not null, User: not null }:
+            <div class="notification-actions">
+                <button class="button" @onclick="BiteBack">
+                    <Icon Name="Icons.Tooth"/>
+                    @Loc["Bite back"]
+                </button>
+            </div>
+            break;
+    }
 </div>
 
 @code {
@@ -118,5 +134,20 @@
         var username                                          = $"@{NotificationResponse.User?.Username}";
         if (NotificationResponse.User?.Host != null) username += $"@{NotificationResponse.User.Host}";
         NavigationManager.NavigateTo($"/{username}");
+    }
+
+    private async Task BiteBack()
+    {
+        if (NotificationResponse is not { Bite: { } bite, User: { } user }) return;
+
+        try
+        {
+            await Api.Misc.BiteBackAsync(bite.Id);
+            await Global.NoticeDialog?.Display(Loc["Bit {0} back", user.DisplayName ?? user.Username])!;
+        }
+        catch (ApiException e)
+        {
+            await Global.NoticeDialog?.Display(e.Response.Message ?? Loc["Unable to bite {0}", user.DisplayName ?? user.Username], NoticeDialog.NoticeType.Error)!;
+        }
     }
 }

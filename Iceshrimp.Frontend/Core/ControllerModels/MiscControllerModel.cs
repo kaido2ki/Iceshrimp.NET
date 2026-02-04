@@ -6,6 +6,9 @@ namespace Iceshrimp.Frontend.Core.ControllerModels;
 
 internal class MiscControllerModel(ApiClient api)
 {
+	public Task BiteBackAsync(string id) =>
+		api.CallAsync(HttpMethod.Post, $"/misc/bite_back/{id}");
+
 	public Task<IEnumerable<NoteResponse>> GetMutedThreadsAsync(PaginationQuery pq) =>
 		api.CallAsync<IEnumerable<NoteResponse>>(HttpMethod.Get, "/misc/muted_threads", pq);
 
