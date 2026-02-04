@@ -854,7 +854,14 @@ public class NoteController(
 
 		return await noteRenderer.RenderOne(note, user);
 	}
-	
+
+	/// <summary>
+	/// Edit note
+	/// </summary>
+	/// <remarks>Update the contents of a note. Editing a note with a poll will reset the poll votes.</remarks>
+	/// <param name="id">The note's ID</param>
+	/// <param name="request">Note update request</param>
+	/// <response code="200">Updated note</response>
 	[HttpPut("{id}")]
 	[Authenticate]
 	[Authorize]
