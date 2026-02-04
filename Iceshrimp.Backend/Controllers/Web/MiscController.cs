@@ -16,15 +16,24 @@ using Microsoft.EntityFrameworkCore;
 
 namespace Iceshrimp.Backend.Controllers.Web;
 
+/// <summary>
+/// Operations that aren't well categorized and may be moved to a more appropriate section at a later date.
+/// </summary>
 [ApiController]
 [Authenticate]
 [Authorize]
+[Tags("Miscellaneous")]
 [EnableRateLimiting("sliding")]
 [Route("/api/iceshrimp/misc")]
 [Produces(MediaTypeNames.Application.Json)]
 [EnableCors("iceshrimp")]
 public class MiscController(DatabaseContext db, NoteRenderer noteRenderer, BiteService biteSvc) : ControllerBase
 {
+	/// <summary>
+	/// Bite back
+	/// </summary>
+	/// <remarks>Bite a user back in response to a Bite activity</remarks>
+	/// <param name="id">The Bite's ID</param>
 	[HttpPost("bite_back/{id}")]
 	[Authenticate]
 	[Authorize]
@@ -49,6 +58,12 @@ public class MiscController(DatabaseContext db, NoteRenderer noteRenderer, BiteS
 		await biteSvc.BiteAsync(user, target);
 	}
 
+	/// <summary>
+	/// Get muted threads
+	/// </summary>
+	/// <remarks>Returns a paginated list of note threads that are muted by the user.</remarks>
+	/// <param name="pq">Pagination query</param>
+	/// <response code="200">Paginated list of muted note threads</response>
 	[HttpGet("muted_threads")]
 	[LinkPagination(20, 40)]
 	[ProducesResults(HttpStatusCode.OK)]
@@ -66,6 +81,11 @@ public class MiscController(DatabaseContext db, NoteRenderer noteRenderer, BiteS
 		return await noteRenderer.RenderManyAsync(notes.EnforceRenoteReplyVisibility(), user);
 	}
 
+	/// <summary>
+	/// Get user status
+	/// </summary>
+	/// <remarks>Returns status information for the user.</remarks>
+	/// <response code="200">Status information</response>
 	[HttpGet("status")]
 	[EnableRateLimiting("sliding")]
 	[ProducesResults(HttpStatusCode.OK)]
