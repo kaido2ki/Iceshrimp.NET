@@ -33,7 +33,8 @@ public enum Relations
 	Requested   = 8,
 	RequestedBy = 16,
 	Blocking    = 32,
-	Muting      = 64
+	Muting      = 64,
+	CanBite     = 128
 }
 
 public enum Role

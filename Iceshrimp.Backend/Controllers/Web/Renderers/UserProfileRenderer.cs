@@ -23,7 +23,8 @@ public class UserProfileRenderer(DatabaseContext db, IOptions<Config.InstanceSec
 			IsBlocking    = false,
 			IsMuting      = false,
 			IsRequested   = false,
-			IsRequestedBy = false
+			IsRequestedBy = false,
+			CanBite       = false
 		};
 
 		var ffVisibility = user.UserProfile?.FFVisibility ?? UserProfile.UserProfileFFVisibility.Public;
@@ -98,7 +99,11 @@ public class UserProfileRenderer(DatabaseContext db, IOptions<Config.InstanceSec
 			               IsBlocking    = p.IsBlockedBy(localUser),
 			               IsMuting      = p.IsMutedBy(localUser),
 			               IsRequested   = p.IsRequestedBy(localUser),
-			               IsRequestedBy = p.IsRequested(localUser)
+			               IsRequestedBy = p.IsRequested(localUser),
+			               CanBite = p.Id != localUser.Id
+			                         && (p.CanBite == User.BiteControl.Public
+			                             || (p.CanBite == User.BiteControl.Followers
+			                                 && p.IsFollowedBy(localUser)))
 		               })
 		               .ToDictionaryAsync(p => p.UserId, p => p);
 	}
@@ -127,6 +132,7 @@ public class UserProfileRenderer(DatabaseContext db, IOptions<Config.InstanceSec
 
 	public class RelationData
 	{
+		public required bool   CanBite;
 		public required bool   IsBlocking;
 		public required bool   IsFollowedBy;
 		public required bool   IsFollowing;
@@ -146,6 +152,7 @@ public class UserProfileRenderer(DatabaseContext db, IOptions<Config.InstanceSec
 			if (data.IsRequestedBy) res |= Relations.RequestedBy;
 			if (data.IsBlocking) res    |= Relations.Blocking;
 			if (data.IsMuting) res      |= Relations.Muting;
+			if (data.CanBite) res       |= Relations.CanBite;
 			return res;
 		}
 	}
