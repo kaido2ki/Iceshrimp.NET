@@ -114,7 +114,7 @@ public class SettingsController(
 	}
 
 	/// <summary>
-	/// Re-enrol two-factor authentication
+	/// Re-enroll two-factor authentication
 	/// </summary>
 	/// <remarks>Replace the current two-factor authenticator with a new authenticator.</remarks>
 	/// <param name="request">Two-factor authentication</param>
