@@ -38,13 +38,7 @@ public class DriveController(
 	private const string ImmutableCacheControl = "max-age=31536000, immutable";
 	private const string TemporaryCacheControl = "max-age=3600";
 
-	/// <summary>
-	/// Get file by access key
-	/// </summary>
-	/// <param name="accessKey">The Drive file's access key</param>
-	/// <param name="version" example="thumbnail">File version</param>
-	/// <response code="200">Drive or proxied file contents</response>
-	/// <response code="302">Remote file contents</response>
+	[ApiExplorerSettings(IgnoreApi = true)]
 	[EnableCors("drive")]
 	[EnableRateLimiting("proxy")]
 	[HttpGet("/files/{accessKey}/{version?}")]
@@ -55,12 +49,7 @@ public class DriveController(
 		return await GetFileByAccessKey(accessKey, version, null);
 	}
 
-	/// <summary>
-	/// Get emoji file
-	/// </summary>
-	/// <param name="id">The emoji's ID</param>
-	/// <response code="200">Drive or proxied file contents</response>
-	/// <response code="302">Remote file contents</response>
+	[ApiExplorerSettings(IgnoreApi = true)]
 	[EnableCors("drive")]
 	[EnableRateLimiting("proxy")]
 	[HttpGet("/media/emoji/{id}")]
@@ -80,12 +69,7 @@ public class DriveController(
 		return await ProxyAsync(emoji.RawPublicUrl, null, null);
 	}
 
-	/// <summary>
-	/// Get instance favicon file
-	/// </summary>
-	/// <param name="id">The instance's ID (not domain name)</param>
-	/// <response code="200">Drive or proxied file contents</response>
-	/// <response code="302">Remote file contents</response>
+	[ApiExplorerSettings(IgnoreApi = true)]
 	[EnableCors("drive")]
 	[EnableRateLimiting("proxy")]
 	[HttpGet("/media/favicon/{id}")]
@@ -111,13 +95,7 @@ public class DriveController(
 		return await ProxyAsync(instance.FaviconUrl, null, null);
 	}
 
-	/// <summary>
-	/// Get user avatar file
-	/// </summary>
-	/// <param name="userId">The user's ID</param>
-	/// <param name="version">This parameter is only used by the client, as it is needed due to the immutable caching policy set on the image data returned from the endpoint.</param>
-	/// <response code="200">Drive or proxied file contents</response>
-	/// <response code="302">Remote file contents</response>
+	[ApiExplorerSettings(IgnoreApi = true)]
 	[EnableCors("drive")]
 	[EnableRateLimiting("proxy")]
 	[HttpGet("/avatars/{userId}/{version}")]
@@ -144,13 +122,7 @@ public class DriveController(
 		return await GetFileByAccessKey(user.Avatar.AccessKey, "thumbnail", user.Avatar);
 	}
 
-	/// <summary>
-	/// Get user banner file
-	/// </summary>
-	/// <param name="userId">The user's ID</param>
-	/// <param name="version">This parameter is only used by the client, as it is needed due to the immutable caching policy set on the image data returned from the endpoint.</param>
-	/// <response code="200">Drive or proxied file contents</response>
-	/// <response code="302">Remote file contents</response>
+	[ApiExplorerSettings(IgnoreApi = true)]
 	[EnableCors("drive")]
 	[EnableRateLimiting("proxy")]
 	[HttpGet("/banners/{userId}/{version}")]
@@ -176,12 +148,7 @@ public class DriveController(
 		return await GetFileByAccessKey(user.Banner.AccessKey, "thumbnail", user.Banner);
 	}
 
-	/// <summary>
-	/// Get user fallback avatar file
-	/// </summary>
-	/// <param name="userId">The user's ID</param>
-	/// <response code="200">Drive or proxied file contents</response>
-	/// <response code="302">Remote file contents</response>
+	[ApiExplorerSettings(IgnoreApi = true)]
 	[EnableCors("drive")]
 	[HttpGet("/identicon/{userId}")]
 	[HttpGet("/identicon/{userId}.png")]
