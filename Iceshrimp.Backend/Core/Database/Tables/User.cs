@@ -6,6 +6,7 @@ using Iceshrimp.Backend.Core.Helpers;
 using Iceshrimp.Shared.Helpers;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Metadata.Builders;
+using NpgsqlTypes;
 
 namespace Iceshrimp.Backend.Core.Database.Tables;
 
@@ -203,6 +204,8 @@ public class User : IIdentifiable
 	/// </summary>
 	[Column("isExplorable")]
 	public bool IsExplorable { get; set; }
+
+	[Column("canBite")] public BiteControl? CanBite { get; set; }
 
 	/// <summary>
 	///     The URI of the user Follower Collection. It will be null if the origin of the user is local.
@@ -644,6 +647,13 @@ public class User : IIdentifiable
 
 	public string? GetBannerUrl(Config.InstanceSection config)
 		=> BannerId != null ? $"https://{config.WebDomain}/banners/{Id}/{BannerId}" : null;
+
+	[PgName("bite_control_enum")]
+	public enum BiteControl
+	{
+		[PgName("public")]    Public    = 0,
+		[PgName("followers")] Followers = 1
+	}
 
 	private class EntityTypeConfiguration : IEntityTypeConfiguration<User>
 	{

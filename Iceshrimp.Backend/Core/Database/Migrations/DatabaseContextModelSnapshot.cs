@@ -19,10 +19,11 @@ namespace Iceshrimp.Backend.Core.Database.Migrations
         {
 #pragma warning disable 612, 618
             modelBuilder
-                .HasAnnotation("ProductVersion", "10.0.0")
+                .HasAnnotation("ProductVersion", "10.0.2")
                 .HasAnnotation("Relational:MaxIdentifierLength", 63);
 
             NpgsqlModelBuilderExtensions.HasPostgresEnum(modelBuilder, "antenna_src_enum", new[] { "home", "all", "users", "list", "group", "instances" });
+            NpgsqlModelBuilderExtensions.HasPostgresEnum(modelBuilder, "bite_control_enum", new[] { "public", "followers" });
             NpgsqlModelBuilderExtensions.HasPostgresEnum(modelBuilder, "filter_action_enum", new[] { "warn", "hide" });
             NpgsqlModelBuilderExtensions.HasPostgresEnum(modelBuilder, "filter_context_enum", new[] { "home", "lists", "threads", "notifications", "accounts", "public" });
             NpgsqlModelBuilderExtensions.HasPostgresEnum(modelBuilder, "interaction_stamp_type", new[] { "quote" });
@@ -4158,6 +4159,10 @@ namespace Iceshrimp.Backend.Core.Database.Migrations
                         .HasColumnType("character varying(32)")
                         .HasColumnName("bannerId")
                         .HasComment("The ID of banner DriveFile.");
+
+                    b.Property<User.BiteControl?>("CanBite")
+                        .HasColumnType("bite_control_enum")
+                        .HasColumnName("canBite");
 
                     b.Property<DateTime>("CreatedAt")
                         .HasColumnType("timestamp with time zone")

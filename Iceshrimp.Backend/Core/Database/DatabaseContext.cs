@@ -136,6 +136,7 @@ public class DatabaseContext(DbContextOptions<DatabaseContext> options)
 		dataSourceBuilder.MapEnum<Filter.FilterContext>();
 		dataSourceBuilder.MapEnum<Filter.FilterAction>();
 		dataSourceBuilder.MapEnum<InteractionStamp.InteractionStampType>();
+		dataSourceBuilder.MapEnum<User.BiteControl>();
 
 		dataSourceBuilder.EnableDynamicJson();
 
@@ -163,6 +164,7 @@ public class DatabaseContext(DbContextOptions<DatabaseContext> options)
 			options.MapEnum<Filter.FilterContext>("filter_context_enum");
 			options.MapEnum<Filter.FilterAction>("filter_action_enum");
 			options.MapEnum<InteractionStamp.InteractionStampType>("interaction_stamp_type");
+			options.MapEnum<User.BiteControl>("bite_control_enum");
 		});
 
 		optionsBuilder.UseProjectables(options => { options.CompatibilityMode(CompatibilityMode.Full); });
@@ -187,6 +189,7 @@ public class DatabaseContext(DbContextOptions<DatabaseContext> options)
 			.HasPostgresEnum<Filter.FilterContext>()
 			.HasPostgresEnum<Filter.FilterAction>()
 			.HasPostgresEnum<InteractionStamp.InteractionStampType>()
+			.HasPostgresEnum<User.BiteControl>()
 			.HasPostgresExtension("pg_trgm");
 
 		modelBuilder
