@@ -70,7 +70,7 @@
                             <Text>@Loc["Edit profile"]</Text>
                         </MenuElement>
                     }
-                    else
+                    else if (UserProfile.Relations.HasFlag(Relations.CanBite))
                     {
                         <MenuElement Icon="Icons.Tooth" OnSelect="Bite">
                             <Text>@Loc["Bite"]</Text>
@@ -264,7 +264,16 @@
 
     private void EditProfile() => Nav.NavigateTo("/settings/profile");
 
-    private void Bite() => Api.Users.BiteUserAsync(User.Id);
+    private async Task Bite() {
+        try {
+            await Api.Users.BiteUserAsync(User.Id);
+            await GlobalComponentSvc.NoticeDialog?.Display(Loc["Bit {0}", User.DisplayName ?? User.Username])!;
+        }
+        catch (ApiException e)
+        {
+            await GlobalComponentSvc.NoticeDialog?.Display(e.Response.Message ?? Loc["Unable to bite {0}", User.DisplayName ?? User.Username], NoticeDialog.NoticeType.Error)!;
+        }
+    }
 
     private async Task RemoveFromFollowersAction(bool confirm)
     {
