@@ -17,7 +17,8 @@ using Microsoft.EntityFrameworkCore;
 namespace Iceshrimp.Backend.Controllers.Web;
 
 /// <summary>
-/// Operations for user authentication. Iceshrimp.NET's API uses Bearer tokens in the <c>Authorization</c> header for authentication.
+/// <para>Operations for user authentication. Iceshrimp.NET's API uses Bearer tokens in the <c>Authorization</c> header for authentication.</para>
+/// <para>The CORS rules for these operations are restricted to only allow domains set in <c>[Instance] AdditionalDomains</c>. Web based clients that aren't set will not be able to use these operations.</para>
 /// </summary>
 [ApiController]
 [Tags("Authentication")]
