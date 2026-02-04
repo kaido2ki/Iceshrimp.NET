@@ -48,6 +48,14 @@
                     </InputSelect>
                 </label>
                 <label>
+                    @Loc["Allow bites from"]
+                    <InputSelect @bind-Value="SettingsForm.CanBite">
+                        <option value="@BiteControl.Public">@Loc["Public"]</option>
+                        <option value="@BiteControl.Followers">@Loc["Followers"]</option>
+                        <option value="@BiteControl.None">@Loc["None"]</option>
+                    </InputSelect>
+                </label>
+                <label>
                     @Loc["Private Mode (Forces all posts from all clients to be followers only)"]
                     <InputCheckbox @bind-Value="SettingsForm.PrivateMode"/>
                 </label>

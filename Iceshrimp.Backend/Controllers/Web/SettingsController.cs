@@ -49,6 +49,13 @@ public class SettingsController(
 		var settings = await GetOrInitUserSettings();
 		var user     = HttpContext.GetUserOrFail();
 
+		var canBite = user.CanBite switch
+		{
+			Core.Database.Tables.User.BiteControl.Public    => BiteControl.Public,
+			Core.Database.Tables.User.BiteControl.Followers => BiteControl.Followers,
+			_                                               => BiteControl.None
+		};
+
 		return new UserSettingsResponse
 		{
 			FilterInaccessible      = settings.FilterInaccessible,
@@ -59,7 +66,8 @@ public class SettingsController(
 			DefaultRenoteVisibility = (NoteVisibility)settings.DefaultNoteVisibility,
 			TwoFactorEnrolled       = settings.TwoFactorEnabled,
 			ManuallyAcceptFollows   = user.IsLocked,
-			HideRepliesNotFollowing = settings.HideRepliesNotFollowing
+			HideRepliesNotFollowing = settings.HideRepliesNotFollowing,
+			CanBite                 = canBite
 		};
 	}
 
@@ -89,6 +97,14 @@ public class SettingsController(
 		await db.Users.Where(p => p.Id == user.Id)
 		        .ExecuteUpdateAsync(p => p.SetProperty(u => u.IsLocked,
 		                                               newSettings.ManuallyAcceptFollows || newSettings.PrivateMode));
+
+		await db.Users.Where(p => p.Id == user.Id)
+		        .ExecuteUpdateAsync(p => p.SetProperty(u => u.CanBite, newSettings.CanBite switch
+		        {
+			        BiteControl.Public    => Core.Database.Tables.User.BiteControl.Public,
+			        BiteControl.Followers => Core.Database.Tables.User.BiteControl.Followers,
+			        _                     => null
+		        }));
 
 		await db.SaveChangesAsync();
 	}

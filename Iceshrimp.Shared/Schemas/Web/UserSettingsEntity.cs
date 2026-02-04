@@ -9,6 +9,7 @@ public class UserSettingsRequest
 {
 	public NoteVisibility DefaultNoteVisibility   { get; set; }
 	public NoteVisibility DefaultRenoteVisibility { get; set; }
+	public BiteControl    CanBite                 { get; set; }
 
 	/// <summary>
 	/// Overrides manually accept follow request to <c>true</c> and note/renote visibility to followers-only or lower.
@@ -20,4 +21,11 @@ public class UserSettingsRequest
 	public bool AlwaysMarkSensitive     { get; set; }
 	public bool ManuallyAcceptFollows   { get; set; }
 	public bool HideRepliesNotFollowing { get; set; }
+}
+
+public enum BiteControl
+{
+	Public,
+	Followers,
+	None
 }
