@@ -2,7 +2,9 @@ using Iceshrimp.Backend.Core.Configuration;
 using Iceshrimp.Backend.Core.Database;
 using Iceshrimp.Backend.Core.Database.Tables;
 using Iceshrimp.Backend.Core.Helpers;
+using Iceshrimp.Backend.Core.Middleware;
 using Iceshrimp.Utils.DependencyInjection;
+using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Options;
 
 namespace Iceshrimp.Backend.Core.Services;
@@ -17,6 +19,10 @@ public class BiteService(
 {
 	public async Task BiteAsync(User user, Bite target)
 	{
+		var following = await db.Followings.AnyAsync(p => p.Followee == target.User && p.Follower == user);
+		if (target.User.CanBite == null || (target.User.CanBite == User.BiteControl.Followers && !following))
+			throw GracefulException.BadRequest("This user cannot be bitten");
+
 		var bite = new Bite
 		{
 			Id         = IdHelpers.GenerateSnowflakeId(),
@@ -41,6 +47,10 @@ public class BiteService(
 
 	public async Task BiteAsync(User user, Note target)
 	{
+		var following = await db.Followings.AnyAsync(p => p.Followee == target.User && p.Follower == user);
+		if (target.User.CanBite == null || (target.User.CanBite == User.BiteControl.Followers && !following))
+			throw GracefulException.BadRequest("This user cannot be bitten");
+
 		var bite = new Bite
 		{
 			Id         = IdHelpers.GenerateSnowflakeId(),
@@ -65,6 +75,10 @@ public class BiteService(
 
 	public async Task BiteAsync(User user, User target)
 	{
+		var following = await db.Followings.AnyAsync(p => p.Followee == target && p.Follower == user);
+		if (target.CanBite == null || (target.CanBite == User.BiteControl.Followers && !following))
+			throw GracefulException.BadRequest("This user cannot be bitten");
+
 		var bite = new Bite
 		{
 			Id         = IdHelpers.GenerateSnowflakeId(),
