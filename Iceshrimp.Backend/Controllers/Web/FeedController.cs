@@ -20,11 +20,7 @@ using Microsoft.Extensions.Options;
 
 namespace Iceshrimp.Backend.Controllers.Web;
 
-#if DEBUG
-[ApiExplorerSettings(IgnoreApi = false)]
-#else
 [ApiExplorerSettings(IgnoreApi = true)]
-#endif
 [ApiController]
 [EnableRateLimiting("sliding")]
 [Route("/users/{id}")]
