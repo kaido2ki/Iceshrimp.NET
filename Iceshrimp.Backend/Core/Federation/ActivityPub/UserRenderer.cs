@@ -100,6 +100,13 @@ public class UserRenderer(
 
 		var pronouns = profile?.Pronouns != null ? new LDLocalizedString { Values = profile.Pronouns! } : null;
 
+		var canBite = user.CanBite switch
+		{
+			User.BiteControl.Public    => new ASLink($"{Constants.ActivityStreamsNs}#Public"),
+			User.BiteControl.Followers => new ASLink($"{id}/followers"),
+			_                          => null
+		};
+
 		return new ASActor
 		{
 			Id               = id,
@@ -149,7 +156,8 @@ public class UserRenderer(
 			},
 			Tags        = tags,
 			Attachments = attachments,
-			Pronouns    = pronouns
+			Pronouns    = pronouns,
+			CanBite     = canBite
 		};
 	}
 

@@ -44,6 +44,10 @@
       "speakAsCat": "https://joinfirefish.org/ns#speakAsCat",
 
       "Bite": "https://ns.mia.jetzt/as#Bite",
+      "canBite": {
+        "@id": "https://ns.mia.jetzt/as#canBite",
+        "@type": "@id"
+      },
       "quoteUri": "http://fedibird.com/ns#quoteUri",
       "EmojiReact": "http://litepub.social/ns#EmojiReact",
       "pronouns": {

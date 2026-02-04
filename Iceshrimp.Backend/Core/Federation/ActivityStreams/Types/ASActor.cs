@@ -139,6 +139,10 @@ public class ASActor : ASObjectWithId
 	[JC(typeof(LocalizedValueObjectConverter))]
 	public LDLocalizedString? Pronouns { get; set; }
 
+	[J("https://ns.mia.jetzt/as#canBite")]
+	[JC(typeof(ASLinkConverter))]
+	public ASLink? CanBite { get; set; }
+
 	[JI]
 	public string? WebfingerAddress
 	{
