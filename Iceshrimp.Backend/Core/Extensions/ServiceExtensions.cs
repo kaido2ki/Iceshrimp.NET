@@ -1,4 +1,5 @@
 using System.Diagnostics.CodeAnalysis;
+using System.Reflection;
 using System.Threading.RateLimiting;
 using System.Xml.Linq;
 using Iceshrimp.Backend.Core.Configuration;
