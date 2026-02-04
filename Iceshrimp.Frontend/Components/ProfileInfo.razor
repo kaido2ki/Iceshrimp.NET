@@ -82,10 +82,10 @@
                             <Text>@Loc["Refetch"]</Text>
                         </MenuElement>
                     }
-                    <hr class="rule"/>
                     <MenuElement Icon="Icons.Info" OnSelect="OpenAbout">
                         <Text>@Loc["About"]</Text>
                     </MenuElement>
+                    <hr class="rule"/>
                     @if (User.Host != null && UserProfile.Url != null)
                     {
                         <MenuElement Icon="Icons.ArrowSquareOut" OnSelect="OpenOriginal">
