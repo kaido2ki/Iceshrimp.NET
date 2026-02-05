@@ -48,30 +48,18 @@ public class NoteRenderer(
 			? await RenderAsync(note.Renote, user, null, data, --recurse)
 			: null;
 
-		IMastodonQuotable? quote    = null;
-		var                text     = note.Text;
-		string?            quoteUri = null;
+		StatusEntity? quote    = null;
+		var           text     = note.Text;
+		string?       quoteUri = null;
 	
 		if (note is { Renote: not null, IsQuote: true } )
 		{
-			if (flags.IsPleroma.Value)
+			if (recurse > 0) quote = await RenderAsync(note.Renote, user, null, data, 0);
+
+			if (!flags.IsPleroma.Value && quote != null)
 			{
-				if (recurse > 0) quote = await RenderAsync(note.Renote, user, null, data, 0);
-			}
-			else
-			{
-				if (recurse > 0)
-				{
-					quote = new Quote
-					{
-						State        = QuoteState.Accepted,
-						QuotedStatus = await RenderAsync(note.Renote, user, null, data, 0)
-					};
-				}
-				else
-				{
-					quote = new ShallowQuote { State = QuoteState.Accepted, QuotedStatusId = note.RenoteId };
-				}
+				quote.QuotedStatus = (StatusEntity)quote.Clone(); // cloning to prevent recursion
+				quote.State        = QuoteState.Accepted;
 			}
 			
 			var qUri = note.Renote?.Url ?? note.Renote?.Uri ?? note.Renote?.GetPublicUriOrNull(config.Value);

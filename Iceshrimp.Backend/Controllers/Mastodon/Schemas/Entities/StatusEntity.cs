@@ -8,7 +8,7 @@ using JI = System.Text.Json.Serialization.JsonIgnoreAttribute;
 
 namespace Iceshrimp.Backend.Controllers.Mastodon.Schemas.Entities;
 
-public class StatusEntity : IIdentifiable, ICloneable, IMastodonQuotable
+public class StatusEntity : IIdentifiable, ICloneable
 {
 	[JI]                          public          string?            MastoReplyUserId;
 	[J("text")]                   public required string?            Text           { get; set; }
@@ -19,7 +19,7 @@ public class StatusEntity : IIdentifiable, ICloneable, IMastodonQuotable
 	[J("in_reply_to_id")]         public required string?            ReplyId        { get; set; }
 	[J("in_reply_to_account_id")] public required string?            ReplyUserId    { get; set; }
 	[J("reblog")]                 public required StatusEntity?      Renote         { get; set; }
-	[J("quote")]                  public required IMastodonQuotable? Quote          { get; set; }
+	[J("quote")]                  public required StatusEntity?      Quote          { get; set; }
 	[J("quote_approval")]         public required QuoteApproval?     QuoteApproval  { get; set; }
 	[J("content_type")]           public required string             ContentType    { get; set; }
 	[J("created_at")]             public required string             CreatedAt      { get; set; }
@@ -58,6 +58,14 @@ public class StatusEntity : IIdentifiable, ICloneable, IMastodonQuotable
 
 	[J("pleroma")] [JI(Condition = JsonIgnoreCondition.WhenWritingNull)]
 	public required PleromaStatusExtensions? Pleroma { get; set; }
+	
+	// HACK: make Status also a valid Quote entity for client compatibility
+	// https://issues.iceshrimp.dev/issue/ISH-871#comment-019c24ed-c841-7de2-9c69-85e2951135ca
+	[J("state")] [JI(Condition = JsonIgnoreCondition.WhenWritingNull)]
+	public QuoteState? State { get; set; }
+	
+	[J("quoted_status")] [JI(Condition = JsonIgnoreCondition.WhenWritingNull)]
+	public StatusEntity? QuotedStatus { get; set; }
 
 	public static string EncodeVisibility(Note.NoteVisibility visibility)
 	{
@@ -113,27 +121,6 @@ public class StatusTags
 {
 	[J("name")] public required string Name { get; set; }
 	[J("url")]  public required string Url  { get; set; }
-}
-
-/// <summary>
-/// The Mastodon API and Pleroma API disagree on the value of the quote parameter, and in Mastodon API there are two
-/// separate object types ("shallow" and regular) that can be used.
-/// </summary>
-[JsonDerivedType(typeof(Quote))]
-[JsonDerivedType(typeof(ShallowQuote))]
-[JsonDerivedType(typeof(StatusEntity))]
-public interface IMastodonQuotable { }
-
-public class Quote : IMastodonQuotable
-{
-	[J("state")]         public required QuoteState    State        { get; set; }
-	[J("quoted_status")] public required StatusEntity? QuotedStatus { get; set; }
-}
-
-public class ShallowQuote : IMastodonQuotable
-{
-	[J("state")]            public required QuoteState State          { get; set; }
-	[J("quoted_status_id")] public required string?    QuotedStatusId { get; set; }
 }
 
 public enum QuoteState
