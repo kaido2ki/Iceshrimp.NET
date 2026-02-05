@@ -10,30 +10,31 @@ namespace Iceshrimp.Backend.Controllers.Mastodon.Schemas.Entities;
 
 public class StatusEntity : IIdentifiable, ICloneable
 {
-	[JI]                          public          string?            MastoReplyUserId;
-	[J("text")]                   public required string?            Text           { get; set; }
-	[J("content")]                public required string?            Content        { get; set; }
-	[J("uri")]                    public required string             Uri            { get; set; }
-	[J("url")]                    public required string?            Url            { get; set; }
-	[J("account")]                public required AccountEntity      Account        { get; set; }
-	[J("in_reply_to_id")]         public required string?            ReplyId        { get; set; }
-	[J("in_reply_to_account_id")] public required string?            ReplyUserId    { get; set; }
-	[J("reblog")]                 public required StatusEntity?      Renote         { get; set; }
-	[J("quote")]                  public required StatusEntity?      Quote          { get; set; }
-	[J("quote_approval")]         public required QuoteApproval?     QuoteApproval  { get; set; }
-	[J("content_type")]           public required string             ContentType    { get; set; }
-	[J("created_at")]             public required string             CreatedAt      { get; set; }
-	[J("edited_at")]              public required string?            EditedAt       { get; set; }
-	[J("replies_count")]          public required long               RepliesCount   { get; set; }
-	[J("reblogs_count")]          public required long               RenoteCount    { get; set; }
-	[J("favourites_count")]       public required long               FavoriteCount  { get; set; }
-	[J("reblogged")]              public required bool?              IsRenoted      { get; set; }
-	[J("favourited")]             public required bool?              IsFavorited    { get; set; }
-	[J("bookmarked")]             public required bool?              IsBookmarked   { get; set; }
-	[J("muted")]                  public required bool?              IsMuted        { get; set; }
-	[J("sensitive")]              public required bool               IsSensitive    { get; set; }
-	[J("spoiler_text")]           public required string             ContentWarning { get; set; }
-	[J("visibility")]             public required string             Visibility     { get; set; }
+	[JI]                          public          string?        MastoReplyUserId;
+	[J("text")]                   public required string?        Text           { get; set; }
+	[J("content")]                public required string?        Content        { get; set; }
+	[J("uri")]                    public required string         Uri            { get; set; }
+	[J("url")]                    public required string?        Url            { get; set; }
+	[J("account")]                public required AccountEntity  Account        { get; set; }
+	[J("in_reply_to_id")]         public required string?        ReplyId        { get; set; }
+	[J("in_reply_to_account_id")] public required string?        ReplyUserId    { get; set; }
+	[J("reblog")]                 public required StatusEntity?  Renote         { get; set; }
+	[J("quote")]                  public required StatusEntity?  Quote          { get; set; }
+	[J("quote_id")]               public required string?        QuoteId        { get; set; }
+	[J("quote_approval")]         public required QuoteApproval? QuoteApproval  { get; set; }
+	[J("content_type")]           public required string         ContentType    { get; set; }
+	[J("created_at")]             public required string         CreatedAt      { get; set; }
+	[J("edited_at")]              public required string?        EditedAt       { get; set; }
+	[J("replies_count")]          public required long           RepliesCount   { get; set; }
+	[J("reblogs_count")]          public required long           RenoteCount    { get; set; }
+	[J("favourites_count")]       public required long           FavoriteCount  { get; set; }
+	[J("reblogged")]              public required bool?          IsRenoted      { get; set; }
+	[J("favourited")]             public required bool?          IsFavorited    { get; set; }
+	[J("bookmarked")]             public required bool?          IsBookmarked   { get; set; }
+	[J("muted")]                  public required bool?          IsMuted        { get; set; }
+	[J("sensitive")]              public required bool           IsSensitive    { get; set; }
+	[J("spoiler_text")]           public required string         ContentWarning { get; set; }
+	[J("visibility")]             public required string         Visibility     { get; set; }
 
 	[J("pinned")]
 	[JI(Condition = JsonIgnoreCondition.WhenWritingNull)]
