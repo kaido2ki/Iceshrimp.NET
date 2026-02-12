@@ -433,6 +433,11 @@ public class ActivityHandlerService(
 		if (await db.Blockings.AnyAsync(p => p.Blockee == resolvedActor && p.Blocker == finalTarget))
 			throw GracefulException.Forbidden("You are not allowed to interact with this user");
 
+		if (finalTarget?.CanBite == null
+		    || (finalTarget.CanBite == User.BiteControl.Followers
+		        && !await db.Followings.AnyAsync(p => p.Followee == finalTarget && p.Follower == resolvedActor)))
+			throw GracefulException.Forbidden("You are not allowed to bite this user");
+
 		await db.AddAsync(dbBite);
 		await db.SaveChangesAsync();
 		await notificationSvc.GenerateBiteNotificationAsync(dbBite);
