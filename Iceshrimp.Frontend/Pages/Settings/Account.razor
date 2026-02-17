@@ -50,9 +50,9 @@
                 <label>
                     @Loc["Allow bites from"]
                     <InputSelect @bind-Value="SettingsForm.CanBite">
-                        <option value="@BiteControl.Public">@Loc["Public"]</option>
+                        <option value="@BiteControl.Public">@Loc["Anyone"]</option>
                         <option value="@BiteControl.Followers">@Loc["Followers"]</option>
-                        <option value="@BiteControl.None">@Loc["None"]</option>
+                        <option value="@BiteControl.None">@Loc["Nobody"]</option>
                     </InputSelect>
                 </label>
                 <label>
