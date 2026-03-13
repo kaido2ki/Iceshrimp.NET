@@ -1,4 +1,5 @@
 <p><img src="/iceshrimp/iceshrimp/media/branch/dev/assets/logo.png" alt="Iceshrimp" width="400px"></p>
+<p><a href="https://kb.iceshrimp.dev/s/63ae7f15-e1f1-45d6-ae26-d3a3b35d2e02/doc/ai-policy-paZIKo68tk"><img src="/iceshrimp/repo-assets/media/branch/main/ai_policy.svg" alt="AI policy: human contributions only"></a></p>
 <p><strong>Iceshrimp</strong> is a decentralized and federated social networking service, implementing the <strong>ActivityPub</strong> standard.</p>
 
 - Highlighted features:
