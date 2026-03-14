@@ -12,7 +12,7 @@
 @inject NavigationManager              NavigationManager
 
 <div class="notification">
-    @if (NotificationResponse is not { Type: "mention" } or { Type: "reply" })
+    @if (NotificationResponse is not { Type: "mention" } and not { Type: "reply" })
     {
         <div class="notification-header">
             @if (NotificationResponse is { User: not null })
@@ -108,8 +108,8 @@
 
     @if (NotificationResponse is { Note: not null })
     {
-        <div class="@(NotificationResponse is not { Type: "mention" } or { Type: "reply" } ? "notification-note" : "")">
-            <NoteComponent Note="NotificationResponse.Note" AsQuote="@(NotificationResponse is not { Type: "mention" } or { Type: "reply" })" OpenNote="true"/>
+        <div class="@(NotificationResponse is not { Type: "mention" } and not { Type: "reply" } ? "notification-note" : "")">
+            <NoteComponent Note="NotificationResponse.Note" AsQuote="@(NotificationResponse is not { Type: "mention" } and not { Type: "reply" })" OpenNote="true"/>
         </div>
     }
 
