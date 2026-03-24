@@ -57,7 +57,7 @@ public class HttpRequestService(IOptions<Config.InstanceSection> options) : ISin
 	)
 	{
 		return Get(url, accept)
-			.Sign(["(request-target)", "date", "host", "accept"], privateKey,
+			.Sign(["(request-target)", "date", "host"], privateKey,
 			      $"https://{options.Value.WebDomain}/users/{actorId}#main-key");
 	}
 
