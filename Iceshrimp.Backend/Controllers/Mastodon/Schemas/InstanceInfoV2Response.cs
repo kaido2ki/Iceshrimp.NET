@@ -24,6 +24,7 @@ public class InstanceInfoV2Response(
 	[J("contact")]       public InstanceContact         Contact       => new(adminContact);
 	[J("registrations")] public InstanceRegistrations   Registrations => new(config.Security);
 	[J("configuration")] public InstanceConfigurationV2 Configuration => new(config.Instance);
+	[J("api_versions")]  public InstanceApiVersions     ApiVersions   => new();
 
 	[J("usage")] public required InstanceUsage Usage { get; set; }
 
@@ -33,7 +34,15 @@ public class InstanceInfoV2Response(
 	
 	[J("thumbnail")] public required InstanceThumbnail Thumbnail { get; set; }
 
+
 	//TODO: add the rest
+}
+
+public class InstanceApiVersions
+{
+	// this is modeled after https://codeberg.org/fediverse-pl/maep/pulls/2, however since the extensions aren't submitted
+	// there (yet?) we'll use our own namespace for it
+	[J("net.iceshrimp.scheduled_boosts")] public ushort ScheduledBoosts { get; set; } = 1;
 }
 
 public class InstanceConfigurationV2(Config.InstanceSection config)
