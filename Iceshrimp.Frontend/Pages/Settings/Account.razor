@@ -79,6 +79,10 @@
                     @Loc["Mark all posts as sensitive"]
                     <InputCheckbox @bind-Value="SettingsForm.AlwaysMarkSensitive"/>
                 </label>
+                <label>
+                    @Loc["Mark account as Explorable/Discoverable"]
+                    <InputCheckbox @bind-Value="SettingsForm.IsExplorable"/>
+                </label>
                 <StateButton ExtraClasses="button" @ref="@SaveButton" OnClick="Submit">
                     <Initial>@Loc["Save changes"]</Initial>
                     <Success>@Loc["Saved"]</Success>
