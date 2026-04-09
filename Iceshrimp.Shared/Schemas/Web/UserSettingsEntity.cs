@@ -21,6 +21,7 @@ public class UserSettingsRequest
 	public bool AlwaysMarkSensitive     { get; set; }
 	public bool ManuallyAcceptFollows   { get; set; }
 	public bool HideRepliesNotFollowing { get; set; }
+	public bool IsExplorable            { get; set; }
 }
 
 public enum BiteControl

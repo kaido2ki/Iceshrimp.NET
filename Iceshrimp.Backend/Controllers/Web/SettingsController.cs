@@ -67,6 +67,7 @@ public class SettingsController(
 			TwoFactorEnrolled       = settings.TwoFactorEnabled,
 			ManuallyAcceptFollows   = user.IsLocked,
 			HideRepliesNotFollowing = settings.HideRepliesNotFollowing,
+			IsExplorable            = user.IsExplorable,
 			CanBite                 = canBite
 		};
 	}
@@ -105,6 +106,9 @@ public class SettingsController(
 			        BiteControl.Followers => Core.Database.Tables.User.BiteControl.Followers,
 			        _                     => null
 		        }));
+
+		await db.Users.Where(p => p.Id == user.Id)
+		        .ExecuteUpdateAsync(p => p.SetProperty(u => u.IsExplorable, newSettings.IsExplorable));
 
 		await db.SaveChangesAsync();
 	}
