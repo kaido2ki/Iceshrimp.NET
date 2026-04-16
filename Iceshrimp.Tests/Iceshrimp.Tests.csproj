@@ -1,4 +1,4 @@
-<Project Sdk="MSTest.Sdk/4.0.2">
+<Project Sdk="MSTest.Sdk/4.2.1">
 
     <ItemGroup>
         <ProjectReference Include="..\Iceshrimp.Backend\Iceshrimp.Backend.csproj" />
