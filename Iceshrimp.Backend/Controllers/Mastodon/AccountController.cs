@@ -68,6 +68,8 @@ public class AccountController(
 			user.IsBot = request.IsBot.Value;
 		if (request.IsExplorable.HasValue)
 			user.IsExplorable = request.IsExplorable.Value;
+		if (request.AttributionDomains != null)
+			user.AttributionDomains = request.AttributionDomains;
 		if (request.HideCollections.HasValue)
 			user.UserProfile.FFVisibility = request.HideCollections.Value
 				? UserProfile.UserProfileFFVisibility.Private

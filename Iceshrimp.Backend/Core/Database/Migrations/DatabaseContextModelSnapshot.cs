@@ -4146,6 +4146,10 @@ namespace Iceshrimp.Backend.Core.Database.Migrations
                         .HasColumnName("alsoKnownAs")
                         .HasComment("URIs the user is known as too");
 
+                    b.PrimitiveCollection<List<string>>("AttributionDomains")
+                        .HasColumnType("text[]")
+                        .HasColumnName("attributionDomains");
+
                     b.Property<string>("AvatarBlurhash")
                         .HasMaxLength(128)
                         .HasColumnType("character varying(128)")

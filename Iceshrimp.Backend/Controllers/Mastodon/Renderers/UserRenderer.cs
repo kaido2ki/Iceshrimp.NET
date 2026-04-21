@@ -131,10 +131,10 @@ public class UserRenderer(
 
 		if (source)
 		{
-			//TODO: populate these
 			res.Source = new AccountSource
 			{
 				Fields   = fieldsSource,
+				AttributionDomains = user.AttributionDomains ?? [],
 				Language = "",
 				Note     = profile?.Description ?? "",
 				Privacy =

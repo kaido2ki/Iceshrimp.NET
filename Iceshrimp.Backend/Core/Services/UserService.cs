@@ -192,6 +192,7 @@ public class UserService(
 			Host                = host,
 			MovedToUri          = actor.MovedTo?.Link,
 			AlsoKnownAs         = actor.AlsoKnownAs?.Where(p => p.Link != null).Select(p => p.Link!).ToList(),
+			AttributionDomains  = actor.AttributionDomains?.Where(p => p.Link != null).Select(p => p.Link!).ToList(),
 			IsExplorable        = actor.IsDiscoverable ?? false,
 			Inbox               = actor.Inbox?.Link,
 			Outbox              = actor.Outbox?.Id,
@@ -305,20 +306,21 @@ public class UserService(
 		user.UserProfile ??= await db.UserProfiles.FirstOrDefaultAsync(p => p.User == user);
 		user.UserProfile ??= new UserProfile { User = user };
 
-		user.LastFetchedAt = DateTime.UtcNow; // If we don't do this we'll overwrite the value with the previous one
-		user.Inbox         = actor.Inbox?.Link;
-		user.Outbox        = actor.Outbox?.Id;
-		user.SharedInbox   = actor.SharedInbox?.Link ?? actor.Endpoints?.SharedInbox?.Id;
-		user.DisplayName   = actor.DisplayName?.ReplaceLineEndings("\n").Trim();
-		user.IsLocked      = actor.IsLocked ?? false;
-		user.IsBot         = actor.IsBot;
-		user.MovedToUri    = actor.MovedTo?.Link;
-		user.AlsoKnownAs   = actor.AlsoKnownAs?.Where(p => p.Link != null).Select(p => p.Link!).ToList();
-		user.IsExplorable  = actor.IsDiscoverable ?? false;
-		user.FollowersUri  = actor.Followers?.Id;
-		user.IsCat         = actor.IsCat ?? false;
-		user.SpeakAsCat    = actor.SpeakAsCat ?? actor.IsCat ?? false;
-		user.Featured      = actor.Featured?.Id;
+		user.LastFetchedAt      = DateTime.UtcNow; // If we don't do this we'll overwrite the value with the previous one
+		user.Inbox              = actor.Inbox?.Link;
+		user.Outbox             = actor.Outbox?.Id;
+		user.SharedInbox        = actor.SharedInbox?.Link ?? actor.Endpoints?.SharedInbox?.Id;
+		user.DisplayName        = actor.DisplayName?.ReplaceLineEndings("\n").Trim();
+		user.IsLocked           = actor.IsLocked ?? false;
+		user.IsBot              = actor.IsBot;
+		user.MovedToUri         = actor.MovedTo?.Link;
+		user.AlsoKnownAs        = actor.AlsoKnownAs?.Where(p => p.Link != null).Select(p => p.Link!).ToList();
+		user.AttributionDomains = actor.AttributionDomains?.Where(p => p.Link != null).Select(p => p.Link!).ToList();
+		user.IsExplorable       = actor.IsDiscoverable ?? false;
+		user.FollowersUri       = actor.Followers?.Id;
+		user.IsCat              = actor.IsCat ?? false;
+		user.SpeakAsCat         = actor.SpeakAsCat ?? actor.IsCat ?? false;
+		user.Featured           = actor.Featured?.Id;
 
 		User.BiteControl? canBite = null;
 		if (actor.CanBite?.Link == $"{Constants.ActivityStreamsNs}#Public")

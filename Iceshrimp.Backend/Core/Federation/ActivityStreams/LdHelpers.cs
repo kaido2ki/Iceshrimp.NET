@@ -41,8 +41,17 @@ public static class LdHelpers
 		ExpandContext      = ASExtensions,
 		ProcessingMode     = JsonLdProcessingMode.JsonLd11,
 		KeepIRIs           = [$"{Constants.ActivityStreamsNs}#Public"],
-		ForceArray         = ASForceArray.Select(p => $"{Constants.ActivityStreamsNs}#{p}").ToList(),
 		DisallowedKeywords = ["@reverse", "@graph", "@included"],
+		ForceArray         = [
+			$"{Constants.ActivityStreamsNs}#tag",
+			$"{Constants.ActivityStreamsNs}#attachment",
+			$"{Constants.ActivityStreamsNs}#to",
+			$"{Constants.ActivityStreamsNs}#cc",
+			$"{Constants.ActivityStreamsNs}#bcc",
+			$"{Constants.ActivityStreamsNs}#bto",
+			$"{Constants.ActivityStreamsNs}#alsoKnownAs",
+			"http://joinmastodon.org/ns#attributionDomains"
+		],
 
 		// separated for readability
 		RemoveUnusedInlineContextProperties = true
@@ -57,8 +66,6 @@ public static class LdHelpers
 	{
 		NullValueHandling = NullValueHandling.Ignore, DateTimeZoneHandling = DateTimeZoneHandling.Utc
 	};
-
-	private static IEnumerable<string> ASForceArray => ["tag", "attachment", "to", "cc", "bcc", "bto", "alsoKnownAs"];
 
 	private static JToken GetPreloadedDocument(string filename) =>
 		JToken.Parse(AssemblyHelpers.GetEmbeddedResource($"contexts.{filename}"));

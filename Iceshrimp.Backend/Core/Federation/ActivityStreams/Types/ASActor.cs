@@ -102,6 +102,9 @@ public class ASActor : ASObjectWithId
 
 	[J($"{Constants.ActivityStreamsNs}#alsoKnownAs")]
 	public List<ASLink>? AlsoKnownAs { get; set; }
+	
+	[J("http://joinmastodon.org/ns#attributionDomains")]
+	public List<ASLink>? AttributionDomains { get; set; }
 
 	[J("http://joinmastodon.org/ns#featured")]
 	[JC(typeof(ASOrderedCollectionConverter))]

@@ -23,6 +23,10 @@
     "focalPoint": {
       "@id": "toot:focalPoint",
       "@container": "@list"
+    },
+    "attributionDomains": {
+      "@id": "toot:attributionDomains",
+      "@type": "@id"
     }
   }
 }

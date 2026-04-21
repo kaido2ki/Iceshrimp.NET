@@ -240,6 +240,13 @@ public class User : IIdentifiable
 	/// </summary>
 	[Column("alsoKnownAs")]
 	public List<string>? AlsoKnownAs { get; set; }
+	
+	/// <summary>
+	///     Domains hosting pages this user can be attributed to
+	///		(see https://blog.joinmastodon.org/2024/07/highlighting-journalism-on-mastodon/)
+	/// </summary>
+	[Column("attributionDomains")]
+	public List<string>? AttributionDomains { get; set; }
 
 	/// <summary>
 	///     Whether to speak as a cat if isCat.

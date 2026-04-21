@@ -16,6 +16,10 @@
         "@id": "toot:featured",
         "@type": "@id"
       },
+      "attributionDomains": {
+        "@id": "toot:attributionDomains",
+        "@type": "@id"
+      },
       "webfinger": {
         "@id": "https://purl.archive.org/socialweb/webfinger#webfinger",
         "@type": "xsd:string"

@@ -38,6 +38,10 @@ public abstract class AccountSchemas
 		[J("indexable")]
 		[B(Name = "indexable")]
 		public bool? IsIndexable { get; set; }
+		
+		[J("attribution_domains")]
+		[B(Name = "attribution_domains")]
+		public List<string>? AttributionDomains { get; set; }
 
 		[B(Name = "fields_attributes")]
 		[JI]
