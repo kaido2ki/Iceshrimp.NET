@@ -101,10 +101,20 @@ public class MfmConverter(
 		return parser.Mentions;
 	}
 
+	private static string FormatValue(string name, string key, string value) =>
+		key switch {
+			"color" => $"#{value}",
+			"deg" => $"{value}deg",
+			"top" or "right" or "bottom" or "left" => $"{value}%",
+			"radius" or "width" => $"{value}px",
+			"x" or "y" when name == "position" => $"{value}em",
+			_ => value
+		};
+
 	public MfmHtmlData ToHtml(
 		IMfmNode[] nodes, List<Note.MentionedUser> mentions, string? host, string? quoteUri = null,
 		bool quoteInaccessible = false, bool replyInaccessible = false, string rootElement = "p",
-		List<Emoji>? emoji = null, List<MfmInlineMedia>? media = null
+		List<Emoji>? emoji = null, List<MfmInlineMedia>? media = null, bool argStyle = false
 	)
 	{
 		var element    = CreateElement(rootElement);
@@ -128,7 +138,7 @@ public class MfmConverter(
 
 		var usedMedia = new List<MfmInlineMedia>();
 		foreach (var node in nodes)
-			element.AppendNodes(FromMfmNode(node, mentions, host, usedMedia, emoji, media));
+			element.AppendNodes(FromMfmNode(node, mentions, host, usedMedia, emoji, media, argStyle));
 
 		if (quoteUri != null)
 		{
@@ -193,7 +203,7 @@ public class MfmConverter(
 
 	private INode FromMfmNode(
 		IMfmNode node, List<Note.MentionedUser> mentions, string? host, List<MfmInlineMedia> usedMedia,
-		List<Emoji>? emoji = null, List<MfmInlineMedia>? media = null
+		List<Emoji>? emoji = null, List<MfmInlineMedia>? media = null, bool argStyle = false
 	)
 	{
 		switch (node)
@@ -325,6 +335,15 @@ public class MfmConverter(
                         // this should be safe given argument keys only support letters and digits
                         // https://iceshrimp.dev/iceshrimp/Iceshrimp.MfmSharp/src/branch/dev/Iceshrimp.MfmSharp/MfmParser.cs#L572
                         el.SetAttribute($"data-mfm-{key}", value ?? "");
+                    }
+
+                    if (argStyle)
+                    {
+	                    el.SetAttribute("style",
+	                                    string.Join("; ",
+	                                                fn.Args.Where(a => !string.IsNullOrEmpty(a.Value))
+	                                                  .Select(a => $"--mfm-{a.Key}: {FormatValue(fn.Name, a.Key, a.Value!)}"))
+	                                    + ";");
                     }
                 }
                 

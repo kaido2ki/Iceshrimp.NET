@@ -391,99 +391,116 @@
     }
 }
 
-/*attr() is not supported for these use cases yet*/
 .mfm-jelly {
+    --mfm-delay: 0s;
+    --mfm-speed: 1s;
+    --mfm-loop: infinite;
+
     display: inline-block;
     animation-name: fn-jelly;
-    /*animation-delay: attr(data-mfm-delay time, 0);*/
-    /*animation-duration: attr(data-mfm-speed time, 1s);*/
-    animation-duration: 1s;
+    animation-delay: var(--mfm-delay);
+    animation-duration: var(--mfm-speed);
     animation-fill-mode: both;
-    /*animation-iteration-count: attr(data-mfm-loop number, infinite);*/
-    animation-iteration-count: infinite;
+    animation-iteration-count: var(--mfm-loop);
     animation-timing-function: linear;
 }
 
 .mfm-tada {
+    --mfm-delay: 0s;
+    --mfm-speed: 1s;
+    --mfm-loop: infinite;
+
     display: inline-block;
     font-size: 150%;
     animation-name: fn-tada;
-    /*animation-delay: attr(data-mfm-delay time, 0);*/
-    /*animation-duration: attr(data-mfm-speed time, 1s);*/
-    animation-duration: 1s;
+    animation-delay: var(--mfm-delay);
+    animation-duration: var(--mfm-speed);
     animation-fill-mode: both;
-    /*animation-iteration-count: attr(data-mfm-loop number, infinite);*/
-    animation-iteration-count: infinite;
+    animation-iteration-count: var(--mfm-loop);
     animation-timing-function: linear;
 }
 
 .mfm-jump {
+    --mfm-delay: 0s;
+    --mfm-speed: 0.75s;
+    --mfm-loop: infinite;
+
     display: inline-block;
     animation-name: fn-jump;
-    /*animation-delay: attr(data-mfm-delay time, 0);*/
-    /*animation-duration: attr(data-mfm-speed time, 1s);*/
-    animation-duration: 0.75s;
+    animation-delay: var(--mfm-delay);
+    animation-duration: var(--mfm-speed);
     animation-fill-mode: both;
-    /*animation-iteration-count: attr(data-mfm-loop number, infinite);*/
-    animation-iteration-count: infinite;
+    animation-iteration-count: var(--mfm-loop);
     animation-timing-function: linear;
 }
 
 .mfm-bounce {
+    --mfm-delay: 0s;
+    --mfm-speed: 0.75s;
+    --mfm-loop: infinite;
+
     display: inline-block;
     animation-name: fn-bounce;
-    /*animation-delay: attr(data-mfm-delay time, 0);*/
-    /*animation-duration: attr(data-mfm-speed time, 1s);*/
-    animation-duration: 0.75s;
+    animation-delay: var(--mfm-delay);
+    animation-duration: var(--mfm-speed);
     animation-fill-mode: both;
-    /*animation-iteration-count: attr(data-mfm-loop number, infinite);*/
-    animation-iteration-count: infinite;
+    animation-iteration-count: var(--mfm-loop);
     animation-timing-function: linear;
 }
 
 .mfm-shake {
+    --mfm-delay: 0s;
+    --mfm-speed: 0.5s;
+    --mfm-loop: infinite;
+
     display: inline-block;
     animation-name: fn-shake;
-    /*animation-delay: attr(data-mfm-delay time, 0);*/
-    /*animation-duration: attr(data-mfm-speed time, 1s);*/
-    animation-duration: 0.5s;
+    animation-delay: var(--mfm-delay);
+    animation-duration: var(--mfm-speed);
     animation-fill-mode: both;
-    /*animation-iteration-count: attr(data-mfm-loop number, infinite);*/
-    animation-iteration-count: infinite;
+    animation-iteration-count: var(--mfm-loop);
     animation-timing-function: linear;
 }
 
 .mfm-twitch {
+    --mfm-delay: 0s;
+    --mfm-speed: 0.5s;
+    --mfm-loop: infinite;
+
     display: inline-block;
     animation-name: fn-twitch;
-    /*animation-delay: attr(data-mfm-delay time, 0);*/
-    /*animation-duration: attr(data-mfm-speed time, 1s);*/
-    animation-duration: 0.5s;
+    animation-delay: var(--mfm-delay);
+    animation-duration: var(--mfm-speed);
     animation-fill-mode: both;
-    /*animation-iteration-count: attr(data-mfm-loop number, infinite);*/
-    animation-iteration-count: infinite;
+    animation-iteration-count: var(--mfm-loop);
     animation-timing-function: linear;
 }
 
 .mfm-rainbow {
+    --mfm-delay: 0s;
+    --mfm-speed: 1s;
+    --mfm-loop: infinite;
+
     display: inline-block;
     animation-name: fn-rainbow;
-    /*animation-delay: attr(data-mfm-delay time, 0);*/
-    /*animation-duration: attr(data-mfm-speed time, 1s);*/
-    animation-duration: 1s;
+    animation-delay: var(--mfm-delay);
+    animation-duration: var(--mfm-speed);
     animation-fill-mode: both;
-    /*animation-iteration-count: attr(data-mfm-loop number, infinite);*/
-    animation-iteration-count: infinite;
+    animation-iteration-count: var(--mfm-loop);
     animation-timing-function: linear;
 }
 
 .mfm-spin {
+    --mfm-delay: 0s;
+    --mfm-speed: 1.5s;
+    --mfm-loop: infinite;
+
     display: inline-block;
     animation-name: fn-spin;
-    animation-delay: 0s;
-    animation-duration: 1.5s;
+    animation-delay: var(--mfm-delay);
+    animation-duration: var(--mfm-speed);
     animation-fill-mode: both;
-    animation-iteration-count: infinite;
+    animation-iteration-count: var(--mfm-loop);
     animation-timing-function: linear;
 }
 
@@ -504,21 +521,26 @@
 }
 
 .mfm-rotate {
+    --mfm-deg: 90deg;
+    
     display: inline-block;
     transform-origin: center center 0;
-    transform: rotate(90deg);
+    transform: rotate(var(--mfm-deg));
 }
 
 .mfm-rotate[data-mfm-x] {
-    transform: perspective(120px) rotateX(90deg);
+    transform: perspective(120px) rotateX(var(--mfm-deg));
 }
 
 .mfm-fade {
+    --mfm-delay: 0s;
+    --mfm-speed: 1.5s;
+
     display: inline-block;
     animation-name: fn-fade;
-    animation-delay: 0s;
+    animation-delay: var(--mfm-delay);
     animation-direction: alternate;
-    animation-duration: 1.5s;
+    animation-duration: var(--mfm-speed);
     animation-iteration-count: infinite;
     animation-timing-function: linear;
 }
@@ -527,22 +549,53 @@
     animation-direction: alternate-reverse;
 }
 
-.mfm-fg {
+.mfm-crop {
+    --mfm-top: 0%;
+    --mfm-right: 0%;
+    --mfm-bottom: 0%;
+    --mfm-left: 0%;
+
     display: inline-block;
-    /*color: attr(data-mfm-color color, #f00);*/
-    color: #f00;
+    clip-path: inset(var(--mfm-top) var(--mfm-right) var(--mfm-bottom) var(--mfm-left));
+}
+
+.mfm-position {
+    --mfm-x: 0em;
+    --mfm-y: 0em;
+
+    display: inline-block;
+    transform: translateX(var(--mfm-x)) translateY(var(--mfm-y));
+}
+
+.mfm-scale {
+    --mfm-x: 1;
+    --mfm-y: 1;
+
+    display: inline-block;
+    transform: scale(var(--mfm-x), var(--mfm-y));
+}
+
+.mfm-fg {
+    --mfm-color: #f00;
+
+    display: inline-block;
+    color: var(--mfm-color);
 }
 
 .mfm-bg {
+    --mfm-color: #f00;
+
     display: inline-block;
-    /*background-color: attr(data-mfm-color color, #f00);*/
-    background-color: #f00;
+    background-color: var(--mfm-color);
 }
 
 .mfm-border {
+    --mfm-width: 1px;
+    --mfm-style: solid;
+    --mfm-color: var(--accent-primary-color);
+
     display: inline-block;
-    /*border: attr(data-mfm-width length, 1px) attr(data-mfm-color color, var(--accent-primary-color));*/
-    border: 1px solid var(--accent-primary-color);
+    border: var(--mfm-width) var(--mfm-style) var(--mfm-color);
 }
 
 .mfm-border:not([data-mfm-noclip]) {

@@ -40,7 +40,7 @@ public class NoteRenderer(
 		Dictionary<string, PreviewPoll> polls
 	)
 	{
-		var renderedText = mfm.Render(note.Text, note.User.Host, mentions[note.Id], emoji[note.Id], "span", attachments[note.Id]);
+		var renderedText = mfm.Render(note.Text, note.User.Host, mentions[note.Id], emoji[note.Id], "span", attachments[note.Id], true);
 		var inlineMediaUrls = renderedText?.InlineMedia.Select(m => m.Src).ToArray() ?? [];
 
 		var res = new PreviewNote
