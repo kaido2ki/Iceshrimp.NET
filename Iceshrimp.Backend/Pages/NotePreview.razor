@@ -9,6 +9,10 @@
 { 
     throw GracefulException.NotFound("This note either doesn't exist or is only accessible to authenticated users");
 }
+@foreach (var ascendant in _ascendants)
+{
+    <NoteComponent Note="ascendant" ShowMedia="ShowMedia"/>
+}
 <NoteComponent Note="_note" ShowMedia="ShowMedia"/>
 <PageTitle>Note by @@@(_note.User.Username) - @_instanceName</PageTitle>
 <HeadContent>

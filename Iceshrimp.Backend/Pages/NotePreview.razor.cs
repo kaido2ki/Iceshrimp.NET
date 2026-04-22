@@ -20,8 +20,9 @@ public partial class NotePreview(
 {
 	[Parameter] public required string Id { get; set; }
 
-	private PreviewNote? _note;
-	private string       _instanceName = "Iceshrimp.NET";
+	private PreviewNote?      _note;
+	private string            _instanceName = "Iceshrimp.NET";
+	private List<PreviewNote> _ascendants   = [];
 
 	private bool ShowMedia         => security.Value.PublicPreview > Enums.PublicPreview.RestrictedNoMedia;
 	private bool ShowRemoteReplies => security.Value.PublicPreview > Enums.PublicPreview.Restricted;
@@ -63,5 +64,20 @@ public partial class NotePreview(
 		}
 
 		_note = await renderer.RenderOne(note);
+
+		if (note == null) return;
+
+		var ascendants = await Database.NoteAncestors(note, 20)
+		                               .Include(p => p.User.UserProfile)
+		                               .Include(p => p.Reply!.User.UserProfile)
+		                               .Include(p => p.Renote!.User.UserProfile)
+		                               .EnsureVisibleFor(null)
+		                               .PrecomputeNoteContextVisibilities(null)
+		                               .ToListAsync();
+
+		if (!ShowRemoteReplies)
+			ascendants.RemoveAll(p => p.UserHost != null);
+
+		_ascendants = await renderer.RenderManyAsync(ascendants);
 	}
 }
