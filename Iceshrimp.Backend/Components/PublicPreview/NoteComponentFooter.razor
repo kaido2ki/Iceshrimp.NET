@@ -1,3 +1,4 @@
+@using Iceshrimp.Assets.PhosphorIcons
 @using Iceshrimp.Backend.Components.PublicPreview.Schemas
 @if (!HasFooterContent)
 {
@@ -61,24 +62,37 @@
         }
         else
         {
-            foreach (var file in Note.Attachments)
-            {
-                if (file.MimeType.StartsWith("image/"))
+            <div class="attachment-container" data-count="@Note.Attachments.Count">
+                @foreach (var file in Note.Attachments)
                 {
-                    <img src="@file.Url" max-width="200px" max-height="200px" alt="@(file.Alt ?? "")"/>
+                    <div class="wrapper">
+                        @if (file.MimeType.StartsWith("image/"))
+                        {
+                            <img class="attachment" src="@file.Url" alt="@file.Alt" title="@(file.Alt ?? "No alt text.")"/>
+                        }
+                        else if (file.MimeType.StartsWith("audio/"))
+                        {
+                            <audio controls class="attachment" src="@file.Url" title="@(file.Alt ?? "No alt text.")"></audio>
+                        }
+                        else if (file.MimeType.StartsWith("video/"))
+                        {
+                            <video controls class="attachment" title="@(file.Alt ?? "No alt text.")">
+                                <source src="@file.Url" type="@file.MimeType"/>
+                                <p>@(file.Alt ?? "No alt text.")</p>
+                            </video>
+                        }
+                        else
+                        {
+                            <div class="attachment contents" title="@(file.Alt ?? "No alt text.")">
+                                <Icon Name="Icons.FileArrowDown" Size="3em"/>
+                                <a href="@file.Url" target="_blank">
+                                    @file.Name
+                                </a>
+                            </div>
+                        }
+                    </div>
                 }
-                else if (file.MimeType.StartsWith("video/"))
-                {
-                    <video controls max-width="200px" max-height="200px">
-                        <source src="@file.Url" type="@file.MimeType"/>
-                        <p>@(file.Alt ?? "No alt text.")</p>
-                    </video>
-                }
-                else
-                {
-                    <div>Attachment: <a href="@file.Url">@file.Name</a> (@file.MimeType)</div>
-                }
-            }
+            </div>
         }
     }
 </div>
