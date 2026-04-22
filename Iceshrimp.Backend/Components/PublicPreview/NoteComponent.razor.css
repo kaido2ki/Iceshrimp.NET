@@ -24,3 +24,15 @@ details {
     width: 100%;
     box-sizing: border-box;
 }
+
+.note-counts {
+    display: flex;
+    margin-top: 0.5em;
+    gap: 2em;
+}
+
+.note-counts .count {
+    display: flex;
+    justify-content: center;
+    gap: 0.5em;
+}

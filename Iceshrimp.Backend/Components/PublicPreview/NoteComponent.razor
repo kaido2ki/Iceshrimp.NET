@@ -1,3 +1,4 @@
+@using Iceshrimp.Assets.PhosphorIcons
 @using Iceshrimp.Backend.Components.Generic
 @using Iceshrimp.Backend.Components.PublicPreview.Schemas
 
@@ -23,6 +24,21 @@
             <span class="mfm">@Note.Text</span>
             <NoteComponentFooter Note="Note" ShowMedia="ShowMedia"/>
         }
+    </div>
+    
+    <div class="note-counts">
+        <span class="count">
+            <Icon Name="Icons.ArrowUUpLeft" Size="1.3em"/>
+            @Note.RepliesCount
+        </span>
+        <span class="count">
+            <Icon Name="Icons.Repeat" Size="1.3em"/>
+            @Note.RenoteCount
+        </span>
+        <span class="count">
+            <Icon Name="Icons.Heart" Size="1.3em"/>
+            @Note.LikeCount
+        </span>
     </div>
 </div>
 

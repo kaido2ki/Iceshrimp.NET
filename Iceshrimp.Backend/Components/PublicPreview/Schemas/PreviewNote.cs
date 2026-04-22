@@ -16,6 +16,9 @@ public class PreviewNote
 	public required PreviewPoll?             Poll;
 	public required DateTime                 CreatedAt;
 	public required DateTime?                UpdatedAt;
+	public required int                      RepliesCount;
+	public required int                      RenoteCount;
+	public required int                      LikeCount;
 }
 
 public class PreviewAttachment

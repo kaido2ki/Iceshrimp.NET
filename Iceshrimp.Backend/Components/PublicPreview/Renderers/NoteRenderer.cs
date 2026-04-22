@@ -56,7 +56,10 @@ public class NoteRenderer(
 			Attachments       = attachments[note.Id]?.Where(p => !inlineMediaUrls.Contains(p.Url)).ToList(),
 			Poll              = polls.GetValueOrDefault(note.Id),
 			CreatedAt         = note.CreatedAt,
-			UpdatedAt         = note.UpdatedAt
+			UpdatedAt         = note.UpdatedAt,
+			RepliesCount      = note.RepliesCount,
+			RenoteCount       = note.RenoteCount,
+			LikeCount         = note.LikeCount
 		};
 
 		return res;
