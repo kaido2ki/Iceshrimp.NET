@@ -172,6 +172,10 @@ textarea {
     max-width: 100%;
 }
 
+a {
+    color: var(--link);
+}
+
 .fake-link {
     color: var(--link);
     cursor: pointer;
