@@ -8,3 +8,55 @@ span.emoji {
         vertical-align: middle;
     }
 }
+
+/* MFM */
+.mfm {
+    line-height: 1.6;
+}
+
+.mfm .mention {
+    text-decoration: none;
+    background-color: var(--highlight-color);
+    color: var(--notice-color);
+    border-radius: 1em;
+    padding: 0.2em 0.5em;
+}
+
+.mfm .emoji {
+    display: inline;
+    position: relative;
+    top: 0;
+
+    > img {
+        height: 2em;
+        vertical-align: middle;
+        transition-duration: 250ms;
+    }
+}
+
+.mfm .emoji {
+    > img:hover {
+        transform: scale(1.5);
+        transition-duration: 250ms;
+        position: relative;
+        z-index: +1;
+    }
+}
+
+.mfm blockquote {
+    margin: 8px 0;
+    padding-left: 12px;
+    border-left: solid 4px var(--border-color);
+}
+
+.mfm a {
+    color: var(--link);
+}
+
+.mfm .hashtag {
+    text-decoration-line: none;
+}
+
+.mfm .hashtag:hover {
+    text-decoration-line: underline;
+}
