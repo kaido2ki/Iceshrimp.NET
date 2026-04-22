@@ -14,6 +14,7 @@ public class NoteRenderer(
 	DatabaseContext db,
 	UserRenderer userRenderer,
 	MfmRenderer mfm,
+	EmojiService emojiSvc,
 	MediaProxyService mediaProxy,
 	IOptions<Config.InstanceSection> instance,
 	IOptionsSnapshot<Config.SecuritySection> security
@@ -30,14 +31,15 @@ public class NoteRenderer(
 		var users       = await GetUsersAsync(allNotes);
 		var attachments = await GetAttachmentsAsync(allNotes);
 		var polls       = await GetPollsAsync(allNotes);
+		var reactions   = await GetReactionsAsync(allNotes);
 
-		return Render(note, users, mentions, emoji, attachments, polls);
+		return Render(note, users, mentions, emoji, attachments, polls, reactions);
 	}
 
 	private PreviewNote Render(
 		Note note, List<PreviewUser> users, Dictionary<string, List<Note.MentionedUser>> mentions,
 		Dictionary<string, List<Emoji>> emoji, Dictionary<string, List<PreviewAttachment>?> attachments,
-		Dictionary<string, PreviewPoll> polls
+		Dictionary<string, PreviewPoll> polls, List<PreviewReaction> reactions
 	)
 	{
 		var renderedText = mfm.Render(note.Text, note.User.Host, mentions[note.Id], emoji[note.Id], "span", attachments[note.Id], true);
@@ -59,7 +61,8 @@ public class NoteRenderer(
 			UpdatedAt         = note.UpdatedAt,
 			RepliesCount      = note.RepliesCount,
 			RenoteCount       = note.RenoteCount,
-			LikeCount         = note.LikeCount
+			LikeCount         = note.LikeCount,
+			Reactions         = reactions.Where(p => p.NoteId == note.Id).ToList()
 		};
 
 		return res;
@@ -138,6 +141,34 @@ public class NoteRenderer(
 			                          VotersCount = p.VotersCount
 		                          });
 	}
+	
+	private async Task<List<PreviewReaction>> GetReactionsAsync(List<Note> notes)
+	{
+		if (notes.Count == 0) return [];
+		var counts = notes.ToDictionary(p => p.Id, p => p.Reactions);
+		var res = await db.NoteReactions
+		                  .Where(p => notes.Contains(p.Note))
+		                  .GroupBy(p => new { p.NoteId, p.Reaction })
+		                  .Select(p => new PreviewReaction
+		                  {
+			                  NoteId    = p.First().NoteId,
+			                  Count     = (int)counts[p.First().NoteId].GetValueOrDefault(p.First().Reaction, 1),
+			                  Name      = p.First().Reaction,
+			                  Url       = null,
+			                  Sensitive = false
+		                  })
+		                  .ToListAsync();
+
+		foreach (var item in res.Where(item => item.Name.StartsWith(':')))
+		{
+			var hit = await emojiSvc.ResolveEmojiAsync(item.Name);
+			if (hit == null) continue;
+			item.Url       = hit.GetAccessUrl(instance.Value);
+			item.Sensitive = hit.Sensitive;
+		}
+
+		return res;
+	}
 
 	public async Task<List<PreviewNote>> RenderManyAsync(List<Note> notes)
 	{
@@ -148,6 +179,7 @@ public class NoteRenderer(
 		var emoji       = await GetEmojiAsync(allNotes);
 		var attachments = await GetAttachmentsAsync(allNotes);
 		var polls       = await GetPollsAsync(allNotes);
-		return notes.Select(p => Render(p, users, mentions, emoji, attachments, polls)).ToList();
+		var reactions   = await GetReactionsAsync(allNotes);
+		return notes.Select(p => Render(p, users, mentions, emoji, attachments, polls, reactions)).ToList();
 	}
 }

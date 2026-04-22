@@ -19,6 +19,7 @@ public class PreviewNote
 	public required int                      RepliesCount;
 	public required int                      RenoteCount;
 	public required int                      LikeCount;
+	public required List<PreviewReaction>    Reactions;
 }
 
 public class PreviewAttachment
@@ -36,4 +37,13 @@ public class PreviewPoll
 	public required bool                            Multiple    { get; set; }
 	public required List<(string Value, int Votes)> Choices     { get; set; }
 	public required int?                            VotersCount { get; set; }
+}
+
+public class PreviewReaction
+{
+	public required string  NoteId    { get; set; }
+	public required string  Name      { get; set; }
+	public required int     Count     { get; set; }
+	public required string? Url       { get; set; }
+	public required bool    Sensitive { get; set; }
 }

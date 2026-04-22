@@ -25,7 +25,27 @@
             <NoteComponentFooter Note="Note" ShowMedia="ShowMedia"/>
         }
     </div>
-    
+
+    @if (ShowMedia)
+    {
+        <div class="reactions">
+            @foreach (var reaction in Note.Reactions)
+            {
+                <span class="reaction" title="@reaction.Name">
+                    @if (reaction.Url != null)
+                    {
+                        <img class="@("emoji" + (reaction.Sensitive ? " sensitive" : ""))" src="@reaction.Url" alt="@reaction.Name"/>
+                    }
+                    else
+                    {
+                        <span class="emoji">@reaction.Name</span>
+                    }
+                    @reaction.Count
+                </span>
+            }
+        </div>
+    }
+
     <div class="note-counts">
         <span class="count">
             <Icon Name="Icons.ArrowUUpLeft" Size="1.3em"/>
@@ -38,6 +58,10 @@
         <span class="count">
             <Icon Name="Icons.Heart" Size="1.3em"/>
             @Note.LikeCount
+        </span>
+        <span class="count">
+            <Icon Name="Icons.Smiley" Size="1.3em"/>
+            @Note.Reactions.Sum(p => p.Count)
         </span>
     </div>
 </div>

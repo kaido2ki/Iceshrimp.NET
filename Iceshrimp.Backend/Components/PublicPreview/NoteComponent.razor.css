@@ -25,6 +25,34 @@ details {
     box-sizing: border-box;
 }
 
+.reactions {
+    display: flex;
+    flex-wrap: wrap;
+    margin-top: 0.5em;
+    gap: 2em;
+}
+
+.reactions .reaction {
+    display: flex;
+    justify-content: center;
+    gap: 0.5em;
+}
+
+.reactions .emoji {
+    font-size: 1.5em;
+    height: 1em;
+    width: auto;
+}
+
+.reactions .emoji.sensitive {
+    filter: blur(6px);
+    transition: filter 0.3s;
+}
+
+.reactions .emoji.sensitive:hover {
+    filter: blur(0);
+}
+
 .note-counts {
     display: flex;
     margin-top: 0.5em;
