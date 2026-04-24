@@ -1,11 +1,11 @@
 @using Iceshrimp.Shared.Schemas.Web
-@if (User.DisplayName != null && User.Emojis.Count != 0)
+@if (!string.IsNullOrWhiteSpace(User.DisplayName) && User.Emojis.Count != 0)
 {
     <MfmText Text="@User.DisplayName.Split('\n')[0]" Emoji="@User.Emojis" Simple="@true"/>
 }
 else
 {
-    @(User.DisplayName ?? User.Username)
+    @(!string.IsNullOrWhiteSpace(User.DisplayName) ? User.DisplayName : User.Username)
 }
 
 @code {
