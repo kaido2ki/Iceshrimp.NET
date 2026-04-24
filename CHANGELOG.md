@@ -10,7 +10,7 @@ This release contains lots of new features & bug fixes. Upgrading is recommended
 - Instances can now customize their favicon, banner, and theme color
 - MFM nodes for emojis, `fg`, `bg`, `border`, `font`, and `ruby` have been improved
 - Users can now manage account migrations from the frontend
-- The Iceshrimp.NET API now has lots of human readable documentation which can be access through the Scalar or Swagger UI
+- The Iceshrimp.NET API now has lots of human readable documentation which can be accessed through the Scalar or Swagger UI
 - Atom, JSONFeed, and RSS are now supported. Profile pages now have links to the feeds and feed readers should be able to automatically find the feeds from a user's profile URL. Feeds only display notes that have a public visibility and are unavailable for private/locked users
 - Moderators can now create instance announcements
 - Mastodon users can now quote notes from Iceshrimp.NET users
