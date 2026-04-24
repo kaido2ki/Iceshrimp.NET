@@ -1,7 +1,6 @@
 using System.Net;
 using System.Net.Mime;
 using System.Text;
-using AngleSharp.Text;
 using Iceshrimp.Backend.Controllers.Shared.Attributes;
 using Iceshrimp.Backend.Core.Configuration;
 using Iceshrimp.Backend.Core.Database;
@@ -373,7 +372,7 @@ public class SettingsController(
 		var fqns = contents
 		           .Split("\n")
 		           .Where(line => !string.IsNullOrWhiteSpace(line))
-		           .Select(line => line.SplitCommas().First())
+		           .Select(line => line.Split(',', StringSplitOptions.TrimEntries).First().TrimStart('@'))
 		           .Where(fqn => fqn.Contains('@'))
 		           .ToList();
 
@@ -403,7 +402,7 @@ public class SettingsController(
 		var fqns = contents
 		           .Split("\n")
 		           .Where(line => !string.IsNullOrWhiteSpace(line))
-		           .Select(line => line.SplitCommas().First())
+		           .Select(line => line.Split(',', StringSplitOptions.TrimEntries).First().TrimStart('@'))
 		           .Where(fqn => fqn.Contains('@'))
 		           .ToList();
 
@@ -433,7 +432,7 @@ public class SettingsController(
 		var fqns = contents
 		           .Split("\n")
 		           .Where(line => !string.IsNullOrWhiteSpace(line))
-		           .Select(line => line.SplitCommas().First())
+		           .Select(line => line.Split(',', StringSplitOptions.TrimEntries).First().TrimStart('@'))
 		           .Where(fqn => fqn.Contains('@'))
 		           .ToList();
 
