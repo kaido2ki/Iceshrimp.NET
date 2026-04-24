@@ -30,8 +30,8 @@
 
     <!-- Version metadata -->
     <PropertyGroup>
-        <VersionPrefix>2025.1</VersionPrefix>
-        <VersionSuffix>beta5.patch3.security4</VersionSuffix>
+        <VersionPrefix>2026.1</VersionPrefix>
+        <VersionSuffix>beta</VersionSuffix>
     </PropertyGroup>
 
     <ItemGroup>

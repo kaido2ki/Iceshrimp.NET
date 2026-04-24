@@ -1,3 +1,131 @@
+## v2026.1-beta
+This release contains lots of new features & bug fixes. Upgrading is recommended for all server operators.
+
+### Highlights
+- Local and remote user/note reports are now fully supported
+- Emoji management is massively improved with better handling of remote emojis and bulk emoji editing
+- Users can now mute, block, unmute and unblock other users in any client
+- Users can now import or export their following, muted, and blocked users list
+- The note composer is much more powerful with support for polls, pasting attachments/quotes, user mention searching
+- Instances can now customize their favicon, banner, and theme color
+- MFM nodes for emojis, `fg`, `bg`, `border`, `font`, and `ruby` have been improved
+- Users can now manage account migrations from the frontend
+- The Iceshrimp.NET API now has lots of human readable documentation which can be access through the Scalar or Swagger UI
+- Atom, JSONFeed, and RSS are now supported. Profile pages now have links to the feeds and feed readers should be able to automatically find the feeds from a user's profile URL. Feeds only display notes that have a public visibility and are unavailable for private/locked users
+- Moderators can now create instance announcements
+- Mastodon users can now quote notes from Iceshrimp.NET users
+- Users can now view, pin and unpin notes from any client
+- Static pages are now visually consistent with the frontend
+- Light theme is now supported for static pages and the frontend
+- Updated from .NET 9 to .NET 10
+- Added support for instance admins to use OpenTelemetry to better monitor instance performance and other metrics
+- Private memos (notes you can create about other users) are supported in all clients
+- Federated bite controls are now supported and bites are now opt-in
+
+### Blazor frontend
+- Lots of UI bugs have been resolved (way too many to list here)
+- Users can now report other users and their notes
+- Moderators can now view and act upon local and forwarded reports
+- Note and profile pages now have a banner indicating if they are remote (and therefore possibly out of date or inaccurate)
+- Note filters now display the filter name instead of the filtered keyword in the timeline
+- The composer can now attach a quote with a button or when the URL of a note is pasted into the main text field
+- Users can now be temporarily or permanently muted, blocked, unmuted, or unblocked from their profile
+- The composer now shows file names for attachments and more clearly indicates if they are an image, audio, or video file
+- The composer now has the option to create polls
+- Remote emoji management now has its own page
+- Many pages now have labels for buttons in the top bar instead of relying on icons and hover text
+- Menu actions that are dangerous (permanently deleting a note, blocking a user, etc.) are now red to make them more visible
+- Remote notes now have the option to copy their remote URL
+- Remote note contents can now be manually refetched in case they are out of date
+- The frontend now starts much faster on instances with lots of emojis. It will wait until the composer or emoji picker is opened before fetching emojis
+- The badge for automated users have been moved so they no longer get truncated if their usernames are very long
+- Added the option to enable manually accepting follow requests
+- The composer and many dialogs now handle escape and enter key presses to close/cancel or send/confirm
+- The composer now allows uploading multiple attachments at the same time
+- The composer now allows pasting attachments or note URLs to add as a quote
+- The follow requests page now shows request dates and lets you view outgoing follow requests
+- The composer now has a button for inserting mentions with a user search
+- The timeline page now supports all timeline types (home, local, social, bubble, global, and remote)
+- The filter management page is now easier to read and use
+- The frontend now remembers what page you were viewing after updating instead of returning to the timeline
+- Notes can now be added or removed from your bookmarks and there is now a bookmarks page
+- There is now an "about" (debug) page for notes and user profiles which lets you view the API responses for them, admins can also view the ActivityPub representations
+- There is now a migration page in the settings
+- Speak as cat is now supported
+- The account settings page has a section for changing your password
+- There is now a page and dialog for viewing instance announcements
+- The moderator dashboard now has a page for managing instance announcements
+- Users can import following/muting/block lists or export their lists to their drive
+- Users can now unrenote notes they have previously renoted
+- Notes now display an indicator when there is a shallow quote, allowing users to go to the quoted note if it isn't directly visible
+- Cat ears are displayed for users that are marked as cats, you can pat them by hovering your cursor over their avatar :3
+- The drive page now has breadcrumbs allowing you to see and go to parent folders
+- Notes can now be edited
+- Bite notifications can now be bitten back at
+
+### Static pages (public preview, admin dashboard, queue dashboard, etc.)
+- Stylesheet browser compatibility has been improved
+- The admin dashboard now has pages for managing cron tasks, bubble instances, and invites
+- The admin dashboard instance metadata page now has options for setting the favicon, banner, and theme color
+- There is now a page that lists the instance blocklist or allowlist, the contents of this page differ depending on the instance settings and whether you are logged in
+- All static pages have been ported from Razor Pages to Blazor SSR
+- Profile pages for public preview have been overhauled, including banners, badges, feed links, pinned notes, and a paginated list of notes from the user
+- Improved the main layout for static pages with a single navbar and less cluttered footer
+
+### Backend
+- The object storage configuration now gets validated before starting the object storage migration task
+- Path-style object storage access URLs now work correctly
+- Batch emoji import now handles large archive files correctly
+- Account migrations now migrate mutes as well
+- The search query syntax now supports filtering by post visibility
+- Negated multi word search filters now work correctly
+- Authorized fetch signature validation can now be configured separately from authorized fetch
+- Link verification now works correctly for websites served using chunked transfer encoding
+- Incoming reports from remote servers are now handled
+- Added launch commands for creating regular or admin users (`--create-user`, `--create-admin-user`), granting or revoking admin (`--grant-admin`, `--revoke-admin`), and resetting passwords (`--reset-password`)
+    - Passwords on newly created users are randomly generated and logged to the console unless specified (`--password`)
+- Admins can now import and export instance blocklists and allowlists
+- Users with private mode enabled now automatically have manual follow requests enabled
+- Added an API endpoint for easily creating Mastodon API apps with a pre-authorized token
+- Added limited support for filters with regex keyword matching
+- Unicode Emoji support has been updated from version 15 to 17
+- Favicons and theme colors for remote instances are now fetched and rendered to clients
+- `speakAsCat` is now properly federated
+- Startup is now aborted if unknown database migrations are detected
+- [FEP-c16b: Formatting MFM functions](https://codeberg.org/fediverse/fep/src/branch/main/fep/c16b/fep-c16b.md) is now supported for outbound notes and the Mastodon client API
+    - This should enable the Akkoma frontend's MFM functionality
+- [FEP-044f: Consent-respecting quote posts](https://codeberg.org/fediverse/fep/src/branch/main/fep/044f/fep-044f.md) is now partially supported for incoming quote requests, which get automatically accepted
+- Added initial support for lists
+
+### Akkoma client API
+- Clients can now indicate when a note is local-only
+- Clients now properly indicate when a note is muted
+- Notes now have a count and list for quotes
+- OAuth2 token management is now supported
+- The "direct" and known network timelines are now supported
+- Note previews are now supported
+
+### Mastodon client API
+- Clients can now get the list of users who reacted to a note with a Unicode emoji
+- Clients can now get the account preference for default note visibility
+- The bubble timeline is now available
+- Added an `iceshrimp` OAuth2 scope allowing Mastodon clients to support Icesrhimp.NET specific features
+    - **Note: Allowing this scope is equivalent to giving the client all permissions**
+- The well-known oauth-authorization-server endpoint is now supported
+- Avatar and banner descriptions are now supported
+- Report notifications are now supported
+- Clients can now tell which timelines are available on the instance
+- Quotes are now also compatible with Mastodon's implementation
+    - This is extremely "cursed", for the lack of a better term, as we're trying to keep compatibility with clients which expect the previous quote extension.
+- Note and renote scheduling is now supported
+    - Renote scheduling is a custom extension, [which is documented here](https://kb.iceshrimp.dev/s/docs/doc/mastodon-api-extensions-D2nKy75Cr9#h-scheduling-boosts)
+
+### Miscellaneous
+- Miscellaneous bug fixes & tons of performance improvements
+
+### Attribution
+This release was made possible by project contributors: AntoineÐ, elizabeth, Henry Jameson, Kopper, Laura Hausmann, Lilian, Luna Borowska, Lunya, mystie, nicole mikołajczyk, notfire, pancakes & Tamara Schmitz
+
 ## v2025.1-beta5.patch3.security4
 This is a security hotfix release. It's identical to v2025.1-beta5.patch3.security3, except for the security mitigations listed below. Upgrading is strongly recommended for all server operators.
 
