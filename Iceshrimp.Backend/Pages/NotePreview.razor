@@ -13,6 +13,7 @@
 {
     <NoteComponent Note="ascendant" ShowMedia="ShowMedia"/>
 }
+<span id="root-note"></span>
 <NoteComponent Note="_note" ShowMedia="ShowMedia"/>
 @if (_descendants.Count != 0)
 {
@@ -83,3 +84,10 @@
         <i>This server's configuration is preventing remotely originating content from being shown. This view may therefore be incomplete.</i>
     </p>
 }
+
+<script>
+    window.onload = (_) => {
+        const root = document.getElementById("root-note");
+        root.scrollIntoView({ behavior: "instant", block: "center"});
+    };
+</script>
