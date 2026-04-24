@@ -3,6 +3,26 @@
     margin-bottom: 0.5rem;
 }
 
+.renote-info .user {
+    overflow: hidden;
+    text-overflow: ellipsis;
+    text-wrap: nowrap;
+    white-space: nowrap;
+}
+
+.renote-info .user a {
+    color: var(--notice-color);
+    text-decoration-line: none;
+}
+
+.renote-info .user a:hover {
+    text-decoration-line: underline;
+}
+
+.renote-info .user ::deep .icon-wrapper:last-of-type {
+    margin-right: 0.25em;
+}
+
 .metadata {
     margin-left: auto;
 }

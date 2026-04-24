@@ -25,4 +25,6 @@ public class UserResponse : IIdentifiable
 	public List<EmojiResponse> Emojis      { get; set; } = [];
 
 	[JI(Condition = WhenWritingNull)] public string? MovedTo { get; set; }
+
+	public string Handle => Host != null ? $"@{Username}@{Host}" : $"@{Username}";
 }

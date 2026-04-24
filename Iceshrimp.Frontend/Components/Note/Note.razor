@@ -5,8 +5,15 @@
         <div class="renote">
             <div class="renote-info">
                 <span class="user">
-                    <Icon Name="Icons.Repeat"/> Renoted by
-                    <UserDisplayName User="@NoteResponse.User"/>
+                    <Icon Name="Icons.Repeat" Size="1.3em"/>
+                    @if (NoteResponse.User.IsBot)
+                    {
+                        <Icon Name="Icons.Robot" Size="1.3em" title="Automated"/>
+                    }
+                    @Loc["Renoted by"]
+                    <a href="@($"/{NoteResponse.User.Handle}")">
+                        <UserDisplayName User="@NoteResponse.User"/>
+                    </a>
                 </span>
                 <span class="metadata">
                     <NoteMetadata Visibility="NoteResponse.Visibility" CreatedAt="DateTime.Parse(NoteResponse.CreatedAt)"/>
