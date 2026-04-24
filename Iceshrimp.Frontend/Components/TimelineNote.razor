@@ -1,6 +1,8 @@
 @* ReSharper disable once RedundantUsingDirective *@
 @using Iceshrimp.Frontend.Components.Note
 @using Iceshrimp.Shared.Schemas.Web
+@inject NavigationManager Nav;
+
 @if (Note.Filtered is { Hide: true }) { }
 else
 {
@@ -9,7 +11,7 @@ else
         {
             <div class="ancestor-wrapper">
                 <div class="note-indent">
-                    <UserAvatar User="@Note.Reply.User"/>
+                    <UserAvatar User="@Note.Reply.User" OnClick="OpenReplyProfile"/>
                     <Line></Line>
                 </div>
                 <div class="note">
@@ -25,4 +27,6 @@ else
 
 @code {
     [Parameter] [EditorRequired] public required NoteResponse Note { get; set; }
+
+    private void OpenReplyProfile() => Nav.NavigateTo($"/{Note.Reply?.User.Handle}");
 }

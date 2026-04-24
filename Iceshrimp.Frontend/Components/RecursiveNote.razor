@@ -2,6 +2,7 @@
 @using Iceshrimp.Frontend.Components.Note
 @using Iceshrimp.Frontend.Core.Services.NoteStore
 @using Iceshrimp.Shared.Schemas.Web
+@inject NavigationManager Nav;
 @inject RelatedStore Store
 @implements IDisposable
 
@@ -12,7 +13,7 @@
             @if (_indented)
             {
                 <div class="note-indent">
-                    <UserAvatar User="@Note.User"/>
+                    <UserAvatar User="@Note.User" OnClick="OpenProfile"/>
                     @if (Note.Descendants?.Count > 0)
                     {
                         <Line></Line>
@@ -103,6 +104,8 @@
             StateHasChanged();
         }
     }
+
+    private void OpenProfile() => Nav.NavigateTo($"/{Note.User.Handle}");
 
     public void Dispose()
     {

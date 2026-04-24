@@ -25,14 +25,5 @@
     [Parameter] [EditorRequired] public required UserResponse User     { get; set; }
     [Parameter] [EditorRequired] public required bool         Indented { get; set; }
 
-    private void OpenProfile()
-    {
-        var path = $"@{User.Username}";
-        if (User.Host?.Length > 0)
-        {
-            path += $"@{User.Host}";
-        }
-
-        Nav.NavigateTo($"/{path}");
-    }
+    private void OpenProfile() => Nav.NavigateTo($"/{User.Handle}");
 }
