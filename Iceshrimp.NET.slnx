@@ -33,6 +33,7 @@
     <File Path=".docker/dotnet-sdk-8.0-wasm.Dockerfile" />
     <File Path=".docker/dotnet-sdk-9.0-alpine-wasm.Dockerfile" />
     <File Path=".docker/dotnet-sdk-9.0-alpine.Dockerfile" />
+    <File Path=".docker\dotnet-sdk-10.0-wasm.Dockerfile" />
   </Folder>
   <Folder Name="/build/tasks/">
     <Project Path="Iceshrimp.Build/Iceshrimp.Build.csproj" />

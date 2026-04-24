@@ -10,6 +10,7 @@ build dotnet-sdk-9.0-alpine       dotnet-sdk:9.0-alpine
 build dotnet-sdk-9.0-alpine-wasm  dotnet-sdk:9.0-alpine-wasm
 build dotnet-sdk-10.0-alpine       dotnet-sdk:10.0-alpine
 build dotnet-sdk-10.0-alpine-wasm  dotnet-sdk:10.0-alpine-wasm
+build dotnet-sdk-10.0-wasm         dotnet-sdk:10.0-wasm
 
 build ci-env-dotnet8        ci-env:dotnet8
 build ci-env-dotnet8-wasm   ci-env:dotnet8-wasm
