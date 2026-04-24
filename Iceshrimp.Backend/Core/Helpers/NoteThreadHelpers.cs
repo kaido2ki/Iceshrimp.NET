@@ -49,6 +49,27 @@ public static class NoteThreadHelpers
 		return final;
 	}
 
+	public static List<PreviewNote> OrderAncestors(this List<PreviewNote> notes)
+	{
+		var final = new List<PreviewNote>();
+		foreach (var note in notes)
+		{
+			if (note.ReplyId == null)
+			{
+				final.Insert(0, note);
+				continue;
+			}
+
+			var parent = final.Find(p => p.Id == note.ReplyId);
+			if (parent != null)
+				final.Insert(final.IndexOf(parent) + 1, note);
+			else
+				final.Add(note);
+		}
+
+		return final;
+	}
+
 	public static List<NoteResponse> OrderDescendants(this List<NoteResponse> notes)
 	{
 		foreach (var note in notes)

@@ -80,7 +80,7 @@ public partial class NotePreview(
 		if (!ShowRemoteReplies)
 			ascendants.RemoveAll(p => p.UserHost != null);
 
-		_ascendants = await renderer.RenderManyAsync(ascendants);
+		_ascendants = (await renderer.RenderManyAsync(ascendants)).OrderAncestors();
 
 		var descendants = await Database.NoteDescendants(note, 20, 100)
 		                                .Include(p => p.User.UserProfile)
