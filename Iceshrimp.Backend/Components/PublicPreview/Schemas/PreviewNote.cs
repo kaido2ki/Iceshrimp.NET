@@ -20,6 +20,10 @@ public class PreviewNote
 	public required int                      RenoteCount;
 	public required int                      LikeCount;
 	public required List<PreviewReaction>    Reactions;
+	public required PreviewNote?             Reply;
+	public required string?                  ReplyId;
+	public          PreviewNote?             Parent;
+	public          List<PreviewNote>?       Descendants;
 }
 
 public class PreviewAttachment

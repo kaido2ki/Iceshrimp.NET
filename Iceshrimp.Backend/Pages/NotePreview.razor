@@ -14,6 +14,14 @@
     <NoteComponent Note="ascendant" ShowMedia="ShowMedia"/>
 }
 <NoteComponent Note="_note" ShowMedia="ShowMedia"/>
+@if (_descendants.Count != 0)
+{
+    <hr/>
+    @foreach (var descendant in _descendants)
+    {
+        <NoteComponent Note="descendant" ShowMedia="ShowMedia" Descendants="@descendant.Descendants"/>
+    }
+}
 <PageTitle>Note by @@@(_note.User.Username) - @_instanceName</PageTitle>
 <HeadContent>
     @{

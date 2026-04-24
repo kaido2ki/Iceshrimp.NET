@@ -44,6 +44,7 @@ public class NoteRenderer(
 	{
 		var renderedText = mfm.Render(note.Text, note.User.Host, mentions[note.Id], emoji[note.Id], "span", attachments[note.Id], true);
 		var inlineMediaUrls = renderedText?.InlineMedia.Select(m => m.Src).ToArray() ?? [];
+		var reply = note.Reply != null ? Render(note.Reply, users, mentions, emoji, attachments, polls, reactions) : null;
 
 		var res = new PreviewNote
 		{
@@ -62,7 +63,9 @@ public class NoteRenderer(
 			RepliesCount      = note.RepliesCount,
 			RenoteCount       = note.RenoteCount,
 			LikeCount         = note.LikeCount,
-			Reactions         = reactions.Where(p => p.NoteId == note.Id).ToList()
+			Reactions         = reactions.Where(p => p.NoteId == note.Id).ToList(),
+			Reply             = reply,
+			ReplyId           = note.ReplyId
 		};
 
 		return res;

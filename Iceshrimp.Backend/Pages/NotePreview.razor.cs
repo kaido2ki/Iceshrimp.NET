@@ -3,6 +3,7 @@ using Iceshrimp.Backend.Components.PublicPreview.Renderers;
 using Iceshrimp.Backend.Components.PublicPreview.Schemas;
 using Iceshrimp.Backend.Core.Configuration;
 using Iceshrimp.Backend.Core.Extensions;
+using Iceshrimp.Backend.Core.Helpers;
 using Iceshrimp.Backend.Core.Middleware;
 using Iceshrimp.Backend.Core.Services;
 using Microsoft.AspNetCore.Components;
@@ -23,6 +24,7 @@ public partial class NotePreview(
 	private PreviewNote?      _note;
 	private string            _instanceName = "Iceshrimp.NET";
 	private List<PreviewNote> _ascendants   = [];
+	private List<PreviewNote> _descendants  = [];
 
 	private bool ShowMedia         => security.Value.PublicPreview > Enums.PublicPreview.RestrictedNoMedia;
 	private bool ShowRemoteReplies => security.Value.PublicPreview > Enums.PublicPreview.Restricted;
@@ -79,5 +81,18 @@ public partial class NotePreview(
 			ascendants.RemoveAll(p => p.UserHost != null);
 
 		_ascendants = await renderer.RenderManyAsync(ascendants);
+
+		var descendants = await Database.NoteDescendants(note, 20, 100)
+		                                .Include(p => p.User.UserProfile)
+		                                .Include(p => p.Reply!.User.UserProfile)
+		                                .Include(p => p.Renote!.User.UserProfile)
+		                                .EnsureVisibleFor(null)
+		                                .PrecomputeNoteContextVisibilities(null)
+		                                .ToListAsync();
+
+		if (!ShowRemoteReplies)
+			descendants.RemoveAll(p => p.UserHost != null);
+
+		_descendants = (await renderer.RenderManyAsync(descendants)).OrderDescendants();
 	}
 }

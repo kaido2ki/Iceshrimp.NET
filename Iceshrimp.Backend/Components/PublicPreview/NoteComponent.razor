@@ -65,8 +65,18 @@
         </span>
     </div>
 </div>
+@if (Descendants != null)
+{
+    <div class="descendants">
+        @foreach (var descendant in Descendants)
+        {
+            <NoteComponent Note="descendant" ShowMedia="ShowMedia" Descendants="@(descendant.Descendants ?? [])"/>
+        }
+    </div>
+}
 
 @code {
-    [Parameter, EditorRequired] public required PreviewNote Note      { get; set; }
-    [Parameter, EditorRequired] public required bool        ShowMedia { get; set; }
+    [Parameter, EditorRequired] public required PreviewNote        Note        { get; set; }
+    [Parameter, EditorRequired] public required bool               ShowMedia   { get; set; }
+    [Parameter]                 public          List<PreviewNote>? Descendants { get; set; }
 }

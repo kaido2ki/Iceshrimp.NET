@@ -1,4 +1,5 @@
 using System.Linq.Expressions;
+using Iceshrimp.Backend.Components.PublicPreview.Schemas;
 using Iceshrimp.Backend.Controllers.Mastodon.Schemas.Entities;
 using Iceshrimp.Shared.Schemas.Web;
 
@@ -112,6 +113,29 @@ public static class NoteThreadHelpers
 				Walk(descendant);
 			}
 		}
+	}
+	
+	public static List<PreviewNote> OrderDescendants(this List<PreviewNote> notes)
+	{
+		foreach (var note in notes)
+		{
+			var parent = notes.FirstOrDefault(p => p.Id == note.ReplyId);
+			if (parent == null) continue;
+			parent.Descendants ??= [];
+			parent.Descendants.Add(note);
+			note.Parent = parent;
+		}
+
+		foreach (var note in notes.Where(p => p.Descendants?.Count > 0))
+		{
+			note.Descendants = note.Descendants?
+			                       .OrderBy(p => p.Id)
+			                       .ToList()
+			                       .PromoteBy(p => p.Reply != null && p.Reply.User.Id == p.User.Id);
+		}
+
+		notes.RemoveAll(p => p.Parent != null);
+		return notes;
 	}
 
 	private static List<T> PromoteBy<T>(this List<T> nodes, Expression<Func<T, bool>> predicate)
