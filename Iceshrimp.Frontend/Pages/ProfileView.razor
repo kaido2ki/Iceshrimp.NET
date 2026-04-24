@@ -87,9 +87,7 @@
             <div class="notes">
                 @foreach (var note in UserPinned)
                 {
-                    <div class="note-container">
-                        <Note NoteResponse="note" OpenNote="true"/>
-                    </div>
+                    <TimelineNote Note="note"/>
                 }
             </div>
             <span @ref="EndPinnedRef" class="pinned-end">
@@ -104,9 +102,7 @@
             <div class="notes">
                 @foreach (var note in UserNotes)
                 {
-                    <div class="note-container">
-                        <Note NoteResponse="note" OpenNote="true"/>
-                    </div>
+                    <TimelineNote Note="note"/>
                 }
             </div>
             <ScrollEnd IntersectionChange="AddNotes" ManualLoad="AddNotes" Class="end"/>
