@@ -17,6 +17,10 @@ internal class HtmlParser(
 			return node.TextContent;
 		if (node.NodeType is NodeType.Comment or NodeType.Document)
 			return null;
+		{
+			if (node is HtmlElement el && el.ClassList.Contains("quote-inline"))
+				return null;
+		}
 
 		switch (node.NodeName)
 		{
