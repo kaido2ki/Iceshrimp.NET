@@ -75,6 +75,13 @@
                 @Loc["Click to view quoted note"]
             </div>
         }
+        else if (NoteBase is NoteWithQuote { QuoteInaccessible: true })
+        {
+            <div class="quote">
+                <Icon Name="Icons.Quotes"/>
+                @Loc["The quoted note is unavailable"]
+            </div>
+        }
     </div>
     @if (_overHeight & _showFull)
     {
