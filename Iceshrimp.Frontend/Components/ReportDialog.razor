@@ -82,7 +82,7 @@
                 <div>
                     <input type="checkbox" @bind="Forward" id="should-forward"/>
                     <label for="should-forward">
-                        @Loc["Forward to"] @ReportedUser?.Host
+                        @Loc["Forward to {0}", ReportedUser?.Host!]
                     </label>
                 </div>
             }
