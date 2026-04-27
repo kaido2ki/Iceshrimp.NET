@@ -923,6 +923,6 @@ public class NoteController(
 
 		var rules = await db.Rules.Where(p => request.RuleIds.Contains(p.Id)).ToListAsync();
 
-		await reportSvc.CreateReportAsync(user, note.User, [note], rules, request.Comment);
+		await reportSvc.CreateReportAsync(user, note.User, [note], rules, request.Comment, request.Forward);
 	}
 }

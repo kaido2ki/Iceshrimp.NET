@@ -8,6 +8,8 @@ public class NoteReportRequest
     /// Rules that the user has violated
     /// </summary>
     public required List<string> RuleIds { get; set; }
+
+    public          bool         Forward { get; set; }
 }
 
 public class UserReportRequest : NoteReportRequest

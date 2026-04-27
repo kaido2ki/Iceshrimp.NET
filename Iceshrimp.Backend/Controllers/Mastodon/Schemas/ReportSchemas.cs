@@ -24,5 +24,9 @@ public abstract class ReportSchemas
 		[B(Name = "comment")]
 		[J("comment")]
 		public string Comment { get; set; } = "";
+
+		[B(Name = "forward")]
+		[J("forward")]
+		public bool Forward { get; set; } = false;
 	}
 }

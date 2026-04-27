@@ -261,7 +261,7 @@ public class UserController(
 		if (notes.Any(p => p.UserId != id))
 			throw GracefulException.BadRequest("One or more notes do not belong to the reported user");
 
-		await reportSvc.CreateReportAsync(user, target, notes, rules, request.Comment);
+		await reportSvc.CreateReportAsync(user, target, notes, rules, request.Comment, request.Forward);
 	}
 
 	/// <summary>

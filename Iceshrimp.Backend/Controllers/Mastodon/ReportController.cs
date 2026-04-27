@@ -45,7 +45,7 @@ public class ReportController(ReportService reportSvc, DatabaseContext db, UserR
 
 		var rules = await db.Rules.Where(p => request.RuleIds.Contains(p.Id)).ToListAsync();
 
-		var report        = await reportSvc.CreateReportAsync(user, target, notes, rules, request.Comment);
+		var report        = await reportSvc.CreateReportAsync(user, target, notes, rules, request.Comment, request.Forward);
 		var targetAccount = await userRenderer.RenderAsync(report.TargetUser, user);
 
 		return new ReportEntity
