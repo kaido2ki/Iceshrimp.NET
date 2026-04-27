@@ -268,7 +268,7 @@
         try
         {
             await Api.Moderation.DeleteReportAsync(Id);
-            await ResolveCallback(true);
+            Nav.NavigateTo("/mod/reports");
         }
         catch (ApiException e)
         {
