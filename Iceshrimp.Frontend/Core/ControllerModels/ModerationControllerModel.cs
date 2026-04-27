@@ -1,3 +1,4 @@
+using System.Net;
 using Iceshrimp.Frontend.Core.Miscellaneous;
 using Iceshrimp.Frontend.Core.Services;
 using Iceshrimp.Shared.Schemas.Web;
@@ -22,4 +23,7 @@ internal class ModerationControllerModel(ApiClient api)
 
     public Task ForwardReportAsync(string id) =>
         api.CallAsync(HttpMethod.Post, $"/moderation/reports/{id}/forward");
+
+    public Task DeleteReportAsync(string id) =>
+        api.CallAsync(HttpMethod.Post, $"/moderation/reports/{id}/delete");
 }

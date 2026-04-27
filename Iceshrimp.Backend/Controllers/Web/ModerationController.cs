@@ -210,6 +210,22 @@ public class ModerationController(
 	}
 
 	/// <summary>
+	///	Delete report
+	/// </summary>
+	/// <param name="id">The report's ID</param>
+	[HttpPost("reports/{id}/delete")]
+	[ProducesResults(HttpStatusCode.OK)]
+	[ProducesErrors(HttpStatusCode.BadRequest, HttpStatusCode.NotFound)]
+	public async Task DeleteReport(string id)
+	{
+		var report = await db.Reports.FirstOrDefaultAsync(p => p.Id == id)
+			?? throw GracefulException.NotFound("Report not found");
+
+		db.Remove(report);
+		await db.SaveChangesAsync();
+	}
+
+	/// <summary>
 	/// Refetch emoji
 	/// </summary>
 	/// <remarks>Attempt to refetch a <b>remote</b> emoji if it is broken. This is not supported on most instance software.</remarks>
