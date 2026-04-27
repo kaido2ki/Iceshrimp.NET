@@ -8,6 +8,7 @@
 @inject GlobalComponentSvc             GlobalComponentSvc;
 @inject JsService                      Js;
 @inject IStringLocalizer<Localization> Loc;
+@inject SessionService                 Session;
 
 <dialog class="dialog" @ref="Dialog">
     <div class="report @(Waiting ? "waiting" : "")">
@@ -76,6 +77,16 @@
             <textarea class="input" @bind="Comment" @bind:event="oninput" rows="5"
                       placeholder="@Loc["Report details"]"></textarea>
             
+            @if (ReportedUser?.Host != null && (Session?.Current?.IsModerator ?? false) || (Session?.Current?.IsAdmin ?? false))
+            {
+                <div>
+                    <input type="checkbox" @bind="Forward" id="should-forward"/>
+                    <label for="should-forward">
+                        @Loc["Forward to"] @ReportedUser?.Host
+                    </label>
+                </div>
+            }
+            
             <div class="buttons">
                 <button class="button submit-btn" @onclick="Submit"
                         disabled="@string.IsNullOrWhiteSpace(Comment)">@Loc["Submit"]</button>
@@ -94,6 +105,7 @@
     private string             NewNoteId    { get; set; } = "";
     private NoteBase?          ReportedNote { get; set; }
     private UserResponse?      ReportedUser { get; set; }
+    private bool               Forward      { get; set; }
     private bool               Waiting      { get; set; }
 
     private async Task CloseDialog()
@@ -109,6 +121,7 @@
         NewNoteId    = "";
         ReportedNote = note;
         ReportedUser = null;
+        Forward      = false;
 
         StateHasChanged();
 
@@ -123,6 +136,7 @@
         NewNoteId    = "";
         ReportedNote = null;
         ReportedUser = user;
+        Forward      = false;
 
         StateHasChanged();
 
@@ -136,14 +150,14 @@
             if (ReportedNote != null)
             {
                 Waiting = true;
-                await Api.Notes.ReportNoteAsync(ReportedNote.Id, new NoteReportRequest { Comment = Comment, RuleIds = RuleIds });
+                await Api.Notes.ReportNoteAsync(ReportedNote.Id, new NoteReportRequest { Comment = Comment, RuleIds = RuleIds, Forward = Forward});
                 Waiting = false;
                 await CloseDialog();
             }
             else if (ReportedUser != null)
             {
                 Waiting = true;
-                await Api.Users.ReportUserAsync(ReportedUser.Id, new UserReportRequest { Comment = Comment, RuleIds = RuleIds, NoteIds = NoteIds });
+                await Api.Users.ReportUserAsync(ReportedUser.Id, new UserReportRequest { Comment = Comment, RuleIds = RuleIds, NoteIds = NoteIds, Forward = Forward});
                 Waiting = false;
                 await CloseDialog();
             }
