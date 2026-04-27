@@ -162,7 +162,6 @@
         <div class="buttons">
             @if (!Report.Resolved)
             {
-                
                 @if (Report.Reporter.Host == null && Report.TargetUser.Host != null && !Report.Forwarded)
                 {
                     <span class="button" @onclick="Forward">
@@ -179,6 +178,10 @@
                     @Loc["Suspend user"]
                 </span>
             }
+            <span class="button" @onclick="DeleteReport">
+                <Icon Name="Icons.Trash"/>
+                @Loc["Delete report"]
+            </span>
         </div>
     </div>
 }
@@ -252,6 +255,24 @@
         catch (ApiException e)
         {
             await Global.NoticeDialog?.Display(e.Response.Message ?? Loc["Unable to suspend user"], NoticeDialog.NoticeType.Error)!;
+        }
+    }
+
+    private void DeleteReport() =>
+        Global.ConfirmDialog?.Confirm(new EventCallback<bool>(this, DeleteReportCallback), Loc["Delete this report?"]);
+
+    private async Task DeleteReportCallback(bool confirm)
+    {
+        if (!confirm || Id == null || Report == null) return;
+
+        try
+        {
+            await Api.Moderation.DeleteReportAsync(Id);
+            await ResolveCallback(true);
+        }
+        catch (ApiException e)
+        {
+            await Global.NoticeDialog?.Display(e.Response.Message ?? Loc["Unable to delete report"], NoticeDialog.NoticeType.Error)!;
         }
     }
 
