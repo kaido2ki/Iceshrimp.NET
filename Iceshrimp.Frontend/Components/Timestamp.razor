@@ -1,6 +1,4 @@
 @using System.Timers
-@using Iceshrimp.Frontend.Localization
-@using Microsoft.Extensions.Localization
 @inject IStringLocalizer<Localization> Loc;
 
 <span title="@Date.ToLocalTime().ToString("G")">@RenderTimestamp()</span>
