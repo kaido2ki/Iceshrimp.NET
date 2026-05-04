@@ -107,7 +107,7 @@
         <div class="report-user">
             <NoteUserInfo User="Report.Reporter" Indented="false"/>
             <div class="report-details">
-                @if (Report.TargetUser.Host != null)
+                @if (Report.Reporter.Host != null)
                 {
                     <span class="report-resolved">@Loc["Remote report"]</span>
                 }
