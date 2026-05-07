@@ -16,12 +16,20 @@
     @if (IconUrl != null)
     {
         <img class="logo" src="@IconUrl" alt="Instance icon"/>
+        <span class="checkbox">
+            <InputCheckbox @bind-Value="@Model.RemoveIcon" id="remove-icon"/>
+            <label for="remove-icon">Remove icon</label>
+        </span>
     }
     <InputFile name="Model.IconFile" id="icon" accept="image/*"/>
     <label for="banner">Banner</label>
     @if (BannerUrl != null)
     {
         <img class="banner" src="@BannerUrl" alt="Instance banner"/>
+        <span class="checkbox">
+            <InputCheckbox @bind-Value="@Model.RemoveBanner" id="remove-banner"/>
+            <label for="remove-banner">Remove banner</label>
+        </span>
     }
     <InputFile name="Model.BannerFile" id="banner" accept="image/*"/>
     <label for="name">Instance name</label>
@@ -53,6 +61,8 @@
         public string?    ThemeColor   { get; set; }
         public IFormFile? IconFile     { get; set; }
         public IFormFile? BannerFile   { get; set; }
+        public bool       RemoveIcon   { get; set; }
+        public bool       RemoveBanner { get; set; }
 
         public void Canonicalize()
         {
@@ -108,7 +118,15 @@
         await Meta.SetAsync(MetaEntity.ThemeColor, Model.ThemeColor);
 
         var ia = await SystemUser.GetInstanceActorAsync();
-        if (Model.IconFile != null && Model.IconFile.ContentType.StartsWith("image/"))
+        if (Model.RemoveIcon)
+        {
+            var oldId = await Meta.GetAsync(MetaEntity.IconFileId);
+            if (oldId != null)
+                await Drive.RemoveFileAsync(oldId);
+
+            await Meta.SetAsync(MetaEntity.IconFileId, null);
+        }
+        else if (Model.IconFile != null && Model.IconFile.ContentType.StartsWith("image/"))
         {
             var req  = new DriveFileCreationRequest { Filename = Model.IconFile.Name, IsSensitive = false, MimeType = "image/png" };
             var file = await Drive.StoreFileAsync(Model.IconFile.OpenReadStream(), ia, req, favicon: true);
@@ -119,7 +137,16 @@
 
             await Meta.SetAsync(MetaEntity.IconFileId, file.Id);
         }
-        if (Model.BannerFile != null && Model.BannerFile.ContentType.StartsWith("image/"))
+
+        if (Model.RemoveBanner)
+        {
+            var oldId = await Meta.GetAsync(MetaEntity.BannerFileId);
+            if (oldId != null)
+                await Drive.RemoveFileAsync(oldId);
+
+            await Meta.SetAsync(MetaEntity.BannerFileId, null);
+        }
+        else if (Model.BannerFile != null && Model.BannerFile.ContentType.StartsWith("image/"))
         {
             var req  = new DriveFileCreationRequest { Filename = Model.BannerFile.Name, IsSensitive = false, MimeType = Model.BannerFile.ContentType };
             var file = await Drive.StoreFileAsync(Model.BannerFile.OpenReadStream(), ia, req);
