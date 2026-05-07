@@ -1,3 +1,5 @@
+using Iceshrimp.Shared.Configuration;
+
 namespace Iceshrimp.Shared.Schemas.Web;
 
 public class InstanceResponse
@@ -31,4 +33,9 @@ public enum Registrations
 public class Limitations
 {
     public required int NoteLength { get; set; }
+
+    public int ProfileDescriptionLength => 2048;
+    public int ProfileFieldsCount       => Limits.MaxProfileFields;
+    public int ProfileFieldsNameLength  => Limits.MaxProfileFieldNameLength;
+    public int ProfileFieldsValueLength => Limits.MaxProfileFieldValueLength;
 }
