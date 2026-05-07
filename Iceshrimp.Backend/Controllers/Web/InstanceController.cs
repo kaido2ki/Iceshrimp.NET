@@ -44,9 +44,11 @@ public class InstanceController(
 	{
 		var limits = new Limitations { NoteLength = instanceConfig.Value.CharacterLimit };
 
+		// Have to do multiple gets because of the amount of things being deconstructed
 		var (instanceName, iconId, bannerId, themeColor) =
 			await meta.GetManyAsync(MetaEntity.InstanceName, MetaEntity.IconFileId, MetaEntity.BannerFileId,
 			                        MetaEntity.ThemeColor);
+		var (description, contactEmail) = await meta.GetManyAsync(MetaEntity.InstanceDescription, MetaEntity.AdminContactEmail);
 
 		var iconUrl = await db.DriveFiles.Where(p => p.Id == iconId)
 		                      .Select(p => p.PublicUrl ?? p.RawAccessUrl)
@@ -65,7 +67,9 @@ public class InstanceController(
 			BannerUrl     = bannerUrl,
 			ThemeColor    = themeColor,
 			Limits        = limits,
-			UserCount     = await db.Users.CountAsync(p => p.Host == null && !p.IsSuspended && !p.IsSystemUser)
+			UserCount     = await db.Users.CountAsync(p => p.Host == null && !p.IsSuspended && !p.IsSystemUser),
+			Description   = description,
+			ContactEmail  = contactEmail
 		};
 	}
 

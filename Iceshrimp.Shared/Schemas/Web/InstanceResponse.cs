@@ -11,6 +11,8 @@ public class InstanceResponse
     public required string?       ThemeColor    { get; set; }
     public required Limitations   Limits        { get; set; }
     public required int           UserCount     { get; set; }
+    public required string?       Description   { get; set; }
+    public required string?       ContactEmail  { get; set; }
 }
 
 public class StaffResponse
