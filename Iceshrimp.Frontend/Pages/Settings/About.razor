@@ -11,6 +11,7 @@
 @using Iceshrimp.Frontend.Components
 @attribute [Authorize]
 @layout SettingsLayout;
+@inject ApiService                     Api;
 @inject VersionService                 Version;
 @inject IStringLocalizer<Localization> Loc;
 @inject IJSRuntime                     Js;
@@ -29,6 +30,121 @@
 </SectionContent>
 
 <div class="body">
+    @if (Instance != null)
+    {
+        <div class="instance">
+            <h1>@Loc["Instance Information"]</h1>
+            @if (Instance.BannerUrl != null)
+            {
+                <img class="banner" src="@Instance.BannerUrl" alt="Instance banner"/>
+            }
+            <span class="name">@(Instance.Name ?? "Iceshrimp.NET")</span>
+            @if (Instance.AccountDomain != Instance.WebDomain)
+            {
+                <span class="value">
+                    <code>@@@Instance.AccountDomain</code>
+                    /
+                    <code>https://@Instance.WebDomain</code>
+                </span>
+            }
+            else
+            {
+                <span class="value">
+                    <code>@Instance.AccountDomain</code>
+                </span>
+            }
+            <span class="name">@Loc["Admin Email"]</span>
+            <span class="value">
+                @if (Instance.ContactEmail != null)
+                {
+                    <a href="@($"mailto:{Instance.ContactEmail}")">@Instance.ContactEmail</a>
+                }
+                else
+                {
+                    <i>@Loc["No contact email provided"]</i>
+                }
+            </span>
+            <span class="name">@Loc["Description"]</span>
+            <span class="value">
+                @if (!string.IsNullOrWhiteSpace(Instance.Description))
+                {
+                    <MfmText Text="@Instance.Description"/>
+                }
+                else
+                {
+                    <i>@Loc["No description provided"]</i>
+                }
+            </span>
+            <span class="name">@Loc["Rules"]</span>
+            <span class="value">
+                @if (Rules is {Count: > 0})
+                {
+                    <ol class="rules">
+                        @foreach (var rule in Rules)
+                        {
+                            <li>
+                                @rule.Text
+                                @if (rule.Description != null)
+                                {
+                                    <br/>
+                                    <i>@rule.Description</i>
+                                }
+                            </li>
+                        }
+                    </ol>
+                }
+                else
+                {
+                    <i>@Loc["No rules provided"]</i>
+                }
+            </span>
+            <span class="name">@Loc["Limitations"]</span>
+            <span class="value">
+                <table>
+                    <tbody>
+                    <tr>
+                        <th>@Loc["User registrations"]</th>
+                        <td>@switch (Instance.Registration)
+                            {
+                                case Registrations.Closed:
+                                    @Loc["Closed"]
+                                    break;
+                                case Registrations.Invite:
+                                    @Loc["Invite only"]
+                                    break;
+                                case Registrations.Open:
+                                    @Loc["Open"]
+                                    break;
+                                default:
+                                    break;
+                            }
+                        </td>
+                    </tr>
+                    <tr>
+                        <th>@Loc["Note length"]</th>
+                        <td>@Instance.Limits.NoteLength</td>
+                    </tr>
+                    <tr>
+                        <th>@Loc["Profile description length"]</th>
+                        <td>@Instance.Limits.ProfileDescriptionLength</td>
+                    </tr>
+                    <tr>
+                        <th>@Loc["Profile fields"]</th>
+                        <td>@Instance.Limits.ProfileFieldsCount</td>
+                    </tr>
+                    <tr>
+                        <th>@Loc["Profile field name length"]</th>
+                        <td>@Instance.Limits.ProfileFieldsNameLength</td>
+                    </tr>
+                    <tr>
+                        <th>@Loc["Profile field value length"]</th>
+                        <td>@Instance.Limits.ProfileFieldsValueLength</td>
+                    </tr>
+                    </tbody>
+                </table>
+            </span>
+        </div>
+    }
     <div class="version">
         <h1>@Loc["Version Information"]</h1>
         <span class="name">Iceshrimp.NET</span>
@@ -102,9 +218,14 @@
     private UpdateState                 _updateState = UpdateState.Unknown;
     private VersionResponse?            _newVersion;
     private StateButton                 UpdateButton { get; set; } = null!;
+    private InstanceResponse?           Instance     { get; set; }
+    private List<RuleResponse>?         Rules        { get; set; }
 
     protected override async Task OnInitializedAsync()
     {
+        Instance = await Api.Instance.GetInstanceAsync();
+        Rules    = await Api.Instance.GetRulesAsync();
+
         _module                     =  (IJSInProcessObjectReference)await Js.InvokeAsync<IJSObjectReference>("import", "./Components/ErrorUi.razor.js");
         UpdateSvc.UpdateStatusEvent += OnUpdateStatusChange;
         UpdateStatusSwitch(UpdateSvc.UpdateState);
