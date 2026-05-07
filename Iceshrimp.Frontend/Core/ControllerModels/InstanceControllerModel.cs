@@ -10,4 +10,7 @@ internal class InstanceControllerModel(ApiClient api)
 
     public Task<List<RuleResponse>> GetRulesAsync() =>
         api.CallAsync<List<RuleResponse>>(HttpMethod.Get, "/instance/rules");
+
+    public Task<StaffResponse> GetStaffAsync() =>
+        api.CallAsync<StaffResponse>(HttpMethod.Get, "/instance/staff");
 }

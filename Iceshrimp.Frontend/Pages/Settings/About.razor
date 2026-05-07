@@ -98,6 +98,26 @@
                     <i>@Loc["No rules provided"]</i>
                 }
             </span>
+            @if (Staff is { Admins.Count: > 0 })
+            {
+                <span class="name">@Loc["Admins"]</span>
+                <span class="value">
+                    @foreach (var admin in Staff.Admins)
+                    {
+                        <UserProfileCard User="admin" ShowBio="false"/>
+                    }
+                </span>
+            }
+            @if (Staff is { Moderators.Count: > 0 })
+            {
+                <span class="name">@Loc["Moderators"]</span>
+                <span class="value">
+                    @foreach (var moderator in Staff.Moderators)
+                    {
+                        <UserProfileCard User="moderator" ShowBio="false"/>
+                    }
+                </span>
+            }
             <span class="name">@Loc["Limitations"]</span>
             <span class="value">
                 <table>
@@ -220,11 +240,13 @@
     private StateButton                 UpdateButton { get; set; } = null!;
     private InstanceResponse?           Instance     { get; set; }
     private List<RuleResponse>?         Rules        { get; set; }
+    private StaffResponse?              Staff        { get; set; }
 
     protected override async Task OnInitializedAsync()
     {
-        Instance = await Api.Instance.GetInstanceAsync();
-        Rules    = await Api.Instance.GetRulesAsync();
+        Instance      = await Api.Instance.GetInstanceAsync();
+        Rules         = await Api.Instance.GetRulesAsync();
+        Staff         = await Api.Instance.GetStaffAsync();
 
         _module                     =  (IJSInProcessObjectReference)await Js.InvokeAsync<IJSObjectReference>("import", "./Components/ErrorUi.razor.js");
         UpdateSvc.UpdateStatusEvent += OnUpdateStatusChange;
