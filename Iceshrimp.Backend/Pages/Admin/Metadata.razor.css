@@ -1,0 +1,14 @@
+.logo {
+    display: block;
+    width: 5rem;
+    height: 5rem
+}
+
+.banner {
+    display: block;
+    width: 100%;
+    height: auto;
+    object-fit: cover;
+    aspect-ratio: 21/9;
+    border-radius: 1rem;
+}

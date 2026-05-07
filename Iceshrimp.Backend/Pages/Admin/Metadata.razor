@@ -4,6 +4,7 @@
 @using Iceshrimp.Backend.Core.Extensions
 @using Iceshrimp.Backend.Core.Services
 @using Microsoft.AspNetCore.Components.Forms
+@using Microsoft.EntityFrameworkCore
 @inherits AdminComponentBase
 
 <AdminPageHeader Title="Instance metadata"/>
@@ -12,8 +13,16 @@
 
 <EditForm FormName="update-metadata" Model="Model" OnSubmit="@OnSubmit" enctype="multipart/form-data">
     <label for="icon">Icon</label>
+    @if (IconUrl != null)
+    {
+        <img class="logo" src="@IconUrl" alt="Instance icon"/>
+    }
     <InputFile name="Model.IconFile" id="icon" accept="image/*"/>
     <label for="banner">Banner</label>
+    @if (BannerUrl != null)
+    {
+        <img class="banner" src="@BannerUrl" alt="Instance banner"/>
+    }
     <InputFile name="Model.BannerFile" id="banner" accept="image/*"/>
     <label for="name">Instance name</label>
     <InputText @bind-Value="@Model.Name" id="name" placeholder="Shrimp & friends"/>
@@ -32,6 +41,9 @@
     [Inject] public required SystemUserService SystemUser { get; set; }
 
     [SupplyParameterFromForm] private MetadataModel Model { get; set; } = null!;
+
+    private string? IconUrl   { get; set; }
+    private string? BannerUrl { get; set; }
 
     private class MetadataModel
     {
@@ -76,6 +88,15 @@
     {
         (Model.Name, Model.Description, Model.AdminContact, Model.ThemeColor) =
             await Meta.GetManyAsync(MetaEntity.InstanceName, MetaEntity.InstanceDescription, MetaEntity.AdminContactEmail, MetaEntity.ThemeColor);
+
+        var (iconId, bannerId) = await Meta.GetManyAsync(MetaEntity.IconFileId, MetaEntity.BannerFileId);
+
+        IconUrl = await Database.DriveFiles.Where(p => p.Id == iconId)
+                                .Select(p => p.PublicUrl ?? p.RawAccessUrl)
+                                .FirstOrDefaultAsync();
+        BannerUrl = await Database.DriveFiles.Where(p => p.Id == bannerId)
+                                  .Select(p => p.PublicUrl ?? p.RawAccessUrl)
+                                  .FirstOrDefaultAsync();
     }
 
     async Task OnSubmit()
