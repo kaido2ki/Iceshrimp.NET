@@ -497,7 +497,7 @@ public class User : IIdentifiable
 	[NotMapped] public bool? PrecomputedIsRequested   { get; set; }
 	[NotMapped] public bool? PrecomputedIsRequestedBy { get; set; }
 
-	[NotMapped] public bool? PrecomputedRenotesMuted { get; set; }
+	[NotMapped] public bool? PrecomputedMutedRenotes { get; set; }
 
 	[NotMapped] public string? PrecomputedMemo { get; set; }
 
@@ -562,7 +562,7 @@ public class User : IIdentifiable
 	public bool IsMuting(User user) => Muting.Contains(user);
 
 	[Projectable]
-	public bool RenotesMuted(User user) => RenoteMutings.Contains(user);
+	public bool MutedRenotes(User user) => RenoteMutings.Contains(user);
 
 	[Projectable]
 	public bool HasPinned(Note note) => PinnedNotes.Contains(note);
@@ -623,9 +623,9 @@ public class User : IIdentifiable
 		return this;
 	}
 
-	public User WithPrecomputedRenotesMuted(bool mutingRenotes)
+	public User WithPrecomputedMutedRenotes(bool mutedRenotes)
 	{
-		PrecomputedRenotesMuted = mutingRenotes;
+		PrecomputedMutedRenotes = mutedRenotes;
 
 		return this;
 	}

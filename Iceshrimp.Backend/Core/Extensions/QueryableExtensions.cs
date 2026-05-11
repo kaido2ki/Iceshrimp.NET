@@ -337,7 +337,7 @@ public static class QueryableExtensions
 		                          .WithPrecomputedMuteStatus(p.IsMuting(user), p.IsMutedBy(user))
 		                          .WithPrecomputedFollowStatus(p.IsFollowing(user), p.IsFollowedBy(user),
 		                                                       p.IsRequested(user), p.IsRequestedBy(user))
-		                          .WithPrecomputedRenotesMuted(p.RenotesMuted(user)));
+		                          .WithPrecomputedMutedRenotes(p.MutedRenotes(user)));
 	}
 
 	public static IQueryable<Notification> FilterHiddenNotifications(
@@ -372,7 +372,7 @@ public static class QueryableExtensions
 
 		public IQueryable<Note> FilterMutedRenotes(User user)
 		{
-			return query.Where(p => !p.IsPureRenote || !p.User.RenotesMuted(user));
+			return query.Where(p => !p.IsPureRenote || !p.User.MutedRenotes(user));
 		}
 	}
 

@@ -309,7 +309,7 @@ public class AccountController(
 					MuterId   = user.Id,
 					MuteeId   = id
 				});
-				followee.PrecomputedRenotesMuted = true;
+				followee.PrecomputedMutedRenotes = true;
 			}
 			else
 			{
@@ -319,7 +319,7 @@ public class AccountController(
 				if (mute != null)
 				{
 					db.Remove(mute);
-					followee.PrecomputedRenotesMuted = false;
+					followee.PrecomputedMutedRenotes = false;
 				}
 			}
 
@@ -791,7 +791,7 @@ public class AccountController(
 			Notifying           = false, //FIXME
 			DomainBlocking      = false, //FIXME
 			MutingNotifications = false, //FIXME
-			ShowingReblogs      = !u.PrecomputedRenotesMuted ?? true
+			ShowingReblogs      = !u.PrecomputedMutedRenotes ?? true
 		};
 	}
 }
