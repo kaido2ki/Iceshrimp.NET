@@ -428,6 +428,8 @@ public class User : IIdentifiable
 
 	[InverseProperty(nameof(RenoteMuting.Mutee))]
 	public virtual ICollection<RenoteMuting> RenoteMutingMutees { get; set; } = new List<RenoteMuting>();
+	
+	[NotMapped] [Projectable] public virtual IEnumerable<User> RenoteMutings => RenoteMutingMutees.Select(p => p.Muter);
 
 	[InverseProperty(nameof(RenoteMuting.Muter))]
 	public virtual ICollection<RenoteMuting> RenoteMutingMuters { get; set; } = new List<RenoteMuting>();
@@ -494,7 +496,9 @@ public class User : IIdentifiable
 
 	[NotMapped] public bool? PrecomputedIsRequested   { get; set; }
 	[NotMapped] public bool? PrecomputedIsRequestedBy { get; set; }
-	
+
+	[NotMapped] public bool? PrecomputedRenotesMuted { get; set; }
+
 	[NotMapped] public string? PrecomputedMemo { get; set; }
 
 	[Projectable] public bool   IsLocalUser      => Host == null;
@@ -558,6 +562,9 @@ public class User : IIdentifiable
 	public bool IsMuting(User user) => Muting.Contains(user);
 
 	[Projectable]
+	public bool RenotesMuted(User user) => RenoteMutings.Contains(user);
+
+	[Projectable]
 	public bool HasPinned(Note note) => PinnedNotes.Contains(note);
 
 	[Projectable]
@@ -612,6 +619,13 @@ public class User : IIdentifiable
 		PrecomputedIsFollowedBy  = followedBy;
 		PrecomputedIsRequested   = requested;
 		PrecomputedIsRequestedBy = requestedBy;
+
+		return this;
+	}
+
+	public User WithPrecomputedRenotesMuted(bool mutingRenotes)
+	{
+		PrecomputedRenotesMuted = mutingRenotes;
 
 		return this;
 	}
