@@ -273,7 +273,7 @@ public class AccountController(
 	[ProducesResults(HttpStatusCode.OK)]
 	[ProducesErrors(HttpStatusCode.BadRequest, HttpStatusCode.Forbidden, HttpStatusCode.NotFound)]
 	//TODO: [FromHybrid] request (bool reblogs, bool notify, bool languages)
-	public async Task<RelationshipEntity> FollowUser(string id)
+	public async Task<RelationshipEntity> FollowUser(string id, [FromHybrid] AccountSchemas.AccountFollowSettingsRequest request)
 	{
 		var user = HttpContext.GetUserOrFail();
 		if (user.Id == id)
@@ -296,6 +296,34 @@ public class AccountController(
 				followee.PrecomputedIsRequestedBy = true;
 			else
 				followee.PrecomputedIsFollowedBy = true;
+		}
+
+		if (request.Reblogs != null)
+		{
+			if (request.Reblogs == false)
+			{
+				await db.RenoteMutings.AddAsync(new RenoteMuting
+				{
+					Id        = IdHelpers.GenerateSnowflakeId(),
+					CreatedAt = DateTime.UtcNow,
+					MuterId   = user.Id,
+					MuteeId   = id
+				});
+				followee.PrecomputedRenotesMuted = true;
+			}
+			else
+			{
+				var mute = await db.RenoteMutings
+				                   .Where(p => p.MuterId == user.Id && p.MuteeId == id)
+				                   .FirstOrDefaultAsync();
+				if (mute != null)
+				{
+					db.Remove(mute);
+					followee.PrecomputedRenotesMuted = false;
+				}
+			}
+
+			await db.SaveChangesAsync();
 		}
 
 		return RenderRelationship(followee);
@@ -763,7 +791,7 @@ public class AccountController(
 			Notifying           = false, //FIXME
 			DomainBlocking      = false, //FIXME
 			MutingNotifications = false, //FIXME
-			ShowingReblogs      = true   //FIXME
+			ShowingReblogs      = !u.PrecomputedRenotesMuted ?? true
 		};
 	}
 }

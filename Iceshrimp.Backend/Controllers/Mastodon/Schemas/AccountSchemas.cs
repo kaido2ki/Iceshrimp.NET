@@ -93,4 +93,11 @@ public abstract class AccountSchemas
 		[B(Name = "comment")]
 		public required string Comment { get; set; }
 	}
+
+	public class AccountFollowSettingsRequest
+	{
+		[J("reblogs")]
+		[B(Name = "reblogs")]
+		public bool? Reblogs { get; set; }
+	}
 }
