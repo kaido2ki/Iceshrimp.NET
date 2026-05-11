@@ -39,6 +39,7 @@ public class TimelineController(DatabaseContext db, NoteRenderer noteRenderer, C
 		               .EnsureVisibleFor(user)
 		               .FilterHidden(user, db, filterHiddenListMembers: true)
 		               .FilterMutedThreads(user, db)
+		               .FilterMutedRenotes(user)
 		               .Paginate(query, ControllerContext)
 		               .PrecomputeVisibilities(user)
 		               .RenderAllForMastodonAsync(noteRenderer, user, Filter.FilterContext.Home);
@@ -58,6 +59,7 @@ public class TimelineController(DatabaseContext db, NoteRenderer noteRenderer, C
 		               .FilterByPublicTimelineRequest(request, db)
 		               .FilterHidden(user, db)
 		               .FilterMutedThreads(user, db)
+		               .FilterMutedRenotes(user)
 		               .Paginate(query, ControllerContext)
 		               .PrecomputeVisibilities(user)
 		               .RenderAllForMastodonAsync(noteRenderer, user, Filter.FilterContext.Public);
@@ -79,6 +81,7 @@ public class TimelineController(DatabaseContext db, NoteRenderer noteRenderer, C
 		               .FilterByPublicTimelineRequest(request, db)
 		               .FilterHidden(user, db)
 		               .FilterMutedThreads(user, db)
+		               .FilterMutedRenotes(user)
 		               .Paginate(query, ControllerContext)
 		               .PrecomputeVisibilities(user)
 		               .RenderAllForMastodonAsync(noteRenderer, user, Filter.FilterContext.Public);
@@ -99,6 +102,7 @@ public class TimelineController(DatabaseContext db, NoteRenderer noteRenderer, C
 		               .EnsureVisibleFor(user)
 		               .FilterHidden(user, db)
 		               .FilterMutedThreads(user, db)
+		               .FilterMutedRenotes(user)
 		               .Paginate(query, ControllerContext)
 		               .PrecomputeVisibilities(user)
 		               .RenderAllForMastodonAsync(noteRenderer, user);
@@ -119,6 +123,7 @@ public class TimelineController(DatabaseContext db, NoteRenderer noteRenderer, C
 		               .FilterByHashtagTimelineRequest(request, db)
 		               .FilterHidden(user, db)
 		               .FilterMutedThreads(user, db)
+		               .FilterMutedRenotes(user)
 		               .Paginate(query, ControllerContext)
 		               .PrecomputeVisibilities(user)
 		               .RenderAllForMastodonAsync(noteRenderer, user, Filter.FilterContext.Public);
@@ -139,6 +144,7 @@ public class TimelineController(DatabaseContext db, NoteRenderer noteRenderer, C
 		               .EnsureVisibleFor(user)
 		               .FilterHidden(user, db)
 		               .FilterMutedThreads(user, db)
+		               .FilterMutedRenotes(user)
 		               .Paginate(query, ControllerContext)
 		               .PrecomputeVisibilities(user)
 		               .RenderAllForMastodonAsync(noteRenderer, user, Filter.FilterContext.Lists);

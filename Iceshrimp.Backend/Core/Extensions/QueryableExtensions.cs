@@ -336,7 +336,8 @@ public static class QueryableExtensions
 		                          .WithPrecomputedBlockStatus(p.IsBlocking(user), p.IsBlockedBy(user))
 		                          .WithPrecomputedMuteStatus(p.IsMuting(user), p.IsMutedBy(user))
 		                          .WithPrecomputedFollowStatus(p.IsFollowing(user), p.IsFollowedBy(user),
-		                                                       p.IsRequested(user), p.IsRequestedBy(user)));
+		                                                       p.IsRequested(user), p.IsRequestedBy(user))
+		                          .WithPrecomputedRenotesMuted(p.RenotesMuted(user)));
 	}
 
 	public static IQueryable<Notification> FilterHiddenNotifications(
@@ -367,6 +368,11 @@ public static class QueryableExtensions
 		{
 			return query.Where(p => p.User == user ||
 			                        !db.NoteThreadMutings.Any(m => m.User == user && m.ThreadId == p.ThreadId));
+		}
+
+		public IQueryable<Note> FilterMutedRenotes(User user)
+		{
+			return query.Where(p => !p.IsPureRenote || !p.User.RenotesMuted(user));
 		}
 	}
 
