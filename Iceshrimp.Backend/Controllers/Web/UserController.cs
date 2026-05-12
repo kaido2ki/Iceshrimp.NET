@@ -369,6 +369,58 @@ public class UserController(
 	}
 
 	/// <summary>
+	/// Mute user's boosts
+	/// </summary>
+	/// <param name="id">The user's ID</param>
+	/// <response code="400">You cannot mute yourself.</response>
+	[HttpPost("{id}/mute-boosts")]
+	[Authenticate]
+	[Authorize]
+	[ProducesResults(HttpStatusCode.OK)]
+	[ProducesErrors(HttpStatusCode.BadRequest, HttpStatusCode.NotFound)]
+	public async Task MuteRenotes(string id)
+	{
+		var user = HttpContext.GetUserOrFail();
+		if (user.Id == id)
+			throw GracefulException.BadRequest("You cannot mute your own boosts");
+		
+		var mutee = await db.Users
+		                    .Where(p => p.Id == id)
+		                    .IncludeCommonProperties()
+		                    .PrecomputeRelationshipData(user, db)
+		                    .FirstOrDefaultAsync()
+		            ?? throw GracefulException.RecordNotFound();
+
+		await userSvc.MuteRenotesAsync(user, mutee);
+	}
+	
+	/// <summary>
+	/// Unmute user's boosts
+	/// </summary>
+	/// <param name="id">The user's ID</param>
+	/// <response code="400">You cannot unmute yourself.</response>
+	[HttpPost("{id}/unmute-boosts")]
+	[Authenticate]
+	[Authorize]
+	[ProducesResults(HttpStatusCode.OK)]
+	[ProducesErrors(HttpStatusCode.BadRequest, HttpStatusCode.NotFound)]
+	public async Task UnmuteRenotes(string id)
+	{
+		var user = HttpContext.GetUserOrFail();
+		if (user.Id == id)
+			throw GracefulException.BadRequest("You cannot unmute your own boosts");
+		
+		var mutee = await db.Users
+		                    .Where(p => p.Id == id)
+		                    .IncludeCommonProperties()
+		                    .PrecomputeRelationshipData(user, db)
+		                    .FirstOrDefaultAsync()
+		            ?? throw GracefulException.RecordNotFound();
+
+		await userSvc.UnmuteRenotesAsync(user, mutee);
+	}
+
+	/// <summary>
 	/// Refetch user
 	/// </summary>
 	/// <remarks>Attempt to refetch a <b>remote</b> user and their profile.</remarks>
