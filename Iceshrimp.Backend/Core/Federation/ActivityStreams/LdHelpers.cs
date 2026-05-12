@@ -37,11 +37,12 @@ public static class LdHelpers
 
 	private static readonly JsonLdProcessorOptions Options = new()
 	{
-		DocumentLoader = CustomLoader,
-		ExpandContext  = ASExtensions,
-		ProcessingMode = JsonLdProcessingMode.JsonLd11,
-		KeepIRIs       = [$"{Constants.ActivityStreamsNs}#Public"],
-		ForceArray     = ASForceArray.Select(p => $"{Constants.ActivityStreamsNs}#{p}").ToList(),
+		DocumentLoader     = CustomLoader,
+		ExpandContext      = ASExtensions,
+		ProcessingMode     = JsonLdProcessingMode.JsonLd11,
+		KeepIRIs           = [$"{Constants.ActivityStreamsNs}#Public"],
+		ForceArray         = ASForceArray.Select(p => $"{Constants.ActivityStreamsNs}#{p}").ToList(),
+		DisallowedKeywords = ["@reverse", "@graph", "@included"],
 
 		// separated for readability
 		RemoveUnusedInlineContextProperties = true
@@ -148,7 +149,9 @@ public static class LdHelpers
 	public static JArray Expand(JToken? json)
 	{
 		using var _ = Telemetry.ActivitySource.StartActivity();
-		return JsonLdProcessor.Expand(json, Options);
+		var res = JsonLdProcessor.Expand(json, Options);
+		if (res.Count > 1) throw new Exception("Expansion resulted in more than one object, rejecting");
+		return res;
 	}
 
 	public static string Canonicalize(JArray json)
