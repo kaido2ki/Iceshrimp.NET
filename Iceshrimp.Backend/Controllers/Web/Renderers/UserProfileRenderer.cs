@@ -24,7 +24,8 @@ public class UserProfileRenderer(DatabaseContext db, IOptions<Config.InstanceSec
 			IsMuting      = false,
 			IsRequested   = false,
 			IsRequestedBy = false,
-			CanBite       = false
+			CanBite       = false,
+			MutedRenotes  = false
 		};
 
 		var ffVisibility = user.UserProfile?.FFVisibility ?? UserProfile.UserProfileFFVisibility.Public;
@@ -103,7 +104,8 @@ public class UserProfileRenderer(DatabaseContext db, IOptions<Config.InstanceSec
 			               CanBite = p.Id != localUser.Id
 			                         && (p.CanBite == User.BiteControl.Public
 			                             || (p.CanBite == User.BiteControl.Followers
-			                                 && p.IsFollowedBy(localUser)))
+			                                 && p.IsFollowedBy(localUser))),
+			               MutedRenotes  = p.MutedRenotes(localUser)
 		               })
 		               .ToDictionaryAsync(p => p.UserId, p => p);
 	}
@@ -140,6 +142,7 @@ public class UserProfileRenderer(DatabaseContext db, IOptions<Config.InstanceSec
 		public required bool   IsRequested;
 		public required bool   IsRequestedBy;
 		public required bool   IsSelf;
+		public required bool   MutedRenotes;
 		public required string UserId;
 
 		public static implicit operator Relations(RelationData data)
@@ -153,6 +156,7 @@ public class UserProfileRenderer(DatabaseContext db, IOptions<Config.InstanceSec
 			if (data.IsBlocking) res    |= Relations.Blocking;
 			if (data.IsMuting) res      |= Relations.Muting;
 			if (data.CanBite) res       |= Relations.CanBite;
+			if (data.MutedRenotes) res  |= Relations.MutedRenotes;
 			return res;
 		}
 	}
