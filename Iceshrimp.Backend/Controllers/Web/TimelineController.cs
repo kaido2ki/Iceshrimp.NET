@@ -46,6 +46,7 @@ public class TimelineController(DatabaseContext db, NoteRenderer noteRenderer, C
 		                    .EnsureVisibleFor(user)
 		                    .FilterHidden(user, db, filterHiddenListMembers: true)
 		                    .FilterMutedThreads(user, db)
+		                    .FilterMutedRenotes(user)
 		                    .Paginate(pq, ControllerContext)
 		                    .PrecomputeVisibilities(user)
 		                    .ToListAsync();
@@ -73,6 +74,7 @@ public class TimelineController(DatabaseContext db, NoteRenderer noteRenderer, C
 		                    .EnsureVisibleFor(user)
 		                    .FilterHidden(user, db)
 		                    .FilterMutedThreads(user, db)
+		                    .FilterMutedRenotes(user)
 		                    .Paginate(pq, ControllerContext)
 		                    .PrecomputeVisibilities(user)
 		                    .ToListAsync();
@@ -99,6 +101,7 @@ public class TimelineController(DatabaseContext db, NoteRenderer noteRenderer, C
 		                    .EnsureVisibleFor(user)
 		                    .FilterHidden(user, db, filterHiddenListMembers: true)
 		                    .FilterMutedThreads(user, db)
+		                    .FilterMutedRenotes(user)
 		                    .Paginate(pq, ControllerContext)
 		                    .PrecomputeVisibilities(user)
 		                    .ToListAsync();
@@ -126,6 +129,7 @@ public class TimelineController(DatabaseContext db, NoteRenderer noteRenderer, C
 		                    .EnsureVisibleFor(user)
 		                    .FilterHidden(user, db, filterHiddenListMembers: true)
 		                    .FilterMutedThreads(user, db)
+		                    .FilterMutedRenotes(user)
 		                    .Paginate(pq, ControllerContext)
 		                    .PrecomputeVisibilities(user)
 		                    .ToListAsync();
@@ -152,6 +156,7 @@ public class TimelineController(DatabaseContext db, NoteRenderer noteRenderer, C
 		                    .EnsureVisibleFor(user)
 		                    .FilterHidden(user, db)
 		                    .FilterMutedThreads(user, db)
+		                    .FilterMutedRenotes(user)
 		                    .Paginate(pq, ControllerContext)
 		                    .PrecomputeVisibilities(user)
 		                    .ToListAsync();
@@ -204,6 +209,7 @@ public class TimelineController(DatabaseContext db, NoteRenderer noteRenderer, C
 		                    .EnsureVisibleFor(user)
 		                    .FilterHidden(user, db)
 		                    .FilterMutedThreads(user, db)
+		                    .FilterMutedRenotes(user)
 		                    .Paginate(pq, ControllerContext)
 		                    .PrecomputeVisibilities(user)
 		                    .ToListAsync();
@@ -231,6 +237,7 @@ public class TimelineController(DatabaseContext db, NoteRenderer noteRenderer, C
 		                    .EnsureVisibleFor(user)
 		                    .FilterHidden(user, db)
 		                    .FilterMutedThreads(user, db)
+		                    .FilterMutedRenotes(user)
 		                    .Paginate(pq, ControllerContext)
 		                    .PrecomputeVisibilities(user)
 		                    .ToListAsync();
