@@ -1385,7 +1385,7 @@ public class UserService(
 
 		await db.RenoteMutings.Where(p => p.Muter == muter && p.Mutee == mutee).ExecuteDeleteAsync();
 
-		mutee.PrecomputedIsMutedBy = false;
+		mutee.PrecomputedMutedRenotes = false;
 	}
 
 	public async Task BlockUserAsync(User blocker, User blockee)
