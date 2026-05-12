@@ -107,6 +107,7 @@ public class UserChannel(WebSocketConnection connection, bool notificationsOnly)
 			if (note.CreatedAt < DateTime.UtcNow - TimeSpan.FromMinutes(5)) return;
 			await using var scope = connection.GetAsyncServiceScope();
 			if (await connection.IsMutedThreadAsync(note, scope)) return;
+			if (note.IsPureRenote && connection.MutingRenotes.Contains(note.UserId)) return;
 
 			var renderer     = scope.ServiceProvider.GetRequiredService<NoteRenderer>();
 			var intermediate = await renderer.RenderAsync(note, connection.Token.User);

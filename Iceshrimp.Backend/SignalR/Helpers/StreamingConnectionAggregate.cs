@@ -23,6 +23,7 @@ public sealed class StreamingConnectionAggregate : IDisposable
 	private readonly WriteLockingHashSet<string> _blocking      = [];
 	private readonly WriteLockingHashSet<string> _following     = [];
 	private readonly WriteLockingHashSet<string> _muting        = [];
+	private readonly WriteLockingHashSet<string> _mutingRenotes = [];
 	private readonly WriteLockingHashSet<string> _bubble        = [];
 
 	private readonly IHubContext<StreamingHub, IStreamingHubClient> _hub;
@@ -54,6 +55,8 @@ public sealed class StreamingConnectionAggregate : IDisposable
 		_eventService.UserUnblocked         -= OnUserUnblock;
 		_eventService.UserMuted             -= OnUserMute;
 		_eventService.UserUnmuted           -= OnUserUnmute;
+		_eventService.UserRenotesMuted      -= OnUserRenotesMuted;
+		_eventService.UserRenotesUnmuted    -= OnUserRenotesUnmuted;
 		_eventService.UserFollowed          -= OnUserFollow;
 		_eventService.UserUnfollowed        -= OnUserUnfollow;
 		_eventService.FilterAdded           -= OnFilterAdded;
@@ -102,6 +105,13 @@ public sealed class StreamingConnectionAggregate : IDisposable
 			{
 				await using var scope = _scopeFactory.CreateAsyncScope();
 				if (await IsMutedThreadAsync(data.note, scope))
+					return;
+			}
+
+			if (data.note.IsPureRenote)
+			{
+				await using var scope = _scopeFactory.CreateAsyncScope();
+				if (_mutingRenotes.Contains(data.note.UserId))
 					return;
 			}
 
@@ -278,12 +288,14 @@ public sealed class StreamingConnectionAggregate : IDisposable
 
 	private async Task InitializeAsync()
 	{
-		_eventService.UserBlocked    += OnUserBlock;
-		_eventService.UserUnblocked  += OnUserUnblock;
-		_eventService.UserMuted      += OnUserMute;
-		_eventService.UserUnmuted    += OnUserUnmute;
-		_eventService.UserFollowed   += OnUserFollow;
-		_eventService.UserUnfollowed += OnUserUnfollow;
+		_eventService.UserBlocked        += OnUserBlock;
+		_eventService.UserUnblocked      += OnUserUnblock;
+		_eventService.UserMuted          += OnUserMute;
+		_eventService.UserUnmuted        += OnUserUnmute;
+		_eventService.UserRenotesMuted   += OnUserRenotesMuted;
+		_eventService.UserRenotesUnmuted += OnUserRenotesUnmuted;
+		_eventService.UserFollowed       += OnUserFollow;
+		_eventService.UserUnfollowed     += OnUserUnfollow;
 
 		await InitializeRelationshipsAsync();
 
@@ -316,6 +328,9 @@ public sealed class StreamingConnectionAggregate : IDisposable
 		_muting.AddRange(await db.Mutings.Where(p => p.Muter == _user)
 		                         .Select(p => p.MuteeId)
 		                         .ToListAsync());
+		_mutingRenotes.AddRange(await db.RenoteMutings.Where(p => p.Muter == _user)
+		                                .Select(p => p.MuteeId)
+		                                .ToListAsync());
 
 		_hiddenFromHome = await db.UserListMembers
 		                          .Where(p => p.UserList.User == _user && p.UserList.HideFromHomeTl)
@@ -417,6 +432,32 @@ public sealed class StreamingConnectionAggregate : IDisposable
 		catch (Exception e)
 		{
 			_logger.LogError("Event handler OnUserUnmute threw exception: {e}", e);
+		}
+	}
+	
+	private void OnUserRenotesMuted(UserInteraction interaction)
+	{
+		try
+		{
+			if (interaction.Actor.Id == _userId)
+				_mutingRenotes.Add(interaction.Object.Id);
+		}
+		catch (Exception e)
+		{
+			_logger.LogError("Event handler OnUserRenotesMuted threw exception: {e}", e);
+		}
+	}
+	
+	private void OnUserRenotesUnmuted(UserInteraction interaction)
+	{
+		try
+		{
+			if (interaction.Actor.Id == _userId)
+				_mutingRenotes.Remove(interaction.Object.Id);
+		}
+		catch (Exception e)
+		{
+			_logger.LogError("Event handler OnUserRenotesUnmuted threw exception: {e}", e);
 		}
 	}
 

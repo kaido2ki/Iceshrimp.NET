@@ -1374,8 +1374,10 @@ public class UserService(
 			MuteeId   = mutee.Id
 		};
 
-		db.Add(mute);
+		await db.AddAsync(mute);
 		await db.SaveChangesAsync();
+
+		eventSvc.RaiseUserRenotesMuted(muter, mutee);
 	}
 	
 	public async Task UnmuteRenotesAsync(User muter, User mutee)
@@ -1384,6 +1386,7 @@ public class UserService(
 			return;
 
 		await db.RenoteMutings.Where(p => p.Muter == muter && p.Mutee == mutee).ExecuteDeleteAsync();
+		eventSvc.RaiseUserRenotesUnmuted(muter, mutee);
 
 		mutee.PrecomputedMutedRenotes = false;
 	}

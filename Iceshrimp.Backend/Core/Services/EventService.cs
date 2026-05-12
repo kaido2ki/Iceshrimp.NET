@@ -21,6 +21,8 @@ public class EventService : ISingletonService
 	public event EventHandler<UserInteraction>? UserUnblocked;
 	public event EventHandler<UserInteraction>? UserMuted;
 	public event EventHandler<UserInteraction>? UserUnmuted;
+	public event EventHandler<UserInteraction>? UserRenotesMuted;
+	public event EventHandler<UserInteraction>? UserRenotesUnmuted;
 	public event EventHandler<Notification>?    Notification;
 	public event EventHandler<Filter>?          FilterAdded;
 	public event EventHandler<Filter>?          FilterRemoved;
@@ -65,6 +67,12 @@ public class EventService : ISingletonService
 
 	public void RaiseUserUnmuted(User actor, User obj)
 		=> UserUnmuted?.Invoke(new UserInteraction { Actor = actor, Object = obj });
+
+	public void RaiseUserRenotesMuted(User actor, User obj)
+		=> UserRenotesMuted?.Invoke(new UserInteraction { Actor = actor, Object = obj });
+
+	public void RaiseUserRenotesUnmuted(User actor, User obj)
+		=> UserRenotesUnmuted?.Invoke(new UserInteraction { Actor = actor, Object = obj });
 
 	public void RaiseFilterAdded(Filter filter)                     => FilterAdded?.Invoke(filter);
 	public void RaiseFilterRemoved(Filter filter)                   => FilterRemoved?.Invoke(filter);

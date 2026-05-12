@@ -28,6 +28,7 @@ public sealed class WebSocketConnection(
 	private readonly WriteLockingHashSet<string> _blockedBy     = [];
 	private readonly WriteLockingHashSet<string> _blocking      = [];
 	private readonly WriteLockingHashSet<string> _muting        = [];
+	public readonly  WriteLockingHashSet<string> MutingRenotes  = [];
 	public readonly  WriteLockingHashSet<string> Following      = [];
 	public readonly  WriteLockingHashSet<string> Bubble         = [];
 	public readonly  WriteLockingList<Filter>    Filters        = [];
@@ -45,6 +46,8 @@ public sealed class WebSocketConnection(
 		EventService.UserUnblocked         -= OnUserBlock;
 		EventService.UserMuted             -= OnUserMute;
 		EventService.UserUnmuted           -= OnUserUnmute;
+		EventService.UserRenotesMuted      -= OnUserRenotesMuted;
+		EventService.UserRenotesUnmuted    -= OnUserRenotesUnmuted;
 		EventService.UserFollowed          -= OnUserFollow;
 		EventService.UserUnfollowed        -= OnUserUnfollow;
 		EventService.FilterAdded           -= OnFilterAdded;
@@ -78,18 +81,20 @@ public sealed class WebSocketConnection(
 		_channels.Add(new PublicChannel(this, "public:bubble", true, true, true, false));
 		_channels.Add(new PublicChannel(this, "public:bubble:media", true, true, true, true));
 
-		EventService.UserBlocked            += OnUserUnblock;
-		EventService.UserUnblocked          += OnUserBlock;
-		EventService.UserMuted              += OnUserMute;
-		EventService.UserUnmuted            += OnUserUnmute;
-		EventService.UserFollowed           += OnUserFollow;
-		EventService.UserUnfollowed         += OnUserUnfollow;
-		EventService.FilterAdded            += OnFilterAdded;
-		EventService.FilterRemoved          += OnFilterRemoved;
-		EventService.FilterUpdated          += OnFilterUpdated;
-		EventService.ListMembersUpdated     += OnListMembersUpdated;
-		EventService.BubbleInstanceAdded    += OnBubbleInstanceAdded;
-		EventService.BubbleInstanceRemoved  += OnBubbleInstanceRemoved;
+		EventService.UserBlocked           += OnUserUnblock;
+		EventService.UserUnblocked         += OnUserBlock;
+		EventService.UserMuted             += OnUserMute;
+		EventService.UserUnmuted           += OnUserUnmute;
+		EventService.UserRenotesMuted      += OnUserRenotesMuted;
+		EventService.UserRenotesUnmuted    += OnUserRenotesUnmuted;
+		EventService.UserFollowed          += OnUserFollow;
+		EventService.UserUnfollowed        += OnUserUnfollow;
+		EventService.FilterAdded           += OnFilterAdded;
+		EventService.FilterRemoved         += OnFilterRemoved;
+		EventService.FilterUpdated         += OnFilterUpdated;
+		EventService.ListMembersUpdated    += OnListMembersUpdated;
+		EventService.BubbleInstanceAdded   += OnBubbleInstanceAdded;
+		EventService.BubbleInstanceRemoved += OnBubbleInstanceRemoved;
 
 		await InitializeRelationshipsAsync();
 	}
@@ -109,6 +114,9 @@ public sealed class WebSocketConnection(
 		_muting.AddRange(await db.Mutings.Where(p => p.Muter == Token.User)
 		                         .Select(p => p.MuteeId)
 		                         .ToListAsync());
+		MutingRenotes.AddRange(await db.RenoteMutings.Where(p => p.Muter == Token.User)
+		                                .Select(p => p.MuteeId)
+		                                .ToListAsync());
 
 		Filters.AddRange(await db.Filters.Where(p => p.User == Token.User)
 		                         .Select(p => new Filter
@@ -264,6 +272,34 @@ public sealed class WebSocketConnection(
 		{
 			var logger = Scope.ServiceProvider.GetRequiredService<Logger<WebSocketConnection>>();
 			logger.LogError("Event handler OnUserUnmute threw exception: {e}", e);
+		}
+	}
+	
+	private void OnUserRenotesMuted(UserInteraction interaction)
+	{
+		try
+		{
+			if (interaction.Actor.Id == Token.User.Id)
+				MutingRenotes.Add(interaction.Object.Id);
+		}
+		catch (Exception e)
+		{
+			var logger = Scope.ServiceProvider.GetRequiredService<Logger<WebSocketConnection>>();
+			logger.LogError("Event handler OnUserRenotesMuted threw exception: {e}", e);
+		}
+	}
+	
+	private void OnUserRenotesUnmuted(UserInteraction interaction)
+	{
+		try
+		{
+			if (interaction.Actor.Id == Token.User.Id)
+				MutingRenotes.Remove(interaction.Object.Id);
+		}
+		catch (Exception e)
+		{
+			var logger = Scope.ServiceProvider.GetRequiredService<Logger<WebSocketConnection>>();
+			logger.LogError("Event handler OnUserRenotesUnmuted threw exception: {e}", e);
 		}
 	}
 
