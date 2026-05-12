@@ -27,6 +27,9 @@ public class RegistrationInvite
 
 	private class EntityTypeConfiguration : IEntityTypeConfiguration<RegistrationInvite>
 	{
-		public void Configure(EntityTypeBuilder<RegistrationInvite> entity) { }
+		public void Configure(EntityTypeBuilder<RegistrationInvite> entity)
+		{
+			entity.HasOne(p => p.CreatedBy).WithMany().OnDelete(DeleteBehavior.SetNull);
+		}
 	}
 }
