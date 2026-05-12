@@ -301,29 +301,9 @@ public class AccountController(
 		if (request.Reblogs != null)
 		{
 			if (request.Reblogs == false)
-			{
-				await db.RenoteMutings.AddAsync(new RenoteMuting
-				{
-					Id        = IdHelpers.GenerateSnowflakeId(),
-					CreatedAt = DateTime.UtcNow,
-					MuterId   = user.Id,
-					MuteeId   = id
-				});
-				followee.PrecomputedMutedRenotes = true;
-			}
+				await userSvc.MuteRenotesAsync(user, followee);
 			else
-			{
-				var mute = await db.RenoteMutings
-				                   .Where(p => p.MuterId == user.Id && p.MuteeId == id)
-				                   .FirstOrDefaultAsync();
-				if (mute != null)
-				{
-					db.Remove(mute);
-					followee.PrecomputedMutedRenotes = false;
-				}
-			}
-
-			await db.SaveChangesAsync();
+				await userSvc.UnmuteRenotesAsync(user, followee);
 		}
 
 		return RenderRelationship(followee);

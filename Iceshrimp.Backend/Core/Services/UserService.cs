@@ -1359,6 +1359,35 @@ public class UserService(
 		mutee.PrecomputedIsMutedBy = false;
 	}
 
+	public async Task MuteRenotesAsync(User muter, User mutee)
+	{
+		mutee.PrecomputedMutedRenotes = true;
+		
+		var muting = await db.RenoteMutings.AnyAsync(p => p.Muter == muter && p.Mutee == mutee);
+		if (muting) return;
+		
+		var mute = new RenoteMuting
+		{
+			Id        = IdHelpers.GenerateSnowflakeId(),
+			CreatedAt = DateTime.UtcNow,
+			MuterId   = muter.Id,
+			MuteeId   = mutee.Id
+		};
+
+		db.Add(mute);
+		await db.SaveChangesAsync();
+	}
+	
+	public async Task UnmuteRenotesAsync(User muter, User mutee)
+	{
+		if (!mutee.PrecomputedMutedRenotes ?? false)
+			return;
+
+		await db.RenoteMutings.Where(p => p.Muter == muter && p.Mutee == mutee).ExecuteDeleteAsync();
+
+		mutee.PrecomputedIsMutedBy = false;
+	}
+
 	public async Task BlockUserAsync(User blocker, User blockee)
 	{
 		if (blockee.PrecomputedIsBlockedBy ?? false) return;
