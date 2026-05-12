@@ -272,7 +272,7 @@ public class AccountController(
 	[Authorize("write:follows")]
 	[ProducesResults(HttpStatusCode.OK)]
 	[ProducesErrors(HttpStatusCode.BadRequest, HttpStatusCode.Forbidden, HttpStatusCode.NotFound)]
-	//TODO: [FromHybrid] request (bool reblogs, bool notify, bool languages)
+	//TODO, in AccountFollowSettingsRequest: bool notify, bool languages
 	public async Task<RelationshipEntity> FollowUser(string id, [FromHybrid] AccountSchemas.AccountFollowSettingsRequest request)
 	{
 		var user = HttpContext.GetUserOrFail();
