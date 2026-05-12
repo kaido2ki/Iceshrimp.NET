@@ -26,15 +26,16 @@ public class UserProfileResponse : IIdentifiable
 [Flags]
 public enum Relations
 {
-	None        = 0,
-	Self        = 1,
-	Following   = 2,
-	FollowedBy  = 4,
-	Requested   = 8,
-	RequestedBy = 16,
-	Blocking    = 32,
-	Muting      = 64,
-	CanBite     = 128
+	None         = 0,
+	Self         = 1,
+	Following    = 2,
+	FollowedBy   = 4,
+	Requested    = 8,
+	RequestedBy  = 16,
+	Blocking     = 32,
+	Muting       = 64,
+	CanBite      = 128,
+	MutedRenotes = 256
 }
 
 public enum Role
