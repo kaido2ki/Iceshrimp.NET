@@ -37,4 +37,8 @@ internal class TimelineControllerModel(ApiClient api)
 	[LinkPagination(20, 80)]
 	public Task<List<NoteResponse>> GetRemoteTimelineAsync(string instance, PaginationQuery pq) =>
 		api.CallAsync<List<NoteResponse>>(HttpMethod.Get, $"/timelines/remote/{instance}", pq);
+	
+	[LinkPagination(20, 80)]
+	public Task<List<NoteResponse>> GetTagTimelineAsync(string tag, PaginationQuery pq) =>
+		api.CallAsync<List<NoteResponse>>(HttpMethod.Get, $"/timelines/tag/{tag}", pq);
 }

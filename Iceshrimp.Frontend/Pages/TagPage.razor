@@ -1,0 +1,90 @@
+@page "/tags/{Tag}"
+@using Iceshrimp.Frontend.Core.Miscellaneous
+@using Iceshrimp.Shared.Schemas.Web
+@using Microsoft.AspNetCore.Authorization
+@using Microsoft.AspNetCore.Components.Sections
+@using Iceshrimp.Frontend.Components
+@using Iceshrimp.Assets.PhosphorIcons
+@using Iceshrimp.Frontend.Core.Services
+@using Iceshrimp.Frontend.Localization
+@using Microsoft.Extensions.Localization
+@attribute [Authorize]
+@inject NavigationManager              Nav;
+@inject ApiService                     Api;
+@inject IStringLocalizer<Localization> Loc;
+
+<HeadTitle Text="@DisplayTag"/>
+
+<SectionContent SectionName="top-bar">
+    <Icon Name="Icons.Hash"></Icon>
+    @Tag
+
+</SectionContent>
+<div class="container">
+    <div class="notes">
+        @foreach (var note in Notes)
+        {
+            <TimelineNote Note="note"></TimelineNote>
+        }
+        <ScrollEnd IntersectionChange="AddNotes" ManualLoad="AddNotes" Class="end"/>
+    </div>
+</div>
+
+@if (State == State.Empty)
+{
+    <HeadTitle Text="@Loc["Error"]"/>
+
+    <div>@Loc["Timeline is empty"]</div>
+}
+
+@code {
+    [Parameter] public string?            Tag        { get; set; }
+    private            string             DisplayTag { get; set; } = "#";
+    private            List<NoteResponse> Notes      { get; set; } = [];
+    private            string?            MinId      { get; set; }
+    private            State              State      { get; set; } = State.Loading;
+    private            bool               _fetchLock;
+
+    async Task LoadTag()
+    {
+        State = State.Loading;
+
+        if (Tag is null)
+        {
+            Nav.NotFound();
+            return;
+        }
+
+        await AddNotes();
+        State = Notes.Count > 0 ? State.Loaded : State.Empty;
+    }
+    
+    private async Task GetNotes(string? minId)
+    {
+        var pq    = new PaginationQuery { Limit = 10, MaxId = minId };
+        var notes = await Api.Timelines.GetTagTimelineAsync(Tag!, pq);
+        if (notes.Count > 0)
+        {
+            MinId = notes.Last().Id;
+            Notes.AddRange(notes);
+            StateHasChanged();
+        }
+    }
+
+    private async Task AddNotes()
+    {
+        if (!_fetchLock)
+        {
+            _fetchLock = true;
+            await GetNotes(MinId);
+            _fetchLock = false;
+        }
+    }
+    
+    protected override async Task OnParametersSetAsync()
+    {
+        Notes      = [];
+        DisplayTag = "#" + Tag;
+        await LoadTag();
+    }
+}
