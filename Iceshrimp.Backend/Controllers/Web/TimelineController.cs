@@ -256,9 +256,7 @@ public class TimelineController(DatabaseContext db, NoteRenderer noteRenderer, C
 	/// <response code="200">Paginated list of notes</response>
 	[HttpGet("tag/{hashtag}")]
 	[ProducesResults(HttpStatusCode.OK)]
-	public async Task<IEnumerable<NoteResponse>> GetHashtagTimeline(
-		string hashtag, PaginationQuery pq
-	)
+	public async Task<IEnumerable<NoteResponse>> GetHashtagTimeline(string hashtag, PaginationQuery pq)
 	{
 		var user = HttpContext.GetUserOrFail();
 		var notes = await db.Notes
@@ -272,6 +270,6 @@ public class TimelineController(DatabaseContext db, NoteRenderer noteRenderer, C
 		               .ToListAsync();
 		
 		return await noteRenderer.RenderManyAsync(notes.EnforceRenoteReplyVisibility(), user,
-		                                          Filter.FilterContext.Lists); // TODO: Probably change this FilterContext (maybe make a new one?)
+		                                          Filter.FilterContext.Public);
 	}
 }
