@@ -245,4 +245,33 @@ public class TimelineController(DatabaseContext db, NoteRenderer noteRenderer, C
 		return await noteRenderer.RenderManyAsync(notes.EnforceRenoteReplyVisibility(), user,
 		                                          Filter.FilterContext.Public);
 	}
+	
+	
+	/// <summary>
+	/// Specific tag
+	/// </summary>
+	/// <remarks>Returns a paginated list of notes for a specific tag.</remarks>
+	/// <param name="hashtag">Hashtag</param>
+	/// <param name="pq">Pagination query</param>
+	/// <response code="200">Paginated list of notes</response>
+	[HttpGet("tag/{hashtag}")]
+	[ProducesResults(HttpStatusCode.OK)]
+	public async Task<IEnumerable<NoteResponse>> GetHashtagTimeline(
+		string hashtag, PaginationQuery pq
+	)
+	{
+		var user = HttpContext.GetUserOrFail();
+		var notes = await db.Notes
+		               .IncludeCommonProperties()
+		               .Where(p => p.Tags.Contains(hashtag.ToLowerInvariant()))
+		               .EnsureVisibleFor(user)
+		               .FilterHidden(user, db)
+		               .FilterMutedThreads(user, db)
+		               .Paginate(pq, ControllerContext)
+		               .PrecomputeVisibilities(user)
+		               .ToListAsync();
+		
+		return await noteRenderer.RenderManyAsync(notes.EnforceRenoteReplyVisibility(), user,
+		                                          Filter.FilterContext.Lists); // TODO: Probably change this FilterContext (maybe make a new one?)
+	}
 }
