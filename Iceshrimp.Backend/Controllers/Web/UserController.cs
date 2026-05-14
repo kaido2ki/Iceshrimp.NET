@@ -372,7 +372,7 @@ public class UserController(
 	/// Mute user's boosts
 	/// </summary>
 	/// <param name="id">The user's ID</param>
-	/// <response code="400">You cannot mute yourself.</response>
+	/// <response code="400">You cannot mute your own boosts.</response>
 	[HttpPost("{id}/mute-boosts")]
 	[Authenticate]
 	[Authorize]
@@ -398,7 +398,7 @@ public class UserController(
 	/// Unmute user's boosts
 	/// </summary>
 	/// <param name="id">The user's ID</param>
-	/// <response code="400">You cannot unmute yourself.</response>
+	/// <response code="400">You cannot unmute your own boosts.</response>
 	[HttpPost("{id}/unmute-boosts")]
 	[Authenticate]
 	[Authorize]
