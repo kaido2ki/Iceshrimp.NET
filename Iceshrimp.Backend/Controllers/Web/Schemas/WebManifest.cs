@@ -23,6 +23,73 @@ public class WebManifest
 		new() { Src = "_content/Iceshrimp.Assets.Branding/192.png", Type = "image/png", Sizes = "192x192" }
 	];
 
+	[J("shortcuts")]
+	public List<Shortcut> Shortcuts { get; set; } =
+	[
+		new()
+		{
+			Name      = "New note",
+			ShortName = "Note",
+			Url       = "/share",
+			Icons =
+			[
+				new()
+				{
+					Src     = "/assets/shortcut-note.png",
+					Type    = "image/png",
+					Sizes   = "96x96",
+					Purpose = "monochrome"
+				}
+			]
+		},
+		new()
+		{
+			Name = "Notifications",
+			Url  = "/notifications",
+			Icons =
+			[
+				new()
+				{
+					Src     = "/assets/shortcut-notifications.png",
+					Type    = "image/png",
+					Sizes   = "96x96",
+					Purpose = "monochrome"
+				}
+			]
+		},
+		new()
+		{
+			Name = "Bookmarks",
+			Url  = "/bookmarks",
+			Icons =
+			[
+				new()
+				{
+					Src     = "/assets/shortcut-bookmarks.png",
+					Type    = "image/png",
+					Sizes   = "96x96",
+					Purpose = "monochrome"
+				}
+			]
+		},
+		new()
+		{
+			Name      = "Follow requests",
+			ShortName = "Requests",
+			Url       = "/follow-requests",
+			Icons =
+			[
+				new()
+				{
+					Src     = "/assets/shortcut-follow-requests.png",
+					Type    = "image/png",
+					Sizes   = "96x96",
+					Purpose = "monochrome"
+				}
+			]
+		}
+	];
+
 	public class Icon
 	{
 		[J("src")]   public required string Src   { get; set; }
@@ -32,5 +99,24 @@ public class WebManifest
 		[J("purpose")]
 		[JI(Condition = JsonIgnoreCondition.WhenWritingNull)]
 		public string? Purpose { get; set; }
+	}
+
+	public class Shortcut
+	{
+		[J("name")] public required string Name { get; set; }
+
+		[J("short_name")]
+		[JI(Condition = JsonIgnoreCondition.WhenWritingNull)]
+		public string? ShortName { get; set; }
+
+		[J("description")]
+		[JI(Condition = JsonIgnoreCondition.WhenWritingNull)]
+		public string? Description { get; set; }
+
+		[J("url")] public required string Url { get; set; }
+
+		[J("icons")]
+		[JI(Condition = JsonIgnoreCondition.WhenWritingNull)]
+		public List<Icon>? Icons { get; set; }
 	}
 }
