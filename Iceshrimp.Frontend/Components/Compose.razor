@@ -385,7 +385,7 @@
         await JsSvc.ShowDialogAsync(Dialog, false);
     }
 
-    public async Task OpenDialog(NoteBase? replyTo = null, NoteBase? quote = null)
+    public async Task OpenDialog(NoteBase? replyTo = null, NoteBase? quote = null, string? noteText = null)
     {
         var settings = await Settings.GetUserSettingsAsync();
         if (replyTo != null)
@@ -409,6 +409,11 @@
             NoteDraft.RenoteId   = quote.Id;
             NoteDraft.Visibility = settings.DefaultNoteVisibility > quote.Visibility ? settings.DefaultNoteVisibility : quote.Visibility;
             TextPlaceholder      = AvailablePlaceholders["quote"];
+        }
+        else if (!string.IsNullOrWhiteSpace(noteText))
+        {
+            await ResetState();
+            NoteDraft.Text = noteText;
         }
         else
         {
@@ -673,8 +678,6 @@
 
             var instance = await MetadataService.Instance.Value;
             NoteLength = instance.Limits.NoteLength;
-
-            ComposeService.ComposeDialog = this;
         }
     }
 
@@ -746,5 +749,7 @@
         TextPlaceholder = AvailablePlaceholders["default"];
 
         _objRef = DotNetObjectReference.Create(this);
+
+        ComposeService.ComposeDialog = this;
     }
 }

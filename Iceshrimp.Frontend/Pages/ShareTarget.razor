@@ -1,0 +1,60 @@
+@page "/share"
+@using System.Text
+@using Iceshrimp.Assets.PhosphorIcons
+@using Iceshrimp.Frontend.Components
+@using Iceshrimp.Frontend.Core.Services
+@using Iceshrimp.Frontend.Localization
+@using Microsoft.AspNetCore.Authorization
+@using Microsoft.AspNetCore.Components.Sections
+@using Microsoft.Extensions.Localization
+@attribute [Authorize]
+@inject ComposeService                 Compose;
+@inject IStringLocalizer<Localization> Loc;
+@inject NavigationManager              Nav;
+
+<SectionContent SectionName="top-bar">
+    <Icon Name="Icons.Share"/>
+    @Loc["Share"]
+</SectionContent>
+
+<div class="share-target">
+    @if (ComposeOpened)
+    {
+        <button class="button" @onclick="NavHome">
+            <Icon Name="Icons.House"/>
+            @Loc["Go home"]
+        </button>
+    }
+    else
+    {
+        <LoadingSpinner/>
+    }
+</div>
+
+@code {
+    [SupplyParameterFromQuery(Name = "title")] public string? Title { get; set; }
+    [SupplyParameterFromQuery(Name = "text")] public string? Text { get; set; }
+    [SupplyParameterFromQuery(Name = "url")] public string? Url { get; set; }
+
+    private bool ComposeOpened { get; set; }
+
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        if (!firstRender) return;
+
+        ComposeOpened = false;
+
+        var sb = new StringBuilder();
+
+        if (!string.IsNullOrWhiteSpace(Title)) sb.Append($"**{Title}**");
+        if (!string.IsNullOrWhiteSpace(Text)) sb.Append(Text);
+        if (!string.IsNullOrWhiteSpace(Url)) sb.Append(Url);
+
+        await Compose.ComposeDialog?.OpenDialog(noteText: string.Join('\n', sb))!;
+
+        ComposeOpened = true;
+        StateHasChanged();
+    }
+
+    private void NavHome() => Nav.NavigateTo("/");
+}

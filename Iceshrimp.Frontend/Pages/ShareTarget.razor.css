@@ -1,0 +1,11 @@
+.share-target {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    margin-top: 3rem;
+    text-align: center;
+
+    ::deep .ph-house {
+        margin-right: 0.5rem;
+    }
+}
