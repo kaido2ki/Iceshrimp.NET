@@ -7,6 +7,7 @@
 @inject ApiService                     Api
 @inject GlobalComponentSvc             GlobalComponentSvc;
 @inject IJSRuntime                     Js;
+@inject JsService                      JsSvc;
 @inject IStringLocalizer<Localization> Loc;
 @inject MetadataService                MetadataService
 @inject NavigationManager              Nav;
@@ -90,6 +91,12 @@
                     {
                         <MenuElement Icon="Icons.ArrowSquareOut" OnSelect="OpenOriginal">
                             <Text>@Loc["Open original page"]</Text>
+                        </MenuElement>
+                    }
+                    @if (CanShare)
+                    {
+                        <MenuElement Icon="Icons.Share" OnSelect="Share">
+                            <Text>@Loc["Share"]</Text>
                         </MenuElement>
                     }
                     <MenuElement Icon="Icons.Share" OnSelect="CopyLink">
@@ -269,6 +276,7 @@
     private Menu              ContextMenu { get; set; } = null!;
     private UserMemoRequest   MemoForm    { get; set; } = null!;
     private StateButton       MemoButton  { get; set; } = null!;
+    private bool              CanShare    { get; set; }
     private InstanceResponse? _instance;
 
     private Dictionary<string, string> _languages = LanguageHelper.Bcp47Languages;
@@ -485,7 +493,9 @@
     }
 
     private void CopyUsername() => Js.InvokeVoidAsync("navigator.clipboard.writeText", $"@{User.Username}" + (User.Host != null ? $"@{User.Host}" : ""));
-    
+
+    private void Share() => JsSvc.ShareAsync(User.DisplayName ?? User.Username, UserProfile.Url ?? $"https://{_instance?.WebDomain}/@{User.Username}" + (User.Host != null ? $"@{User.Host}" : ""));
+
     private void CopyAtomFeed() => Js.InvokeVoidAsync("navigator.clipboard.writeText", $"https://{_instance?.WebDomain}/users/{User.Id}/feed.atom");
 
     private void CopyJsonFeed() => Js.InvokeVoidAsync("navigator.clipboard.writeText", $"https://{_instance?.WebDomain}/users/{User.Id}/feed.json");
@@ -552,5 +562,6 @@
     {
         _instance = await MetadataService.Instance.Value;
         MemoForm  = new UserMemoRequest { Text = UserProfile.Memo ?? "" };
+        CanShare  = await JsSvc.CanShareAsync(User.DisplayName ?? User.Username, UserProfile.Url ?? $"https://{_instance?.WebDomain}/@{User.Username}" + (User.Host != null ? $"@{User.Host}" : ""));
     }
 }

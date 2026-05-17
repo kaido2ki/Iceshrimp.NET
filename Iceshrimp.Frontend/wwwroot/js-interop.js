@@ -55,3 +55,25 @@ export function getPosition(element, includeScroll) {
 export function getSelectionStart(element) {
     return element.selectionStart;
 }
+
+/**
+ * Check whether sharing is supported
+ * @param {string | null} text Text to share
+ * @param {string} url URL to share
+ * @returns {boolean} Data can be shared
+ */
+export function canShareLink(text, url) {
+    // Check that the APIs are present and the data is valid
+    if (!navigator.share || !navigator.canShare) return false;
+    return navigator.canShare({ text, url });
+}
+
+/**
+ * Share a link with optional text
+ * @param {string | null} text Text to share
+ * @param {string} url URL to share
+ * @returns {Promise<void>}
+ */
+export async function shareLink(text, url) {
+    await navigator.share({ text, url });
+}

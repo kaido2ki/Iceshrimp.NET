@@ -7,6 +7,7 @@
 @using Microsoft.Extensions.Localization
 @inject IStringLocalizer<Localization> Loc;
 @inject IJSRuntime                     Js;
+@inject JsService                      JsSvc;
 @inject SessionService                 Session;
 @inject GlobalComponentSvc             GlobalComponentSvc
 @inject MetadataService                MetadataSvc;
@@ -129,6 +130,12 @@
             <MenuElement Icon="Icons.ArrowSquareOut" OnSelect="OpenOriginal">
                 <Text>@Loc["Open original page"]</Text>
             </MenuElement>
+            @if (CanShare)
+            {
+                <MenuElement Icon="Icons.Share" OnSelect="Share">
+                    <Text>@Loc["Share"]</Text>
+                </MenuElement>
+            }
             <MenuElement Icon="Icons.Share" OnSelect="CopyLink">
                 <Text>@Loc["Copy link"]</Text>
             </MenuElement>
@@ -181,8 +188,14 @@
     private                                      ElementReference         RenoteButton   { get; set; }
     private                                      ElementReference         EmojiButton    { get; set; }
     private                                      ElementReference         MenuButton     { get; set; }
+    private                                      bool                     CanShare       { get; set; }
 
     [CascadingParameter] NoteBase Note { get; set; } = null!;
+
+    protected override async Task OnInitializedAsync()
+    {
+        CanShare = await JsSvc.CanShareAsync($"Note by {Note.User.DisplayName ?? Note.User.Username}", Note.Url);
+    }
 
     private void ToggleMenu() => ContextMenu.Toggle(MenuButton);
 
@@ -203,6 +216,8 @@
     private void CopyLinkRemote() => Js.InvokeVoidAsync("navigator.clipboard.writeText", Note.Url);
 
     private void CopyContents() => Js.InvokeVoidAsync("navigator.clipboard.writeText", Note.Text);
+
+    private void Share() => JsSvc.ShareAsync($"Note by {Note.User.DisplayName ?? Note.User.Username}", Note.Url);
 
     private void Bookmark()
     {

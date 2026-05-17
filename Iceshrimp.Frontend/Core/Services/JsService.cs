@@ -60,6 +60,23 @@ public class JsService
     public ValueTask<int> GetSelectionStartAsync(ElementReference element) =>
         Module!.InvokeAsync<int>("getSelectionStart", element);
 
+    /// <summary>
+    /// Check whether sharing is supported
+    /// </summary>
+    /// <param name="text">Text to share</param>
+    /// <param name="url">URL to share</param>
+    /// <returns>Data can be shared</returns>
+    public ValueTask<bool> CanShareAsync(string? text, string url) =>
+        Module!.InvokeAsync<bool>("canShareLink", text, url);
+
+    /// <summary>
+    /// Share a link with optional text
+    /// </summary>
+    /// <param name="text">Text to share</param>
+    /// <param name="url">URL to share</param>
+    public ValueTask ShareAsync(string? text, string url) =>
+        Module!.InvokeVoidAsync("shareLink", text, url);
+
     public enum ScrollBehavior
     {
         Auto,
