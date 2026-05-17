@@ -1,6 +1,8 @@
-namespace Iceshrimp.Backend.Controllers.Web.Schemas;
+using System.Text.Json.Serialization;
 using J = System.Text.Json.Serialization.JsonPropertyNameAttribute;
+using JI = System.Text.Json.Serialization.JsonIgnoreAttribute;
 
+namespace Iceshrimp.Backend.Controllers.Web.Schemas;
 
 public class WebManifest
 {
@@ -15,6 +17,8 @@ public class WebManifest
 
 	[J("icons")] public List<Icon> Icons { get; set; } =
 	[
+		new() { Src = "_content/Iceshrimp.Assets.Branding/maskable.png", Type = "image/png", Sizes = "512x512", Purpose = "maskable" },
+		new() { Src = "_content/Iceshrimp.Assets.Branding/monochrome.png", Type = "image/png", Sizes = "512x512", Purpose = "monochrome" },
 		new() { Src = "_content/Iceshrimp.Assets.Branding/512.png", Type = "image/png", Sizes = "512x512" },
 		new() { Src = "_content/Iceshrimp.Assets.Branding/192.png", Type = "image/png", Sizes = "192x192" }
 	];
@@ -24,5 +28,9 @@ public class WebManifest
 		[J("src")]   public required string Src   { get; set; }
 		[J("type")]  public required string Type  { get; set; }
 		[J("sizes")] public required string Sizes { get; set; }
+
+		[J("purpose")]
+		[JI(Condition = JsonIgnoreCondition.WhenWritingNull)]
+		public string? Purpose { get; set; }
 	}
 }
