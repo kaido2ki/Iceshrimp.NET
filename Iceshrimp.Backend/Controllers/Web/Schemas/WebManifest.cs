@@ -104,9 +104,10 @@ public class WebManifest
 
 	public class Share
 	{
-		[J("action")] public string      Action { get; set; } = "/share";
-		[J("method")] public string      Method { get; set; } = "GET";
-		[J("params")] public ShareParams Params { get; set; } = new();
+		[J("action")]  public string      Action  { get; set; } = "/share";
+		[J("enctype")] public string      EncType { get; set; } = "application/x-www-form-urlencoded";
+		[J("method")]  public string      Method  { get; set; } = "GET";
+		[J("params")]  public ShareParams Params  { get; set; } = new();
 
 		public class ShareParams
 		{
