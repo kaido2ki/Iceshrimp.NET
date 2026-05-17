@@ -14,6 +14,7 @@ public class WebManifest
 	[J("background_color")]            public          string BackgroundColor           { get; set; } = "#ffffff";
 	[J("theme_color")]                 public          string ThemeColor                { get; set; } = "#03173d";
 	[J("prefer_related_applications")] public          bool   PreferRelatedApplications { get; set; } = false;
+	[J("share_target")]                public          Share  ShareTarget               { get; set; } = new();
 
 	[J("icons")] public List<Icon> Icons { get; set; } =
 	[
@@ -99,6 +100,20 @@ public class WebManifest
 		[J("purpose")]
 		[JI(Condition = JsonIgnoreCondition.WhenWritingNull)]
 		public string? Purpose { get; set; }
+	}
+
+	public class Share
+	{
+		[J("action")] public string      Action { get; set; } = "/share";
+		[J("method")] public string      Method { get; set; } = "GET";
+		[J("params")] public ShareParams Params { get; set; } = new();
+
+		public class ShareParams
+		{
+			[J("title")] public string Title { get; set; } = "title";
+			[J("text")]  public string Text  { get; set; } = "text";
+			[J("url")]   public string Url   { get; set; } = "url";
+		}
 	}
 
 	public class Shortcut
