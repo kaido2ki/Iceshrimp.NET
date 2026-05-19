@@ -107,6 +107,7 @@ internal class TimelineStore : NoteMessageProvider, IAsyncDisposable, IStreaming
 				TimelineEnum.Global    => await _api.Timelines.GetGlobalTimelineAsync(pq),
 				TimelineEnum.Bookmarks => await _api.Timelines.GetBookmarksTimelineAsync(pq),
 				TimelineEnum.Remote    => await _api.Timelines.GetRemoteTimelineAsync(timeline.Remote!, pq),
+				TimelineEnum.Tag	   => await _api.Timelines.GetTagTimelineAsync(timeline.Tag!, pq),
 				_                      => throw new ArgumentOutOfRangeException(nameof(timeline), timeline, null)
 			};
 
@@ -248,14 +249,20 @@ internal class TimelineStore : NoteMessageProvider, IAsyncDisposable, IStreaming
 		public TimelineEnum Enum { get; }
 		
 		public string? Remote { get; }
+		public string? Tag    { get; }
 
 		public Timeline(TimelineEnum timelineEnum, string? instance = null)
 		{
 			Enum = timelineEnum;
 			if (timelineEnum == TimelineEnum.Remote)
 			{
-				Key    = $"remote:{timelineEnum.ToString()}";
+				Key    = $"remote:{instance!}";
 				Remote = instance ?? throw new ArgumentException("Cannot create remote key without instance");
+			}
+			else if (timelineEnum == TimelineEnum.Tag)
+			{
+				Key = $"tag:{instance!}";
+				Tag = instance ?? throw new ArgumentException("Cannot create tag key without tag");
 			}
 			else
 			{

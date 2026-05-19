@@ -1,6 +1,7 @@
 @page "/"
 @page "/timeline/{Timeline}"
 @page "/timeline/remote/{Instance}"
+@page "/tags/{Tag}"
 @inject TimelineStore                  Store;
 @inject StateService                   State;
 @using System.Web
@@ -20,7 +21,7 @@
 @inject IStringLocalizer<Localization> Loc;
 @inject GlobalComponentSvc             GlobalComponentSvc;
 @inject NavigationManager              Nav;
-@inject StreamingService Streaming;
+@inject StreamingService               Streaming;
 @implements IDisposable
 
 <HeadTitle Text="@Loc["Timeline"]"/>
@@ -55,6 +56,10 @@
                     <Icon Name="Icons.Airplane"/>
                     @Loc[$"Remote: {CurrentTimeline.Remote}"]
                     break;
+                case TimelineEnum.Tag:
+                    <Icon Name="Icons.Tag"/>
+                    @Loc[$"Tag: #{CurrentTimeline.Tag}"]
+                    break;
             }
         </div>
         <Menu @ref="MenuRef" Fixed="true">
@@ -83,6 +88,11 @@
                     <Icon Name="Icons.Airplane"/>@Loc["Remote"]
                 </Text>
             </MenuElement>
+            <MenuElement OnSelect="PickTag">
+                <Text>
+                    <Icon Name="Icons.Tag" />@Loc["Tag"]
+                </Text>
+            </MenuElement>
         </Menu>
     </button>
 
@@ -105,6 +115,7 @@
 @code {
     [Parameter] public string?                        Timeline { get; set; }
     [Parameter] public string?                        Instance { get; set; }
+    [Parameter] public string?                        Tag      { get; set; }
     private            bool                           _loaded;
     private            List<NoteResponse>?            NoteResponses   { get; set; }
     private            TimelineStore.Timeline?        CurrentTimeline { get; set; }
@@ -114,33 +125,37 @@
 
     protected override async Task OnInitializedAsync()
     {
-        if (Timeline != null)
+        if (Timeline != null || Tag != null)
         {
             switch (Timeline)
             {
                 case "local":
-                     SetTimeline(new TimelineStore.Timeline(TimelineEnum.Local));
+                    SetTimeline(new TimelineStore.Timeline(TimelineEnum.Local));
                     break;
-                    case "social":
-                     SetTimeline(new TimelineStore.Timeline(TimelineEnum.Social));
+                case "social":
+                    SetTimeline(new TimelineStore.Timeline(TimelineEnum.Social));
                     break;
-                    case "bubble":
-                     SetTimeline(new TimelineStore.Timeline(TimelineEnum.Bubble));
+                case "bubble":
+                    SetTimeline(new TimelineStore.Timeline(TimelineEnum.Bubble));
                     break;
-                    case "global":
-                     SetTimeline(new TimelineStore.Timeline(TimelineEnum.Global));
+                case "global":
+                    SetTimeline(new TimelineStore.Timeline(TimelineEnum.Global));
                     break;
-                    case "remote":
-                     SetTimeline(new TimelineStore.Timeline(TimelineEnum.Remote, Instance));
+                case "remote":
+                    SetTimeline(new TimelineStore.Timeline(TimelineEnum.Remote, Instance));
+                    break;
+                case null when !string.IsNullOrEmpty(Tag):
+                    SetTimeline(new TimelineStore.Timeline(TimelineEnum.Tag, Tag));
                     break;
             }
         }
         else
         {
-             SetTimeline(State.TimelinePage.Current ?? new TimelineStore.Timeline(TimelineEnum.Home));
+            SetTimeline(State.TimelinePage.Current ?? new TimelineStore.Timeline(TimelineEnum.Home));
         }
-        NoteResponses   = await Store.GetTimelineAsync(CurrentTimeline!, new TimelineStore.Cursor { Direction = DirectionEnum.Older, Count = 20, Id = null });
-        _loaded         = true;
+
+        NoteResponses = await Store.GetTimelineAsync(CurrentTimeline!, new TimelineStore.Cursor { Direction = DirectionEnum.Older, Count = 20, Id = null });
+        _loaded       = true;
         StateHasChanged();
     }
 
@@ -160,20 +175,29 @@
         VirtualScroller?.Save();
         _loaded = false;
         StateHasChanged();
-        NoteResponses   = null;
-         SetTimeline(new TimelineStore.Timeline(timeline, remote));
-        NoteResponses   = await Store.GetTimelineAsync(CurrentTimeline!, new TimelineStore.Cursor { Direction = DirectionEnum.Older, Count = 20, Id = null });
-        _loaded         = true;
+        NoteResponses = null;
+        SetTimeline(new TimelineStore.Timeline(timeline, remote));
+        NoteResponses = await Store.GetTimelineAsync(CurrentTimeline!, new TimelineStore.Cursor { Direction = DirectionEnum.Older, Count = 20, Id = null });
+        _loaded       = true;
         StateHasChanged();
     }
 
     private async Task PickRemote()
         => await GlobalComponentSvc.PromptDialog?.Prompt(new EventCallback<string?>(this, AddQuoteCallback), Loc["Remote Instance"], Loc["Instance hostname"], $"{CurrentTimeline!.Remote}")!;
 
+    private async Task PickTag()
+        => await GlobalComponentSvc.PromptDialog?.Prompt(new EventCallback<string?>(this, PickTagCallback), Loc["Tag"], Loc["#tag"], $"{CurrentTimeline!.Tag}")!;
+
     private async Task AddQuoteCallback(string? remote)
     {
         if (remote is null) return;
         await SwitchTimeline(TimelineEnum.Remote, remote);
+    }
+
+    private async Task PickTagCallback(string? tag)
+    {
+        if (tag is null) return;
+        await SwitchTimeline(TimelineEnum.Tag, tag);
     }
 
     private void SetTimeline(TimelineStore.Timeline timeline)
@@ -208,6 +232,9 @@
             case TimelineEnum.Remote:
                 _ = Streaming.SubscribeToRemoteFeedAsync(timeline.Remote!);
                 Nav.NavigateTo($"/timeline/remote/{HttpUtility.UrlEncode(timeline.Remote)}");
+                break;
+            case TimelineEnum.Tag:
+                Nav.NavigateTo($"/tags/{HttpUtility.UrlEncode(timeline.Tag)}");
                 break;
             default:
                 throw new ArgumentOutOfRangeException();
