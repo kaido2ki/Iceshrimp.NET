@@ -19,11 +19,8 @@ const base = "/";
 const baseUrl = new URL(base, self.origin);
 const manifestUrlList = self.assetsManifest.assets.map(asset => new URL(asset.url, baseUrl).href);
 
-const broadcast = new BroadcastChannel('update-channel');
-
 async function onInstall(event) {
     console.info('Service worker: Install');
-    broadcast.postMessage({type: 'INSTALLING_WORKER'});
 
     // Fetch and cache all matching items from the assets manifest
     const assetsRequests = self.assetsManifest.assets
@@ -69,6 +66,6 @@ async function onFetch(event) {
 
 self.addEventListener('message', (event) => {
     if (event.data && event.data.type === 'SKIP_WAITING') {
-        self.skipWaiting();
+        self.skipWaiting().then(() => event.source.postMessage({type: "REQUEST_RELOAD"}));
     }
 });

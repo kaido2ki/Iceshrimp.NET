@@ -1,51 +1,46 @@
-const broadcast = new BroadcastChannel('update-channel');
-
-export async function RegisterSWUpdateCallback(dotNetHelper){
-    broadcast.onmessage = (event) => {
-        if (event.data && event.data.type === 'INSTALLING_WORKER') {
-            dotNetHelper.invokeMethod('NewServiceWorker');
-        }
-    };
-}
-
-export async function ServiceWorkerCheckRegistration(){
-    if (navigator.serviceWorker == null) return null;
-    const registration = await navigator.serviceWorker.getRegistration();
-    if (!registration) return null;
-    if (registration.installing) return "installing";
-    if (registration.waiting) return "waiting";
-    if (registration.active) return "active";
-    else return null
-}
-
-export async function ServiceWorkerUpdate(){
-    if (navigator.serviceWorker == null) return null;
-    const registration = await navigator.serviceWorker.getRegistration();
-    if (!registration) return null;
-    var res = await registration.update();
-    if (res.installing) return "installing";
-    if (res.waiting) return "waiting";
-    if (res.active) return "active";
-    else return null;
-}
-
-export async function ServiceWorkerSkipWaiting(){
-    if (navigator.serviceWorker == null) return null;
-    const registration = await navigator.serviceWorker.getRegistration();
-    if (registration?.waiting){
-        registration.waiting.postMessage({ type: 'SKIP_WAITING' })
-        return true;
+navigator.serviceWorker.addEventListener("message", (event) => {
+    if (event.data && event.data.type === 'REQUEST_RELOAD') {
+        window.location.reload(true);
     }
-    else {
-        return false;
+});
+
+let checkCount = 0;
+let checkInterval = null;
+let dotnet = null;
+
+export async function startSwUpdateChecking(dotnetRef) {
+    dotnet = dotnetRef;
+    checkCount = 0;
+    checkInterval = window.setInterval(checkSwUpdates, 3000);
+}
+
+async function checkSwUpdates() {
+    const reg = await navigator.serviceWorker.getRegistration();
+    console.info("Checking service worker for updates");
+
+    if (reg.waiting) {
+        dotnet.invokeMethod("UpdateReady");
+        window.clearInterval(checkInterval);
+    } else if (!reg.installing && checkCount >= 5) {
+        dotnet.invokeMethod("NoUpdate");
+        window.clearInterval(checkInterval);
+    }
+
+    checkCount++;
+}
+
+export async function swSkipWaiting() {
+    const reg = await navigator.serviceWorker.getRegistration();
+
+    if (reg.waiting) {
+        reg.waiting.postMessage({type: "SKIP_WAITING"});
     }
 }
 
-export async function UnregisterAll(){
-    let regs = await navigator.serviceWorker.getRegistrations();
-    for (let i of regs) {
-        await i.unregister();
+export async function unregisterAllSw() {
+    const regs = await navigator.serviceWorker.getRegistrations();
+
+    for (let reg of regs) {
+        await reg.unregister();
     }
-    let newRegs = await navigator.serviceWorker.getRegistrations();
-    return newRegs.length <= 0;
 }

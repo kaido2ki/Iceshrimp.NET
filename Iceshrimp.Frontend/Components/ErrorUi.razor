@@ -87,7 +87,7 @@
     {
         Session.EndSession();
         LocalStorage.Clear();
-        await UpdateService.ServiceWorkerUnregisterAllAsync();
+        await UpdateService.UnregisterAllSwAsync();
         Navigation.NavigateTo("/", true);
     }
 }

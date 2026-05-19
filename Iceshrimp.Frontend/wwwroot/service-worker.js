@@ -4,6 +4,6 @@
 self.addEventListener('fetch', () => { });
 self.addEventListener('message', (event) => {
     if (event.data && event.data.type === 'SKIP_WAITING') {
-        self.skipWaiting();
+        self.skipWaiting().then(() => event.source.postMessage({type: "REQUEST_RELOAD"}));
     }
 });
