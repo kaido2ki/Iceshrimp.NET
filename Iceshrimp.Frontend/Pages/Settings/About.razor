@@ -4,7 +4,6 @@
 @using Iceshrimp.Frontend.Core.InMemoryLogger
 @using Iceshrimp.Frontend.Core.Services
 @using Iceshrimp.Frontend.Localization
-@using Iceshrimp.Shared.Schemas.Web
 @using Microsoft.AspNetCore.Authorization
 @using Microsoft.Extensions.Localization
 @using Microsoft.AspNetCore.Components.Sections
@@ -16,11 +15,6 @@
 @inject IStringLocalizer<Localization> Loc;
 @inject IJSRuntime                     Js;
 @inject InMemoryLogService             LogSvc;
-@inject UpdateService                  UpdateSvc;
-@inject NavigationManager              Nav;
-@inject ILogger<About>                 Logger;
-
-@implements IDisposable;
 
 <HeadTitle Text="@Loc["About"]"/>
 
@@ -185,42 +179,6 @@
             <code>@Environment.Version</code>
         </span>
     </div>
-    <div class="update">
-        <StateButton OnClick="@CheckUpdate" @ref="UpdateButton" ExtraClasses="button">
-            <Success>@Loc["No Update available"]</Success>
-            <Initial>@Loc["Check for updates"]</Initial>
-            <Loading>@Loc["Update Loading"]<LoadingSpinner/>
-            </Loading>
-            <Failed>@Loc["Failed to check for updates"]</Failed>
-        </StateButton>
-        @if (_updateState == UpdateState.Installed)
-        {
-            <div>New version!</div>
-            <div class="version">
-                <span class="name">Iceshrimp.NET</span>
-                <span class="value">
-                    <code>@_newVersion?.Version</code>
-                </span>
-                <span class="name">Codename</span>
-                <span class="value">
-                    <code>@_newVersion?.Codename</code>
-                </span>
-                @if (_newVersion?.CommitHash != null)
-                {
-                    <span class="name">Commit</span>
-                    <span class="value">
-                        <code>@_newVersion?.CommitHash</code>
-                    </span>
-                }
-            </div>
-            <button class="button" @onclick="@SkipWaiting">@Loc["Load new version"]</button>
-        }
-        @if (_updateState == UpdateState.NoUpdate)
-        {
-            <div>@Loc["Already on the newest version!"]</div>
-        }
-
-    </div>
     <div class="logs">
         <h1>@Loc["Logs"]</h1>
         @Loc["These logs may contain sensitive information, please do not post them publicly.\n" + "Providing them to developers upon request may help with debugging."]
@@ -232,13 +190,10 @@
 </div>
 
 @code {
-    private IJSInProcessObjectReference _module      = null!;
-    private UpdateState                 _updateState = UpdateState.Unknown;
-    private VersionResponse?            _newVersion;
-    private StateButton                 UpdateButton { get; set; } = null!;
-    private InstanceResponse?           Instance     { get; set; }
-    private List<RuleResponse>?         Rules        { get; set; }
-    private StaffResponse?              Staff        { get; set; }
+    private IJSInProcessObjectReference _module = null!;
+    private InstanceResponse?           Instance { get; set; }
+    private List<RuleResponse>?         Rules    { get; set; }
+    private StaffResponse?              Staff    { get; set; }
 
     protected override async Task OnInitializedAsync()
     {
@@ -246,81 +201,12 @@
         Rules         = await Api.Instance.GetRulesAsync();
         Staff         = await Api.Instance.GetStaffAsync();
 
-        _module                     =  (IJSInProcessObjectReference)await Js.InvokeAsync<IJSObjectReference>("import", "./Components/ErrorUi.razor.js");
-        UpdateSvc.UpdateStatusEvent += OnUpdateStatusChange;
-        UpdateStatusSwitch(UpdateSvc.UpdateState);
-        await CheckUpdate();
-    }
-
-    private enum UpdateState
-    {
-        Unknown,
-        Available,
-        Installing,
-        Installed,
-        NoUpdate
-    }
-
-    private void OnUpdateStatusChange(object? _, UpdateService.UpdateStates newState)
-    {
-        UpdateStatusSwitch(newState);
-        StateHasChanged();
-    }
-
-    private void UpdateStatusSwitch(UpdateService.UpdateStates newState)
-    {
-        switch (newState)
-        {
-            case UpdateService.UpdateStates.UpdateInstalled:
-                _updateState = UpdateState.Installed;
-                break;
-            case UpdateService.UpdateStates.UpdateInstalling:
-                _updateState       = UpdateState.Installing;
-                UpdateButton.State = StateButton.StateEnum.Loading;
-                break;
-            case UpdateService.UpdateStates.UpdateAvailable:
-                _updateState = UpdateState.Available;
-                break;
-            case UpdateService.UpdateStates.NoUpdate:
-                _updateState       = UpdateState.NoUpdate;
-                UpdateButton.State = StateButton.StateEnum.Success;
-                break;
-        }
-    }
-    private async Task CheckUpdate()
-    {
-        try
-        {
-            await UpdateSvc.ServiceWorkerUpdateAsync();
-        }
-        catch (Exception e)
-        {
-            Logger.LogError(e, "Failed to check for updates.");
-            return;
-        }
-
-        _newVersion = UpdateSvc.BackendVersion;
-        StateHasChanged();
-    }
-
-    private async Task SkipWaiting()
-    {
-        var res = await UpdateSvc.ServiceWorkerSkipWaitingAsync();
-        if (!res) return;
-        if (res)
-        {
-            Nav.NavigateTo("/", true);
-        }
+        _module = (IJSInProcessObjectReference)await Js.InvokeAsync<IJSObjectReference>("import", "./Components/ErrorUi.razor.js");
     }
 
     private void DownloadLogs()
     {
         var logBytes = LogSvc.GetLogs().SelectMany(p => Encoding.UTF8.GetBytes(p)).ToArray();
         _module.InvokeVoid("DownloadFile", "log.txt", "text/plain", logBytes);
-    }
-
-    public void Dispose()
-    {
-        UpdateSvc.UpdateStatusEvent -= OnUpdateStatusChange;
     }
 }
