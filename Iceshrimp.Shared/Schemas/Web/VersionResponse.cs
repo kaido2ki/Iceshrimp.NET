@@ -7,4 +7,5 @@ public class VersionResponse
 	public required string? CommitHash { get; set; }
 	public required string  RawVersion { get; set; }
 	public required string  Version    { get; set; }
+	public required string  ReleaseUrl { get; set; }
 }

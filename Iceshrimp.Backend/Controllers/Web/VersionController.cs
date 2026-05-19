@@ -1,6 +1,7 @@
 using System.Net;
 using System.Net.Mime;
 using Iceshrimp.Backend.Controllers.Shared.Attributes;
+using Iceshrimp.Backend.Core.Configuration;
 using Iceshrimp.Backend.Core.Middleware;
 using Iceshrimp.Shared.Helpers;
 using Iceshrimp.Shared.Schemas.Web;
@@ -33,7 +34,8 @@ public class VersionController : ControllerBase
 			CommitHash = version.CommitHash,
 			Edition    = version.Edition,
 			Version    = version.Version,
-			RawVersion = version.RawVersion
+			RawVersion = version.RawVersion,
+			ReleaseUrl = $"{Constants.RepositoryUrl}/releases/tag/v{version.RawVersion}"
 		};
 	}
 }
