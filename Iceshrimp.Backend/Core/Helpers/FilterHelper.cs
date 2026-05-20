@@ -71,10 +71,17 @@ public static class FilterHelper
 				var pattern = $@"\b{EfHelpers.EscapeRegexQuery(keyword[1..^1])}\b";
 				var regex   = new Regex(pattern, RegexOptions.IgnoreCase, TimeSpan.FromMilliseconds(10));
 
-				if (note.Text != null && regex.IsMatch(note.Text))
-					return keyword;
-				if (note.Cw != null && regex.IsMatch(note.Cw))
-					return keyword;
+				try
+				{
+					if (note.Text != null && regex.IsMatch(note.Text))
+						return keyword;
+					if (note.Cw != null && regex.IsMatch(note.Cw))
+						return keyword;
+				}
+				catch (RegexMatchTimeoutException)
+				{
+					return null;
+				}
 			}
 			else if (keyword.StartsWith('/') && keyword.EndsWith('/'))
 			{
