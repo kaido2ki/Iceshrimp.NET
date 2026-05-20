@@ -30,7 +30,7 @@
 
     <!-- Version metadata -->
     <PropertyGroup>
-        <VersionPrefix>2026.1</VersionPrefix>
+        <VersionPrefix>2026.1.1</VersionPrefix>
         <VersionSuffix>beta</VersionSuffix>
     </PropertyGroup>
 

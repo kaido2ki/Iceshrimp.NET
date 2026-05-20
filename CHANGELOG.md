@@ -1,3 +1,18 @@
+## v2026.1.1-beta
+This is a security hotfix release. It's identical to v2026.1-beta, except for the security mitigations listed below. Upgrading is strongly recommended for all server operators.
+
+### Backend
+- The JSON-LD keywords `@reverse`, `@graph` and `@included` are now disallowed
+- JSON-LD payloads that result in more than one object after expansion are now disallowed
+
+### Mastodon client API
+- Regex timeouts during note filtering are now handled gracefully
+
+### Attribution
+This release was made possible by project contributors: Laura Hausmann & notfire
+
+Furthermore, I want to thank the Mastodon team for the vulnerability disclosure.
+
 ## v2026.1-beta
 This release contains lots of new features & bug fixes. Upgrading is recommended for all server operators.
 
