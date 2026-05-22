@@ -369,11 +369,11 @@ public class UserController(
 	}
 
 	/// <summary>
-	/// Mute user's boosts
+	/// Mute user's renotes
 	/// </summary>
 	/// <param name="id">The user's ID</param>
-	/// <response code="400">You cannot mute your own boosts.</response>
-	[HttpPost("{id}/mute-boosts")]
+	/// <response code="400">You cannot mute your own renotes.</response>
+	[HttpPost("{id}/mute-renotes")]
 	[Authenticate]
 	[Authorize]
 	[ProducesResults(HttpStatusCode.OK)]
@@ -382,7 +382,7 @@ public class UserController(
 	{
 		var user = HttpContext.GetUserOrFail();
 		if (user.Id == id)
-			throw GracefulException.BadRequest("You cannot mute your own boosts");
+			throw GracefulException.BadRequest("You cannot mute your own renotes");
 		
 		var mutee = await db.Users
 		                    .Where(p => p.Id == id)
@@ -395,11 +395,11 @@ public class UserController(
 	}
 	
 	/// <summary>
-	/// Unmute user's boosts
+	/// Unmute user's renotes
 	/// </summary>
 	/// <param name="id">The user's ID</param>
-	/// <response code="400">You cannot unmute your own boosts.</response>
-	[HttpPost("{id}/unmute-boosts")]
+	/// <response code="400">You cannot unmute your own renotes.</response>
+	[HttpPost("{id}/unmute-renotes")]
 	[Authenticate]
 	[Authorize]
 	[ProducesResults(HttpStatusCode.OK)]
@@ -408,7 +408,7 @@ public class UserController(
 	{
 		var user = HttpContext.GetUserOrFail();
 		if (user.Id == id)
-			throw GracefulException.BadRequest("You cannot unmute your own boosts");
+			throw GracefulException.BadRequest("You cannot unmute your own renotes");
 		
 		var mutee = await db.Users
 		                    .Where(p => p.Id == id)

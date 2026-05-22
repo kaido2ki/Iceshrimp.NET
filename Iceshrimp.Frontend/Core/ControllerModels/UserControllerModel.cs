@@ -50,10 +50,10 @@ internal class UserControllerModel(ApiClient api)
 		api.CallAsync(HttpMethod.Post, $"/users/{id}/unmute");
 
 	public Task MuteRenotesAsync(string id) =>
-		api.CallAsync(HttpMethod.Post, $"/users/{id}/mute-boosts");
+		api.CallAsync(HttpMethod.Post, $"/users/{id}/mute-renotes");
 	
 	public Task UnmuteRenotesAsync(string id) =>
-		api.CallAsync(HttpMethod.Post, $"/users/{id}/unmute-boosts");
+		api.CallAsync(HttpMethod.Post, $"/users/{id}/unmute-renotes");
 
 	public Task<UserResponse?> RefetchUserAsync(string id) =>
 		api.CallNullableAsync<UserResponse>(HttpMethod.Post, $"/users/{id}/refetch");

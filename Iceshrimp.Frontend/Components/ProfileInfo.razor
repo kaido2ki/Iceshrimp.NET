@@ -138,13 +138,13 @@
                         @if (UserProfile.Relations.HasFlag(Relations.MutedRenotes))
                         {
                             <MenuElement Icon="Icons.Repeat" OnSelect="UnmuteRenotes">
-                                <Text>@Loc["Unmute boosts"]</Text>
+                                <Text>@Loc["Unmute renotes"]</Text>
                             </MenuElement>
                         }
                         else
                         {
                             <MenuElement Icon="Icons.EyeClosed" OnSelect="MuteRenotes">
-                                <Text>@Loc["Mute boosts"]</Text>
+                                <Text>@Loc["Mute renotes"]</Text>
                             </MenuElement>
                         }
 
@@ -371,7 +371,7 @@
     }
     
     private void MuteRenotes() =>
-        GlobalComponentSvc.ConfirmDialog?.Confirm(new EventCallback<bool>(this, MuteRenotesCallback), Loc["Mute {0}'s boosts?", User.DisplayName ?? User.Username], buttonText: Loc["Mute boosts"]);
+        GlobalComponentSvc.ConfirmDialog?.Confirm(new EventCallback<bool>(this, MuteRenotesCallback), Loc["Mute {0}'s renotes?", User.DisplayName ?? User.Username], buttonText: Loc["Mute renotes"]);
 
     private async Task MuteRenotesCallback(bool confirm)
     {
@@ -381,7 +381,7 @@
         {
             await Api.Users.MuteRenotesAsync(User.Id);
 
-            await GlobalComponentSvc.NoticeDialog?.Display(Loc["Muted {0}'s boosts", User.DisplayName ?? User.Username])!;
+            await GlobalComponentSvc.NoticeDialog?.Display(Loc["Muted {0}'s renotes", User.DisplayName ?? User.Username])!;
 
             UserProfile.Relations += (int)Relations.MutedRenotes;
             StateHasChanged();
@@ -393,7 +393,7 @@
     }
     
     private void UnmuteRenotes() =>
-        GlobalComponentSvc.ConfirmDialog?.Confirm(new EventCallback<bool>(this, UnmuteRenotesCallback), Loc["Unmute {0}'s boosts?", User.DisplayName ?? User.Username], buttonText: Loc["Unmute boosts"]);
+        GlobalComponentSvc.ConfirmDialog?.Confirm(new EventCallback<bool>(this, UnmuteRenotesCallback), Loc["Unmute {0}'s renotes?", User.DisplayName ?? User.Username], buttonText: Loc["Unmute renotes"]);
 
     private async Task UnmuteRenotesCallback(bool confirm)
     {
@@ -403,7 +403,7 @@
         {
             await Api.Users.UnmuteRenotesAsync(User.Id);
 
-            await GlobalComponentSvc.NoticeDialog?.Display(Loc["Unmuted {0}'s boosts", User.DisplayName ?? User.Username])!;
+            await GlobalComponentSvc.NoticeDialog?.Display(Loc["Unmuted {0}'s renotes", User.DisplayName ?? User.Username])!;
 
             UserProfile.Relations -= (int)Relations.MutedRenotes;
             StateHasChanged();
