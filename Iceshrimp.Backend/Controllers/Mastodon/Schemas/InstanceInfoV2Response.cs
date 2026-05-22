@@ -114,5 +114,6 @@ public class InstanceTimelinesAccessConfiguration
 public class InstanceTimelineAccessConfiguration(string access)
 {
 	[J("local")]  public string InstanceTimelineAccessLocal  => access;
+	[J("bubble")] public string InstanceTimelineAccessBubble => access;
 	[J("remote")] public string InstanceTimelineAccessRemote => access;
 }
