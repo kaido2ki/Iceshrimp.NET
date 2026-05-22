@@ -42,7 +42,7 @@ public class NoteRenderer(
 		Dictionary<string, PreviewPoll> polls, List<PreviewReaction> reactions
 	)
 	{
-		var renderedText = mfm.Render(note.Text, note.User.Host, mentions[note.Id], emoji[note.Id], "span", attachments[note.Id], true);
+		var renderedText = mfm.Render(note.Text, note.User.Host, mentions.GetValueOrDefault(note.Id) ?? [], emoji.GetValueOrDefault(note.Id) ?? [], "span", attachments.GetValueOrDefault(note.Id) ?? [], true);
 		var inlineMediaUrls = renderedText?.InlineMedia.Select(m => m.Src).ToArray() ?? [];
 		var reply = note.Reply != null ? Render(note.Reply, users, mentions, emoji, attachments, polls, reactions) : null;
 
@@ -56,7 +56,7 @@ public class NoteRenderer(
 			Uri               = note.Uri ?? note.GetPublicUri(instance.Value),
 			QuoteUrl          = note.Renote?.Url ?? note.Renote?.Uri ?? note.Renote?.GetPublicUriOrNull(instance.Value),
 			QuoteInaccessible = note.Renote?.VisibilityIsPublicOrHome == false,
-			Attachments       = attachments[note.Id]?.Where(p => !inlineMediaUrls.Contains(p.Url)).ToList(),
+			Attachments       = attachments.GetValueOrDefault(note.Id)?.Where(p => !inlineMediaUrls.Contains(p.Url)).ToList(),
 			Poll              = polls.GetValueOrDefault(note.Id),
 			CreatedAt         = note.CreatedAt,
 			UpdatedAt         = note.UpdatedAt,
