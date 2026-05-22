@@ -68,7 +68,9 @@
                     <div class="wrapper">
                         @if (file.MimeType.StartsWith("image/"))
                         {
-                            <img class="attachment" src="@file.Url" alt="@file.Alt" title="@(file.Alt ?? "No alt text.")"/>
+                            <a class="image-wrapper" href="@file.Url" target="_blank">
+                                <img class="attachment" src="@file.Url" alt="@file.Alt" title="@(file.Alt ?? "No alt text.")"/>
+                            </a>
                         }
                         else if (file.MimeType.StartsWith("audio/"))
                         {

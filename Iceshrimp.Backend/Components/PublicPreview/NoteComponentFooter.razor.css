@@ -105,7 +105,8 @@
     aspect-ratio: 3/2;
 }
 
-audio.attachment {
+audio.attachment,
+video.attachment {
     width: 100%;
 }
 
@@ -141,4 +142,9 @@ audio.attachment {
     overflow: clip;
     background: var(--background-color);
     border-radius: 0.5rem;
+}
+
+a.image-wrapper {
+    height: min-content;
+    text-decoration-line: none;
 }
