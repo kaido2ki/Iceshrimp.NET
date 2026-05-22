@@ -30,6 +30,7 @@ public partial class UserPreview(
 	private string?      _pronouns;
 	private string?      _location;
 	private string?      _birthday;
+	private bool         ShowMedia => security.Value.PublicPreview > Enums.PublicPreview.RestrictedNoMedia;
 
 	private List<(IconName Icon, string Label)>                 _badges = [];
 	private List<(string Name, string Value, bool? IsVerified)> _fields = [];

@@ -109,7 +109,7 @@
 }
 @foreach (var note in _pinnedNotes)
 {
-    <NoteComponent Note="note" ShowMedia="false"/>
+    <NoteComponent Note="note" ShowMedia="@ShowMedia"/>
 }
 @if (_pinnedNotes.Count != 0 && _notes.Count != 0)
 {
@@ -117,7 +117,7 @@
 }
 @foreach (var note in _notes)
 {
-    <NoteComponent Note="note" ShowMedia="false"/>
+    <NoteComponent Note="note" ShowMedia="@ShowMedia"/>
 }
 
 <div class="pagination">
