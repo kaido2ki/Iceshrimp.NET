@@ -1,6 +1,10 @@
 @using Iceshrimp.Assets.PhosphorIcons
 @using Iceshrimp.Backend.Components.Generic
 @using Iceshrimp.Backend.Components.PublicPreview.Schemas
+@using Iceshrimp.Backend.Core.Configuration
+@using Microsoft.Extensions.Options
+@inject IOptionsSnapshot<Config.InstanceSection> Instance;
+@inject IOptionsSnapshot<Config.SecuritySection> Security;
 
 <div class="note">
     <div class="note-details">
@@ -79,4 +83,13 @@
     [Parameter, EditorRequired] public required PreviewNote        Note        { get; set; }
     [Parameter, EditorRequired] public required bool               ShowMedia   { get; set; }
     [Parameter]                 public          List<PreviewNote>? Descendants { get; set; }
+
+    protected override void OnParametersSet()
+    {
+        // This is computed on the server before being sent to the client
+        if (Security.Value.PublicPreview < Enums.PublicPreview.Public)
+        {
+            Descendants?.RemoveAll(p => p.User.Host != Instance.Value.AccountDomain);
+        }
+    }
 }

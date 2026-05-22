@@ -36,11 +36,9 @@ public partial class NotePreview(
 
 		_instanceName = await meta.GetAsync(MetaEntity.InstanceName) ?? _instanceName;
 
-		//TODO: show publish & edit timestamps
+		//TODO: show edit timestamps
 		//TODO: show quotes inline (enforce visibility by checking VisibilityIsPublicOrHome)
-		//TODO: show parent post inline (enforce visibility by checking VisibilityIsPublicOrHome)
 		//TODO: show avatar instead of image as fallback? can we do both?
-		//TODO: thread view (respect public preview settings - don't show remote replies if set to restricted or lower)
 
 		var note = await Database.Notes
 		                         .IncludeCommonProperties()
@@ -77,10 +75,14 @@ public partial class NotePreview(
 		                               .PrecomputeNoteContextVisibilities(null)
 		                               .ToListAsync();
 
-		if (!ShowRemoteReplies)
-			ascendants.RemoveAll(p => p.UserHost != null);
-
 		_ascendants = (await renderer.RenderManyAsync(ascendants)).OrderAncestors();
+
+		if (!ShowRemoteReplies)
+		{
+			var ix = _ascendants.FindLastIndex(p => p.User.Host != config.Value.AccountDomain);
+			if (ix != -1)
+				_ascendants.RemoveRange(0, ix + 1);
+		}
 
 		var descendants = await Database.NoteDescendants(note, 20, 100)
 		                                .Include(p => p.User.UserProfile)
@@ -89,9 +91,6 @@ public partial class NotePreview(
 		                                .EnsureVisibleFor(null)
 		                                .PrecomputeNoteContextVisibilities(null)
 		                                .ToListAsync();
-
-		if (!ShowRemoteReplies)
-			descendants.RemoveAll(p => p.UserHost != null);
 
 		_descendants = (await renderer.RenderManyAsync(descendants)).OrderDescendants();
 	}

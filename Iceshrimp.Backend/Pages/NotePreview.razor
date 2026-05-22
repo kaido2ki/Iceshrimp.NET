@@ -20,6 +20,8 @@
     <hr/>
     @foreach (var descendant in _descendants)
     {
+        // This is computed on the server before being sent to the client
+        @if (!ShowRemoteReplies && descendant.User.Host != config.Value.AccountDomain) continue;
         <NoteComponent Note="descendant" ShowMedia="ShowMedia" Descendants="@descendant.Descendants"/>
     }
 }
