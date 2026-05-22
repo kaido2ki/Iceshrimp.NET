@@ -82,3 +82,7 @@ img.blur-image {
     filter: blur(10rem);
     object-fit: cover;
 }
+
+video.attachment {
+    width: 100%;
+}
