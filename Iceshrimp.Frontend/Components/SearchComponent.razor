@@ -15,14 +15,26 @@
 @inject IJSRuntime                     Js;
 
 <form class="search" @onsubmit="Search" role="search">
-    <input @bind="SearchString" class="input" aria-label=""/>
-    <InputSelect @bind-Value="@SearchType">
-        @foreach (var type in Enum.GetValues(typeof(SearchTypeEnum)))
-        {
-            <option value="@type">@type</option>
-        }
-    </InputSelect>
-    <button class="button"><Icon Name="Icons.MagnifyingGlass"/>@Loc["Search"]</button>
+    <section class="fields">
+        <input @bind="SearchString" class="input" aria-label=""/>
+        <InputSelect @bind-Value="@SearchType">
+            @foreach (var type in Enum.GetValues(typeof(SearchTypeEnum)))
+            {
+                <option value="@type">@type</option>
+            }
+        </InputSelect>
+        <button class="button"><Icon Name="Icons.MagnifyingGlass"/>@Loc["Search"]</button>
+    </section>
+
+    @* TODO: from, mentions, reply, instance *@
+    @* TODO: in:bookmarks|likes|reactions|interactions *@
+    @* TODO: has:media|image|video|audio|file|poll *@
+    @* TODO: before, after *@
+    <details class="search-filters">
+        <summary>@Loc["Advanced search"]</summary>
+        
+        <a href="https://iceshrimp.net/help/fts" target="_blank">@Loc["More search filters"]</a>
+    </details>
 </form>
 
 @if (_resultType == ResultType.Notes)
