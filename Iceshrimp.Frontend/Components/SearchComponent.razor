@@ -26,15 +26,35 @@
         <button class="button"><Icon Name="Icons.MagnifyingGlass"/>@Loc["Search"]</button>
     </section>
 
-    @* TODO: from, mentions, reply, instance *@
     @* TODO: in:bookmarks|likes|reactions|interactions *@
     @* TODO: has:media|image|video|audio|file|poll *@
     @* TODO: before, after *@
-    <details class="search-filters">
-        <summary>@Loc["Advanced search"]</summary>
-        
-        <a href="https://iceshrimp.net/help/fts" target="_blank">@Loc["More search filters"]</a>
-    </details>
+    @if (SearchType == SearchTypeEnum.Note)
+    {
+        <details class="search-filters">
+            <summary>@Loc["Advanced search"]</summary>
+            <section>
+                <label for="filter-from">@Loc["From user"] (<code>from:</code>)</label>
+                <input @bind="FilterFrom" type="text" class="input" id="filter-from" placeholder="user@@example.org"/>
+            </section>
+            <section>
+                <label for="filter-instance">@Loc["From instance"] (<code>instance:</code>)</label>
+                <input @bind="FilterInstance" type="text" class="input" id="filter-instance"
+                       placeholder="local | example.org"/>
+            </section>
+            <section>
+                <label for="filter-mentions">@Loc["Mentions"] (<code>mentions:</code>)</label>
+                <input @bind="FilterMentions" type="text" class="input" id="filter-mentions"
+                       placeholder="user@@example.org"/>
+            </section>
+            <section>
+                <label for="filter-reply">@Loc["Replying to"] (<code>reply:</code>)</label>
+                <input @bind="FilterReply" type="text" class="input" id="filter-reply" placeholder="user@@example.org"/>
+            </section>
+
+            <a href="https://iceshrimp.net/help/fts" target="_blank">@Loc["More search filters"]</a>
+        </details>
+    }
 </form>
 
 @if (_resultType == ResultType.Notes)
@@ -78,6 +98,7 @@
 
 @code {
     private string                      SearchString       { get; set; } = "";
+    private string                      SearchFilters      { get; set; } = "";
     private SearchTypeEnum              SearchType         { get; set; } = SearchTypeEnum.Note;
     private NoteSearch?                 NoteSearchInstance { get; set; }
     private UserSearch?                 UserSearchInstance { get; set; }
@@ -86,13 +107,18 @@
     private bool                        _setScroll;
     private float                       _scrollTop;
 
+    private string FilterFrom     { get; set; } = "";
+    private string FilterInstance { get; set; } = "";
+    private string FilterMentions { get; set; } = "";
+    private string FilterReply    { get; set; } = "";
+
     protected override async Task OnInitializedAsync()
     {
         Module = (IJSInProcessObjectReference)await Js.InvokeAsync<IJSObjectReference>("import", "/Components/SearchComponent.razor.js");
         var state = StateService.Search.GetState();
         if (state != null)
         {
-            NoteSearchInstance = new NoteSearch(state.SearchString, Api, state.SearchResults);
+            NoteSearchInstance = new NoteSearch(state.SearchString + state.SearchFilters, Api, state.SearchResults);
             _resultType        = ResultType.Notes;
             _scrollTop         = state.ScrollTop;
             _setScroll         = true;
@@ -108,16 +134,41 @@
         }
     }
 
+    private void SetFilters()
+    {
+        if (SearchType == SearchTypeEnum.User)
+        {
+            SearchFilters = "";
+            return;
+        }
+
+        var filters = new List<string>();
+        
+        if (!string.IsNullOrWhiteSpace(FilterFrom))
+            filters.Add("from:" + FilterFrom.Trim().TrimStart('@'));
+        if (!string.IsNullOrWhiteSpace(FilterInstance) && (FilterInstance.Equals("instance", StringComparison.InvariantCultureIgnoreCase) || FilterInstance.Contains('.')))
+            filters.Add("instance:" + FilterInstance.Trim().ToLowerInvariant());
+        if (!string.IsNullOrWhiteSpace(FilterReply))
+            filters.Add("reply:" + FilterReply.Trim().TrimStart('@'));
+        foreach (var mention in FilterMentions.Split([' ', ','], StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries))
+            filters.Add("mentions:" + mention.TrimStart('@'));
+
+        SearchFilters =  filters.Count != 0 ? " " : "";
+        SearchFilters += string.Join(' ', filters);
+    }
+
     private async Task Search()
     {
-        if (string.IsNullOrWhiteSpace(SearchString)) return;
+        SetFilters();
+        if (string.IsNullOrWhiteSpace(SearchString) && string.IsNullOrWhiteSpace(SearchFilters)) return;
+        Console.WriteLine(SearchFilters);
 
         NoteSearchInstance = null;
         _resultType        = ResultType.None;
         StateHasChanged();
         try
         {
-            var lookup = await Api.Search.LookupAsync(SearchString);
+            var lookup = await Api.Search.LookupAsync(SearchString + SearchFilters);
             if (lookup is not null && lookup.TargetUrl.Contains("user"))
             {
                 var user = await Api.Users.GetUserAsync(lookup.TargetUrl.Split("users/")[1]);
@@ -137,10 +188,10 @@
         {
             if (SearchType == SearchTypeEnum.Note)
             {
-                var searchRes = await Api.Search.SearchNotesAsync(SearchString, new PaginationQuery { Limit = 20 });
+                var searchRes = await Api.Search.SearchNotesAsync(SearchString + SearchFilters, new PaginationQuery { Limit = 20 });
                 if (searchRes.Count > 0)
                 {
-                    NoteSearchInstance = new NoteSearch(searchString: SearchString, api: Api, noteResponses: searchRes);
+                    NoteSearchInstance = new NoteSearch(searchString: SearchString + SearchFilters, api: Api, noteResponses: searchRes);
                     _resultType        = ResultType.Notes;
                     StateHasChanged();
                 }
@@ -161,7 +212,7 @@
 
     private void OpenNote(string id)
     {
-        StateService.Search.SetState(new SearchState { SearchResults = NoteSearchInstance!.NoteResponses, ScrollTop = GetScrollY(), SearchString = NoteSearchInstance!.SearchString });
+        StateService.Search.SetState(new SearchState { SearchResults = NoteSearchInstance!.NoteResponses, ScrollTop = GetScrollY(), SearchString = NoteSearchInstance!.SearchString, SearchFilters = SearchFilters });
         Navigation.NavigateTo($"/notes/{id}");
     }
 

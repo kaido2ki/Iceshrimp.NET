@@ -22,4 +22,5 @@ internal class SearchState
 	public required List<NoteResponse> SearchResults;
 	public required float              ScrollTop = 0;
 	public required string             SearchString;
+	public          string             SearchFilters = "";
 }
