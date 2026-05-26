@@ -26,7 +26,6 @@
         <button class="button"><Icon Name="Icons.MagnifyingGlass"/>@Loc["Search"]</button>
     </section>
 
-    @* TODO: in:bookmarks|likes|reactions|interactions *@
     @* TODO: has:media|image|video|audio|file|poll *@
     @* TODO: before, after *@
     @if (SearchType == SearchTypeEnum.Note)
@@ -50,6 +49,17 @@
             <section>
                 <label for="filter-reply">@Loc["Replying to"] (<code>reply:</code>)</label>
                 <input @bind="FilterReply" type="text" class="input" id="filter-reply" placeholder="user@@example.org"/>
+            </section>
+            <section>
+                <span>@Loc["Note in"] (<code>in:</code>)</span>
+                <input @bind="FilterInBookmarks" type="checkbox" id="filter-in-bookmarks"/>
+                <label for="filter-in-bookmarks">@Loc["Bookmarks"]</label>
+                <input @bind="FilterInLikes" type="checkbox" id="filter-in-likes"/>
+                <label for="filter-in-likes">@Loc["Likes"]</label>
+                <input @bind="FilterInReactions" type="checkbox" id="filter-in-reactions"/>
+                <label for="filter-in-reactions">@Loc["Reactions"]</label>
+                <input @bind="FilterInInteractions" type="checkbox" id="filter-in-interactions"/>
+                <label for="filter-in-interactions">@Loc["Interactions"]</label>
             </section>
 
             <a href="https://iceshrimp.net/help/fts" target="_blank">@Loc["More search filters"]</a>
@@ -107,10 +117,14 @@
     private bool                        _setScroll;
     private float                       _scrollTop;
 
-    private string FilterFrom     { get; set; } = "";
-    private string FilterInstance { get; set; } = "";
-    private string FilterMentions { get; set; } = "";
-    private string FilterReply    { get; set; } = "";
+    private string FilterFrom           { get; set; } = "";
+    private string FilterInstance       { get; set; } = "";
+    private string FilterMentions       { get; set; } = "";
+    private string FilterReply          { get; set; } = "";
+    private bool   FilterInBookmarks    { get; set; }
+    private bool   FilterInLikes        { get; set; }
+    private bool   FilterInReactions    { get; set; }
+    private bool   FilterInInteractions { get; set; }
 
     protected override async Task OnInitializedAsync()
     {
@@ -152,6 +166,14 @@
             filters.Add("reply:" + FilterReply.Trim().TrimStart('@'));
         foreach (var mention in FilterMentions.Split([' ', ','], StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries))
             filters.Add("mentions:" + mention.TrimStart('@'));
+        if (FilterInBookmarks)
+            filters.Add("in:bookmarks");
+        if (FilterInLikes)
+            filters.Add("in:likes");
+        if (FilterInReactions)
+            filters.Add("in:reactions");
+        if (FilterInInteractions)
+            filters.Add("in:interactions");
 
         SearchFilters =  filters.Count != 0 ? " " : "";
         SearchFilters += string.Join(' ', filters);
