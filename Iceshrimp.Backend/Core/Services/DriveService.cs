@@ -1,6 +1,7 @@
 using System.Collections.Immutable;
 using System.Diagnostics;
 using System.Diagnostics.CodeAnalysis;
+using System.Net.Http.Headers;
 using Iceshrimp.Backend.Core.Configuration;
 using Iceshrimp.Backend.Core.Database;
 using Iceshrimp.Backend.Core.Database.Tables;
@@ -587,9 +588,12 @@ public class DriveService(
 
 	private static string CleanMimeType(string? mimeType)
 	{
-		return mimeType == null || !Constants.BrowserSafeMimeTypes.Contains(mimeType)
+		if (mimeType == null) return "application/octet-stream";
+		
+		var cleanMimeType = MediaTypeHeaderValue.Parse(mimeType).MediaType;
+		return cleanMimeType == null || !Constants.BrowserSafeMimeTypes.Contains(cleanMimeType)
 			? "application/octet-stream"
-			: mimeType;
+			: cleanMimeType;
 	}
 
 	private IReadOnlyCollection<ImageVersion> GetFormats(
