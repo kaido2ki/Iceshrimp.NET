@@ -78,15 +78,15 @@
                 </section>
                 <section>
                     <label for="filter-from">@Loc["From user"] (<code>from:</code>)</label>
-                    <input @bind="FilterFrom" type="text" class="input" id="filter-from" placeholder="user@@example.org"/>
+                    <input @bind="FilterFrom" type="text" class="input" id="filter-from" placeholder="user | user@@example.org"/>
                     <label for="filter-instance">@Loc["From instance"] (<code>instance:</code>)</label>
                     <input @bind="FilterInstance" type="text" class="input" id="filter-instance"
                            placeholder="local | example.org"/>
                     <label for="filter-mentions">@Loc["Mentions"] (<code>mentions:</code>)</label>
                     <input @bind="FilterMentions" type="text" class="input" id="filter-mentions"
-                           placeholder="user@@example.org"/>
+                           placeholder="user | user@@example.org"/>
                     <label for="filter-reply">@Loc["Replying to"] (<code>reply:</code>)</label>
-                    <input @bind="FilterReply" type="text" class="input" id="filter-reply" placeholder="user@@example.org"/>
+                    <input @bind="FilterReply" type="text" class="input" id="filter-reply" placeholder="user | user@@example.org"/>
                 </section>
                 <section>
                     <label for="filter-before">@Loc["Posted before - inclusive"] (<code>before:</code>)</label>
