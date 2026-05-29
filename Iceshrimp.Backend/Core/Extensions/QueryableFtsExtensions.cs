@@ -200,57 +200,57 @@ public static class QueryableFtsExtensions
 
 		private IQueryable<Note> ApplyBoostsFilter(bool negated)
 			=> query.Where(p => negated ? !p.IsPureRenote : p.IsPureRenote);
-
-		private IQueryable<Note> ApplyAttachmentFilter(AttachmentFilter filter)
-			=> filter.Negated ? query.ApplyNegatedAttachmentFilter(filter) : query.ApplyRegularAttachmentFilter(filter);
-
-		private IQueryable<Note> ApplyRegularAttachmentFilter(AttachmentFilter filter)
+		
+		private IQueryable<Note> ApplyImageFilter(bool negated)
 		{
-			if (filter.Value is AttachmentFilterType.Media)
-				return query.Where(p => p.AttachedFileTypes.Count != 0);
-			if (filter.Value is AttachmentFilterType.Poll)
-				return query.Where(p => p.HasPoll);
-
-			if (filter.Value is AttachmentFilterType.Image or AttachmentFilterType.Video or AttachmentFilterType.Audio)
-			{
-				return query.Where(p => p.AttachedFileTypes.Count != 0
-				                        && EF.Functions.ILike(p.RawAttachments, GetAttachmentILikeQuery(filter.Value)));
-			}
-
-			if (filter.Value is AttachmentFilterType.File)
-			{
-				return query.Where(p => p.AttachedFileTypes.Count != 0
-				                        && (!EF.Functions.ILike(p.RawAttachments,
-				                                                GetAttachmentILikeQuery(AttachmentFilterType.Image))
-				                            || !EF.Functions.ILike(p.RawAttachments,
-				                                                   GetAttachmentILikeQuery(AttachmentFilterType.Video))
-				                            || !EF.Functions.ILike(p.RawAttachments,
-				                                                   GetAttachmentILikeQuery(AttachmentFilterType.Audio))));
-			}
-
-			throw new ArgumentOutOfRangeException(nameof(filter), filter.Value, null);
+			return negated 
+				? query.Where(p => !p.AttachedFileTypes.Any(m => m.StartsWith("image/")))
+			    : query.Where(p => p.AttachedFileTypes.Count != 0
+			                        && p.AttachedFileTypes.Any(m => m.StartsWith("image/")));
+		}
+		
+		private IQueryable<Note> ApplyAudioFilter(bool negated)
+		{
+			return negated
+				? query.Where(p => !p.AttachedFileTypes.Any(m => m.StartsWith("audio/")))
+				: query.Where(p => p.AttachedFileTypes.Count != 0
+				                   && p.AttachedFileTypes.Any(m => m.StartsWith("audio/")));
+		}
+		
+		private IQueryable<Note> ApplyVideoFilter(bool negated)
+		{
+			return negated
+				? query.Where(p => !p.AttachedFileTypes.Any(m => m.StartsWith("video/")))
+				: query.Where(p => p.AttachedFileTypes.Count != 0
+				                   && p.AttachedFileTypes.Any(m => m.StartsWith("video/")));
+		}
+		
+		private IQueryable<Note> ApplyFileFilter(bool negated)
+		{
+			return query.Where(p => negated
+			                   ? p.AttachedFileTypes.Count == 0
+							     || p.AttachedFileTypes.Any(m => m.StartsWith("image/")
+							                                        || m.StartsWith("audio/")
+							                                        || m.StartsWith("video/"))
+			                   : p.AttachedFileTypes.Count != 0
+			                     && !p.AttachedFileTypes.Any(m => m.StartsWith("image/")
+			                                                         || m.StartsWith("audio/")
+			                                                         || m.StartsWith("video/")));
 		}
 
-		private IQueryable<Note> ApplyNegatedAttachmentFilter(AttachmentFilter filter)
+		private IQueryable<Note> ApplyAttachmentFilter(AttachmentFilter filter)
 		{
-			if (filter.Value is AttachmentFilterType.Media)
-				return query.Where(p => p.AttachedFileTypes.Count == 0);
-			if (filter.Value is AttachmentFilterType.Poll)
-				return query.Where(p => !p.HasPoll);
-			if (filter.Value is AttachmentFilterType.Image or AttachmentFilterType.Video or AttachmentFilterType.Audio)
-				return query.Where(p => !EF.Functions.ILike(p.RawAttachments, GetAttachmentILikeQuery(filter.Value)));
-
-			if (filter.Value is AttachmentFilterType.File)
+			return filter.Value switch
 			{
-				return query.Where(p => EF.Functions
-				                          .ILike(p.RawAttachments, GetAttachmentILikeQuery(AttachmentFilterType.Image))
-				                        || EF.Functions
-				                             .ILike(p.RawAttachments, GetAttachmentILikeQuery(AttachmentFilterType.Video))
-				                        || EF.Functions
-				                             .ILike(p.RawAttachments, GetAttachmentILikeQuery(AttachmentFilterType.Audio)));
-			}
-
-			throw new ArgumentOutOfRangeException(nameof(filter), filter.Value, null);
+				AttachmentFilterType.Media => query.Where(p => filter.Negated ? p.AttachedFileTypes.Count == 0 
+					                                                               : p.AttachedFileTypes.Count != 0),
+				AttachmentFilterType.Poll  => query.Where(p => filter.Negated ? !p.HasPoll : p.HasPoll),
+				AttachmentFilterType.Image => query.ApplyImageFilter(filter.Negated),
+				AttachmentFilterType.Audio => query.ApplyAudioFilter(filter.Negated),
+				AttachmentFilterType.Video => query.ApplyVideoFilter(filter.Negated),
+				AttachmentFilterType.File  => query.ApplyFileFilter(filter.Negated),
+				_                          => throw new ArgumentOutOfRangeException(nameof(filter), filter.Value, null)
+			};
 		}
 	}
 
