@@ -315,6 +315,9 @@ public class Note : IIdentifiable
 	[StringLength(32)]
 	public string Id { get; set; } = null!;
 
+	/// <remarks>
+	/// Only callable through EF, where this resolves to a database-side function defined in <see cref="DatabaseContext.OnModelCreating"/>.
+	/// </remarks>
 	public static string InternalRawAttachments(string id)
 		=> throw new NotSupportedException();
 
