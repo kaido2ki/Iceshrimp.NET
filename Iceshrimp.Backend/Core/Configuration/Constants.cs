@@ -67,6 +67,8 @@ public static class Constants
 		"audio/x-flac",
 		"audio/flac",
 		"audio/vnd.wave",
+		"audio/wav",
+		"audio/x-wav",
 		"application/x-shockwave-flash",
 		"application/octet-stream"
 	];
