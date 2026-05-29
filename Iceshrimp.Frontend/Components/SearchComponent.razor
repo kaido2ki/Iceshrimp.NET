@@ -26,7 +26,6 @@
         <button class="button"><Icon Name="Icons.MagnifyingGlass"/>@Loc["Search"]</button>
     </section>
 
-    @* TODO: has:media|image|video|audio|file|poll *@
     @* TODO: before, after *@
     @if (SearchType == SearchTypeEnum.Note)
     {
@@ -60,6 +59,21 @@
                 <label for="filter-in-reactions">@Loc["Reactions"]</label>
                 <input @bind="FilterInInteractions" type="checkbox" id="filter-in-interactions"/>
                 <label for="filter-in-interactions">@Loc["Interactions"]</label>
+            </section>
+            <section>
+                <span>@Loc["Note has"] (<code>has:</code>)</span>
+                <input @bind="FilterHasFile" type="checkbox" id="filter-has-file"/>
+                <label for="filter-has-file">@Loc["File"]</label>
+                <input @bind="FilterHasMedia" type="checkbox" id="filter-has-media"/>
+                <label for="filter-has-media">@Loc["Media"]</label>
+                <input @bind="FilterHasAudio" type="checkbox" id="filter-has-audio"/>
+                <label for="filter-has-audio">@Loc["Audio"]</label>
+                <input @bind="FilterHasImage" type="checkbox" id="filter-has-image"/>
+                <label for="filter-has-image">@Loc["Image"]</label>
+                <input @bind="FilterHasVideo" type="checkbox" id="filter-has-video"/>
+                <label for="filter-has-video">@Loc["Video"]</label>
+                <input @bind="FilterHasPoll" type="checkbox" id="filter-has-poll"/>
+                <label for="filter-has-poll">@Loc["Poll"]</label>
             </section>
 
             <a href="https://iceshrimp.net/help/fts" target="_blank">@Loc["More search filters"]</a>
@@ -125,6 +139,12 @@
     private bool   FilterInLikes        { get; set; }
     private bool   FilterInReactions    { get; set; }
     private bool   FilterInInteractions { get; set; }
+    private bool   FilterHasFile        { get; set; }
+    private bool   FilterHasMedia       { get; set; }
+    private bool   FilterHasAudio       { get; set; }
+    private bool   FilterHasImage       { get; set; }
+    private bool   FilterHasVideo       { get; set; }
+    private bool   FilterHasPoll        { get; set; }
 
     protected override async Task OnInitializedAsync()
     {
@@ -166,14 +186,16 @@
             filters.Add("reply:" + FilterReply.Trim().TrimStart('@'));
         foreach (var mention in FilterMentions.Split([' ', ','], StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries))
             filters.Add("mentions:" + mention.TrimStart('@'));
-        if (FilterInBookmarks)
-            filters.Add("in:bookmarks");
-        if (FilterInLikes)
-            filters.Add("in:likes");
-        if (FilterInReactions)
-            filters.Add("in:reactions");
-        if (FilterInInteractions)
-            filters.Add("in:interactions");
+        if (FilterInBookmarks) filters.Add("in:bookmarks");
+        if (FilterInLikes) filters.Add("in:likes");
+        if (FilterInReactions) filters.Add("in:reactions");
+        if (FilterInInteractions) filters.Add("in:interactions");
+        if (FilterHasFile) filters.Add("has:file");
+        if (FilterHasMedia) filters.Add("has:media");
+        if (FilterHasAudio) filters.Add("has:audio");
+        if (FilterHasImage) filters.Add("has:image");
+        if (FilterHasVideo) filters.Add("has:video");
+        if (FilterHasPoll) filters.Add("has:poll");
 
         SearchFilters =  filters.Count != 0 ? " " : "";
         SearchFilters += string.Join(' ', filters);
