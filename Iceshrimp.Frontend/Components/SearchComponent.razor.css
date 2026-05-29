@@ -14,6 +14,27 @@
 }
 
 .search-filters {
+    summary {
+        text-align: center;
+    }
+
+    input[type="checkbox"] {
+        display: inline;
+        margin: 0;
+    }
+}
+
+.filter-groups {
+    display: flex;
+    flex-direction: row;
+    flex-wrap: wrap;
+    justify-content: center;
+    gap: 0.5rem 1rem;
+
+    .subgroup {
+        display: block;
+        margin-top: 0.5rem;
+    }
 }
 
 .end {
@@ -41,4 +62,10 @@
     flex-direction: column;
     width: 100%;
     align-items: center;
+}
+
+@media screen and (max-width: 1000px) {
+    .filter-groups {
+        flex-direction: column;
+    }
 }
