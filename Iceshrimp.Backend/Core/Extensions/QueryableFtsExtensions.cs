@@ -230,20 +230,21 @@ public static class QueryableFtsExtensions
 			return query.Where(p => negated
 			                   ? p.AttachedFileTypes.Count == 0
 							     || p.AttachedFileTypes.Any(m => m.StartsWith("image/")
-							                                        || m.StartsWith("audio/")
-							                                        || m.StartsWith("video/"))
+							                                     || m.StartsWith("audio/")
+							                                     || m.StartsWith("video/"))
 			                   : p.AttachedFileTypes.Count != 0
 			                     && !p.AttachedFileTypes.Any(m => m.StartsWith("image/")
-			                                                         || m.StartsWith("audio/")
-			                                                         || m.StartsWith("video/")));
+			                                                      || m.StartsWith("audio/")
+			                                                      || m.StartsWith("video/")));
 		}
 
 		private IQueryable<Note> ApplyAttachmentFilter(AttachmentFilter filter)
 		{
 			return filter.Value switch
 			{
-				AttachmentFilterType.Media => query.Where(p => filter.Negated ? p.AttachedFileTypes.Count == 0 
-					                                                               : p.AttachedFileTypes.Count != 0),
+				AttachmentFilterType.Media => query.Where(p => filter.Negated
+					                                          ? p.AttachedFileTypes.Count == 0 
+					                                          : p.AttachedFileTypes.Count != 0),
 				AttachmentFilterType.Poll  => query.Where(p => filter.Negated ? !p.HasPoll : p.HasPoll),
 				AttachmentFilterType.Image => query.ApplyImageFilter(filter.Negated),
 				AttachmentFilterType.Audio => query.ApplyAudioFilter(filter.Negated),
