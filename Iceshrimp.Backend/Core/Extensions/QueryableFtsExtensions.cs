@@ -201,30 +201,6 @@ public static class QueryableFtsExtensions
 		private IQueryable<Note> ApplyBoostsFilter(bool negated)
 			=> query.Where(p => negated ? !p.IsPureRenote : p.IsPureRenote);
 		
-		private IQueryable<Note> ApplyImageFilter(bool negated)
-		{
-			return negated 
-				? query.Where(p => !p.AttachedFileTypes.Any(m => m.StartsWith("image/")))
-			    : query.Where(p => p.AttachedFileTypes.Count != 0
-			                        && p.AttachedFileTypes.Any(m => m.StartsWith("image/")));
-		}
-		
-		private IQueryable<Note> ApplyAudioFilter(bool negated)
-		{
-			return negated
-				? query.Where(p => !p.AttachedFileTypes.Any(m => m.StartsWith("audio/")))
-				: query.Where(p => p.AttachedFileTypes.Count != 0
-				                   && p.AttachedFileTypes.Any(m => m.StartsWith("audio/")));
-		}
-		
-		private IQueryable<Note> ApplyVideoFilter(bool negated)
-		{
-			return negated
-				? query.Where(p => !p.AttachedFileTypes.Any(m => m.StartsWith("video/")))
-				: query.Where(p => p.AttachedFileTypes.Count != 0
-				                   && p.AttachedFileTypes.Any(m => m.StartsWith("video/")));
-		}
-		
 		private IQueryable<Note> ApplyFileFilter(bool negated)
 		{
 			return query.Where(p => negated
@@ -246,14 +222,24 @@ public static class QueryableFtsExtensions
 					                                          ? p.AttachedFileTypes.Count == 0 
 					                                          : p.AttachedFileTypes.Count != 0),
 				AttachmentFilterType.Poll  => query.Where(p => filter.Negated ? !p.HasPoll : p.HasPoll),
-				AttachmentFilterType.Image => query.ApplyImageFilter(filter.Negated),
-				AttachmentFilterType.Audio => query.ApplyAudioFilter(filter.Negated),
-				AttachmentFilterType.Video => query.ApplyVideoFilter(filter.Negated),
+				AttachmentFilterType.Image => query.Where(p => MatchAttachmentMimeType(p, "image/", filter.Negated)),
+				AttachmentFilterType.Audio => query.Where(p => MatchAttachmentMimeType(p, "audio/", filter.Negated)),
+				AttachmentFilterType.Video => query.Where(p => MatchAttachmentMimeType(p, "video/", filter.Negated)),
 				AttachmentFilterType.File  => query.ApplyFileFilter(filter.Negated),
 				_                          => throw new ArgumentOutOfRangeException(nameof(filter), filter.Value, null)
 			};
 		}
 	}
+
+	[Projectable]
+	internal static bool MatchAttachmentMimeType(Note note, string mimeType, bool negated, bool exact = false)
+		=> negated
+			? !note.AttachedFileTypes.Any(p => EF.Functions.ILike(p,
+			                                                      EfHelpers.EscapeLikeQuery(mimeType)
+			                                                      + (exact ? "" : '%')))
+			: note.AttachedFileTypes.Any(p => EF.Functions.ILike(p,
+			                                                     EfHelpers.EscapeLikeQuery(mimeType)
+			                                                     + (exact ? "" : '%')));
 
 	[Projectable]
 	[SuppressMessage("ReSharper", "MemberCanBePrivate.Global",
