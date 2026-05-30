@@ -589,9 +589,11 @@ public class DriveService(
 	private static string CleanMimeType(string? mimeType)
 	{
 		if (mimeType == null) return "application/octet-stream";
+
+		_ = MediaTypeHeaderValue.TryParse(mimeType, out var parsedMimeType);
+		var cleanMimeType = parsedMimeType?.MediaType ?? "application/octet-stream";
 		
-		var cleanMimeType = MediaTypeHeaderValue.Parse(mimeType).MediaType;
-		return cleanMimeType == null || !Constants.BrowserSafeMimeTypes.Contains(cleanMimeType)
+		return !Constants.BrowserSafeMimeTypes.Contains(cleanMimeType)
 			? "application/octet-stream"
 			: cleanMimeType;
 	}
