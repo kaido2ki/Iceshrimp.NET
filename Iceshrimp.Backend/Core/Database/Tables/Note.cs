@@ -289,10 +289,6 @@ public class Note : IIdentifiable
 	[InverseProperty(nameof(NoteThread.Notes))]
 	public virtual NoteThread Thread { get; set; } = null!;
 
-	[Projectable]
-	public string RawAttachments
-		=> InternalRawAttachments(Id);
-
 	[NotMapped] [Projectable] public bool IsPureRenote => (RenoteId != null || Renote != null) && !IsQuote;
 
 	[NotMapped]
@@ -314,12 +310,6 @@ public class Note : IIdentifiable
 	[Column("id")]
 	[StringLength(32)]
 	public string Id { get; set; } = null!;
-
-	/// <remarks>
-	/// Only callable through EF, where this resolves to a database-side function defined in <see cref="DatabaseContext.OnModelCreating"/>.
-	/// </remarks>
-	public static string InternalRawAttachments(string id)
-		=> throw new NotSupportedException();
 
 	[Projectable]
 	public bool TextContainsCaseInsensitive(string str) =>

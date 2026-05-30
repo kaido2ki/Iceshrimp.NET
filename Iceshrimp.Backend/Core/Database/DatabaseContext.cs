@@ -198,9 +198,6 @@ public class DatabaseContext(DbContextOptions<DatabaseContext> options)
 		modelBuilder
 			.HasDbFunction(typeof(DatabaseContext).GetMethod(nameof(Conversations), [typeof(string)])!)
 			.HasName("conversations");
-		modelBuilder
-			.HasDbFunction(typeof(Note).GetMethod(nameof(Note.InternalRawAttachments), [typeof(string)])!)
-			.HasName("note_attachments_raw");
 
 		modelBuilder.Entity<DataProtectionKey>().ToTable("data_protection_keys");
 		modelBuilder.ApplyConfigurationsFromAssembly(typeof(DatabaseContext).Assembly);
