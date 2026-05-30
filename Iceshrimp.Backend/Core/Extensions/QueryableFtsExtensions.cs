@@ -205,13 +205,13 @@ public static class QueryableFtsExtensions
 		{
 			return query.Where(p => negated
 			                   ? p.AttachedFileTypes.Count == 0
-							     || p.AttachedFileTypes.Any(m => m.StartsWith("image/")
-							                                     || m.StartsWith("audio/")
-							                                     || m.StartsWith("video/"))
+							     || !p.AttachedFileTypes.Any(m => !EF.Functions.ILike(m, "image/%")
+							                                      && !EF.Functions.ILike(m, "audio/%")
+							                                      && !EF.Functions.ILike(m, "video/%"))
 			                   : p.AttachedFileTypes.Count != 0
-			                     && !p.AttachedFileTypes.Any(m => m.StartsWith("image/")
-			                                                      || m.StartsWith("audio/")
-			                                                      || m.StartsWith("video/")));
+			                     && p.AttachedFileTypes.Any(m => !EF.Functions.ILike(m, "image/%")
+			                                                     && !EF.Functions.ILike(m, "audio/%")
+			                                                     && !EF.Functions.ILike(m, "video/%")));
 		}
 
 		private IQueryable<Note> ApplyAttachmentFilter(AttachmentFilter filter)
