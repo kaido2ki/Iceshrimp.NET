@@ -73,8 +73,6 @@
     private string?    _contactEmail;
     private string?    _iconUrl;
     private string?    _bannerUrl;
-    private bool?      _showFederationList;
-    private string?    _federationMode;
     private List<Rule> _rules = [];
 
     protected override async Task OnInitializedAsync()
@@ -91,9 +89,6 @@
         _contactEmail        = contactEmail;
 
         (_iconUrl, _bannerUrl) = await Instance.GetInstanceImageAsync();
-
-        _showFederationList = Security.Value.ExposeFederationList == Enums.ItemVisibility.Public;
-        _federationMode     = Security.Value.FederationMode.ToString();
 
         _rules = await Instance.GetRulesAsync();
     }

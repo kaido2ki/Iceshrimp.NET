@@ -15,7 +15,7 @@
     <div class="header">
         @*ToDo: account dropdown*@
         <div @ref="_avatar" @onclick="OpenAccountDropdown" class="avatar" @onclick:stopPropagation="true" >
-            <UserAvatar User="Session.Current"/>
+            <UserAvatar User="Session.Current!"/>
             <AccountDropdown @ref="_accountDropdown" />
         </div>
     </div>

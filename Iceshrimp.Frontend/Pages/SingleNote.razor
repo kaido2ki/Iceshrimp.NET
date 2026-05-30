@@ -50,7 +50,7 @@
     </SectionContent>
     @if (RootNote?.User.Host != null)
     {
-        <RemoteUserBanner OriginalPageUrl="@RootNote?.Url"/>
+        <RemoteUserBanner OriginalPageUrl="@RootNote.Url"/>
     }
     <div class="scroller">
         <div class="wrapper">
@@ -71,7 +71,7 @@
                 <div @ref="RootNoteRef" class="root-note">
                     <CascadingValue Value="this" Name="Controller">
                         <CascadingValue Value="NoteStore" TValue="NoteMessageProvider" Name="Provider">
-                            <Note NoteResponse="RootNote" OpenNote="false" RootNote="true"></Note>
+                            <Note NoteResponse="RootNote!" OpenNote="false" RootNote="true"></Note>
                         </CascadingValue>
                     </CascadingValue>
                 </div>
@@ -103,7 +103,7 @@
                             <TabPage>
                                 <Title>@Loc["Likes ({0})", RootNote!.Likes]</Title>
                                 <TabContent>
-                                    <NoteLikeDetails NoteId="@RootNote?.Id"/>
+                                    <NoteLikeDetails NoteId="@RootNote.Id"/>
                                 </TabContent>
                             </TabPage>
                         }
@@ -112,7 +112,7 @@
                             <TabPage>
                                 <Title>@Loc["Renotes ({0})", RootNote!.Renotes]</Title>
                                 <TabContent>
-                                    <NoteRenoteDetails NoteId="@RootNote?.Id"/>
+                                    <NoteRenoteDetails NoteId="@RootNote.Id"/>
                                 </TabContent>
                             </TabPage>
                         }
@@ -121,14 +121,14 @@
                             <TabPage>
                                 <Title>@Loc["Reactions ({0})", RootNote!.Reactions.Count]</Title>
                                 <TabContent>
-                                    <NoteReactionDetails Reactions="RootNote?.Reactions" NoteId="@RootNote?.Id"/>
+                                    <NoteReactionDetails Reactions="RootNote.Reactions" NoteId="@RootNote.Id"/>
                                 </TabContent>
                             </TabPage>
                         }
                         <TabPage>
                             <Title>@Loc["Quotes"]</Title>
                             <TabContent>
-                                <NoteQuoteDetails NoteId="@RootNote?.Id"/>
+                                <NoteQuoteDetails NoteId="@RootNote!.Id"/>
                             </TabContent>
                         </TabPage>
                     </TabbedMenu>
