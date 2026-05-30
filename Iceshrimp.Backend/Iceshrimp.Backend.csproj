@@ -96,11 +96,4 @@
         <Content Remove="wwwroot\assets\LICENSE.md" />
     </ItemGroup>
 
-    <!-- Suppress erroneous System.Private.Uri vulnerability messages that only show up in Rider -->
-    <ItemGroup>
-        <NuGetAuditSuppress Include="https://github.com/advisories/GHSA-5f2m-466j-3848" />
-        <NuGetAuditSuppress Include="https://github.com/advisories/GHSA-x5qj-9vmx-7g6g" />
-        <NuGetAuditSuppress Include="https://github.com/advisories/GHSA-xhfc-gr8f-ffwc" />
-    </ItemGroup>
-
 </Project>
