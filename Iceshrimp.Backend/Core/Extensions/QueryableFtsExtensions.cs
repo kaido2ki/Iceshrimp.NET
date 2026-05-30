@@ -255,19 +255,6 @@ public static class QueryableFtsExtensions
 		}
 	}
 
-	[SuppressMessage("ReSharper", "MemberCanBePrivate.Global",
-	                 Justification = "Projectable chain must have consistent visibility")]
-	internal static string GetAttachmentILikeQuery(AttachmentFilterType filter)
-	{
-		return filter switch
-		{
-			AttachmentFilterType.Image => "%image/%",
-			AttachmentFilterType.Video => "%video/%",
-			AttachmentFilterType.Audio => "%audio/%",
-			_                          => throw new ArgumentOutOfRangeException(nameof(filter), filter, null)
-		};
-	}
-
 	[Projectable]
 	[SuppressMessage("ReSharper", "MemberCanBePrivate.Global",
 	                 Justification = "Projectable chain must have consistent visibility")]
