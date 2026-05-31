@@ -67,7 +67,8 @@ public class SettingsController(
 			ManuallyAcceptFollows   = user.IsLocked,
 			HideRepliesNotFollowing = settings.HideRepliesNotFollowing,
 			IsExplorable            = user.IsExplorable,
-			CanBite                 = canBite
+			CanBite                 = canBite,
+			AttributionDomains      = user.AttributionDomains ?? [],
 		};
 	}
 
@@ -108,6 +109,11 @@ public class SettingsController(
 
 		await db.Users.Where(p => p.Id == user.Id)
 		        .ExecuteUpdateAsync(p => p.SetProperty(u => u.IsExplorable, newSettings.IsExplorable));
+
+		await db.Users.Where(p => p.Id == user.Id)
+		        .ExecuteUpdateAsync(p => p.SetProperty(u => u.AttributionDomains,
+		                                               newSettings.AttributionDomains.Where(d => !string
+			                                               .IsNullOrWhiteSpace(d))));
 
 		await db.SaveChangesAsync();
 	}

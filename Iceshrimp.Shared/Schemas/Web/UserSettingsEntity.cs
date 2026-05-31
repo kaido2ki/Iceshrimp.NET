@@ -16,6 +16,11 @@ public class UserSettingsRequest
 	/// </summary>
 	public bool PrivateMode { get; set; }
 
+	/// <summary>
+	/// Domains hosting pages this user can be attributed to (see https://blog.joinmastodon.org/2024/07/highlighting-journalism-on-mastodon/).
+	/// </summary>
+	public List<string> AttributionDomains { get; set; } = [];
+
 	public bool FilterInaccessible      { get; set; }
 	public bool AutoAcceptFollowed      { get; set; }
 	public bool AlwaysMarkSensitive     { get; set; }
