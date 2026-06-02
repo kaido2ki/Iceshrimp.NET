@@ -3,6 +3,12 @@
 @using Microsoft.Extensions.Localization
 @inject IStringLocalizer<Localization> Loc;
 <div class="nav">
+    <NavLink href="/settings/appearance">
+        <div class="sidebar-btn">
+            <Icon Name="Icons.PaintBrush"/>
+            <span class="text">@Loc["Appearance"]</span>
+        </div>
+    </NavLink>
     <LabeledRuler Label="@Loc["User"]"/>
     <NavLink href="/settings/profile">
         <div class="sidebar-btn">
