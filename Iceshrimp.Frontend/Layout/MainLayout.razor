@@ -1,31 +1,10 @@
-﻿@using Iceshrimp.Frontend.Core.Schemas
-@using Iceshrimp.Frontend.Core.Services
+﻿@using Iceshrimp.Frontend.Core.Services
 @using Microsoft.AspNetCore.Components.Authorization
 @using Microsoft.AspNetCore.Components.Sections
 @inherits LayoutComponentBase
 @inject SettingsService Settings;
 
 <HeadContent>
-    @switch (Settings.Preferences.Theme)
-    {
-        case ClientTheme.Light:
-            <style>
-                :root {
-                    color-scheme: light !important;
-                }
-            </style>
-            break;
-        case ClientTheme.Dark:
-            <style>
-                :root {
-                    color-scheme: dark !important;
-                }
-            </style>
-            break;
-        case ClientTheme.System:
-        default:
-            break;
-    }
     @if (!string.IsNullOrWhiteSpace(Settings.Preferences.CustomCss))
     {
         <style>@Settings.Preferences.CustomCss</style>

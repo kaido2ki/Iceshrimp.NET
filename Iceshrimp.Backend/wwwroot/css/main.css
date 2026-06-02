@@ -36,6 +36,14 @@
     overscroll-behavior-y: none;
 }
 
+:root:has(body.theme-light) {
+    color-scheme: light;
+}
+
+:root:has(body.theme-dark) {
+    color-scheme: dark;
+}
+
 
 /* Prevent font size inflation */
 html {
