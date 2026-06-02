@@ -1,0 +1,4 @@
+::deep .custom-css-input {
+    font-family: monospace;
+    resize: vertical;
+}

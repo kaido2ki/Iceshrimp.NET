@@ -31,8 +31,9 @@
         </label>
         <label>
             @Loc["Custom CSS"]
-            <InputTextArea @bind-Value="Preferences.CustomCss"/>
+            <InputTextArea @bind-Value="Preferences.CustomCss" class="custom-css-input"/>
         </label>
+        <WarningBanner>@Loc["Custom CSS can possibly break the client. You can reset custom CSS from the login/change account page."]</WarningBanner>
         <StateButton ExtraClasses="button" @ref="@SaveButton" OnClick="Submit">
             <Initial>@Loc["Save changes"]</Initial>
             <Success>@Loc["Saved"]</Success>
@@ -61,5 +62,6 @@
         Settings.Preferences = Preferences;
 
         SaveButton.State = StateButton.StateEnum.Success;
+        StateHasChanged();
     }
 }
