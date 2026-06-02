@@ -9,6 +9,9 @@ internal class SettingsService(ApiService api, ISyncLocalStorageService localSto
 {
 	private UserSettingsResponse? UserSettings { get; set; }
 
+	/// <summary>
+	/// Preferences for the frontend, stored in local storage. Preferences are saved based on the setter, so you cannot directly set Preferences.CustomCss = "";
+	/// </summary>
 	public ClientPreferences Preferences
 	{
 		get => localStorage.GetItem<ClientPreferences>("preferences") ?? new ClientPreferences();
