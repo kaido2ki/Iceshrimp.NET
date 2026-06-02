@@ -23,6 +23,16 @@
     flex-direction: row;
     justify-content: space-between;
 }
+
+.sidebar {
+    border-right: 1px solid var(--border-color);
+}
+
+.sidebar ::deep .labeled-ruler {
+    padding-left: 5%;
+    padding-right: 5%;
+}
+
 .body {
     width: 100%;
     height: 100%;

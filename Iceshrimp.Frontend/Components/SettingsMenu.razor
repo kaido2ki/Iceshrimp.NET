@@ -3,22 +3,23 @@
 @using Microsoft.Extensions.Localization
 @inject IStringLocalizer<Localization> Loc;
 <div class="nav">
+    <LabeledRuler Label="@Loc["User"]"/>
     <NavLink href="/settings/profile">
         <div class="sidebar-btn">
             <Icon Name="Icons.User"/>
             <span class="text">@Loc["Profile"]</span>
         </div>
     </NavLink>
-    <NavLink href="/settings/filters">
-        <div class="sidebar-btn">
-            <Icon Name="Icons.SpeakerX"/>
-            <span class="text">@Loc["Filters"]</span>
-        </div>
-    </NavLink>
     <NavLink href="/settings/account">
         <div class="sidebar-btn">
             <Icon Name="Icons.UserCircleGear"/>
             <span class="text">@Loc["Account"]</span>
+        </div>
+    </NavLink>
+    <NavLink href="/settings/filters">
+        <div class="sidebar-btn">
+            <Icon Name="Icons.SpeakerX"/>
+            <span class="text">@Loc["Filters"]</span>
         </div>
     </NavLink>
     <NavLink href="/settings/import-export">
@@ -33,6 +34,7 @@
             <span class="text">@Loc["Migration"]</span>
         </div>
     </NavLink>
+    <LabeledRuler Label="@Loc["Other"]"/>
     <NavLink href="/settings/about">
         <div class="sidebar-btn">
             <Icon Name="Icons.Info"/>
