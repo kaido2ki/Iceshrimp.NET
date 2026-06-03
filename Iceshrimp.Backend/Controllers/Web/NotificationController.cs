@@ -4,8 +4,11 @@ using Iceshrimp.Backend.Controllers.Shared.Attributes;
 using Iceshrimp.Backend.Controllers.Shared.Schemas;
 using Iceshrimp.Backend.Controllers.Web.Renderers;
 using Iceshrimp.Backend.Core.Database;
+using Iceshrimp.Backend.Core.Database.Tables;
 using Iceshrimp.Backend.Core.Extensions;
+using Iceshrimp.Backend.Core.Helpers;
 using Iceshrimp.Backend.Core.Middleware;
+using Iceshrimp.Backend.Core.Services;
 using Iceshrimp.Shared.Schemas.Web;
 using Microsoft.AspNetCore.Cors;
 using Microsoft.AspNetCore.Mvc;
@@ -24,7 +27,8 @@ namespace Iceshrimp.Backend.Controllers.Web;
 [Route("/api/iceshrimp/notifications")]
 [Produces(MediaTypeNames.Application.Json)]
 [EnableCors("iceshrimp")]
-public class NotificationController(DatabaseContext db, NotificationRenderer notificationRenderer) : ControllerBase
+public class NotificationController(DatabaseContext db, MetaService metaSvc, NotificationRenderer notificationRenderer)
+	: ControllerBase
 {
 	/// <summary>
 	/// List notifications
@@ -110,5 +114,89 @@ public class NotificationController(DatabaseContext db, NotificationRenderer not
 		var user = HttpContext.GetUserOrFail();
 		await db.Notifications.Where(p => p.Notifiee == user)
 		        .ExecuteDeleteAsync();
+	}
+
+	/// <summary>
+	/// Get push notification subscription
+	/// </summary>
+	/// <remarks>Get the push notifications subscription for the current session.</remarks>
+	/// <returns>Web Push subscription response</returns>
+	[HttpGet("push")]
+	[ProducesResults(HttpStatusCode.OK)]
+	[ProducesErrors(HttpStatusCode.NotFound)]
+	public async Task<WebPushSubscriptionResponse> GetPushSubscription()
+	{
+		var session = HttpContext.GetSessionOrFail();
+
+		var subscription = await db.SwSubscriptions.FirstOrDefaultAsync(p => p.SessionId == session.Id)
+		                   ?? throw GracefulException.RecordNotFound();
+
+		return new WebPushSubscriptionResponse
+		{
+			Id       = subscription.Id,
+			Endpoint = subscription.Endpoint,
+			VapidKey = await metaSvc.GetAsync(MetaEntity.VapidPublicKey)
+		};
+	}
+
+	/// <summary>
+	/// Subscribe to push notifications
+	/// </summary>
+	/// <remarks>Subscribe the current session to push notifications using the <see href="https://developer.mozilla.org/en-US/docs/Web/API/Push_API">Web Push API</see>.</remarks>
+	/// <param name="request">Web Push subscription request</param>
+	/// <returns>Web Push subscription response</returns>
+	[HttpPost("push")]
+	[ProducesResults(HttpStatusCode.OK)]
+	[ProducesErrors(HttpStatusCode.BadRequest)]
+	public async Task<WebPushSubscriptionResponse> SubscribePush(WebPushSubscriptionRequest request)
+	{
+		var session = HttpContext.GetSessionOrFail();
+
+		var subscription = await db.SwSubscriptions.FirstOrDefaultAsync(p => p.SessionId == session.Id);
+
+		if (subscription == null)
+		{
+			if (!Uri.IsWellFormedUriString(request.Endpoint, UriKind.Absolute))
+				throw GracefulException.BadRequest("Endpoint URL is malformed");
+
+			subscription = new SwSubscription
+			{
+				Id         = IdHelpers.GenerateSnowflakeId(),
+				CreatedAt  = DateTime.UtcNow,
+				UserId     = session.UserId,
+				SessionId  = session.Id,
+				Endpoint   = request.Endpoint,
+				PublicKey  = request.PublicKey,
+				AuthSecret = request.AuthSecret
+			};
+
+			await db.AddAsync(subscription);
+			await db.SaveChangesAsync();
+		}
+
+		return new WebPushSubscriptionResponse
+		{
+			Id       = subscription.Id,
+			Endpoint = subscription.Endpoint,
+			VapidKey = await metaSvc.GetAsync(MetaEntity.VapidPublicKey)
+		};
+	}
+
+	/// <summary>
+	/// Unsubscribe from push notifications
+	/// </summary>
+	/// <remarks>Unsubscribe the current session from push notifications.</remarks>
+	[HttpDelete("push")]
+	[ProducesResults(HttpStatusCode.OK)]
+	[ProducesErrors(HttpStatusCode.NotFound)]
+	public async Task UnsubscribePush()
+	{
+		var session = HttpContext.GetSessionOrFail();
+
+		var subscription = await db.SwSubscriptions.FirstOrDefaultAsync(p => p.SessionId == session.Id)
+		                   ?? throw GracefulException.RecordNotFound();
+
+		db.Remove(subscription);
+		await db.SaveChangesAsync();
 	}
 }
