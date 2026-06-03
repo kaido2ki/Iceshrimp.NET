@@ -30,6 +30,7 @@ public class StatusEntity : IIdentifiable, ICloneable, IPostNotePayload
 	[J("replies_count")]          public required long           RepliesCount   { get; set; }
 	[J("reblogs_count")]          public required long           RenoteCount    { get; set; }
 	[J("favourites_count")]       public required long           FavoriteCount  { get; set; }
+	[J("reactions_count")]        public required long           ReactionsCount { get; set; }
 	[J("reblogged")]              public required bool?          IsRenoted      { get; set; }
 	[J("favourited")]             public required bool?          IsFavorited    { get; set; }
 	[J("bookmarked")]             public required bool?          IsBookmarked   { get; set; }
