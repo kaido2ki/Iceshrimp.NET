@@ -270,7 +270,7 @@ public class NoteRenderer(
 			RepliesCount     = note.RepliesCount,
 			RenoteCount      = note.RenoteCount,
 			FavoriteCount    = note.LikeCount,
-			ReactionsCount   = reactions.Select(p => p.AccountIds?.Count).Sum() ?? 0,
+			ReactionsCount   = reactions.Select(p => p.Count).Sum(),
 			IsFavorited      = liked,
 			IsRenoted        = renoted,
 			IsBookmarked     = bookmarked,
