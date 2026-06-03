@@ -72,6 +72,7 @@ public class InstanceAccountsConfiguration(int maxMemoChars)
 {
 	[J("max_featured_tags")]         public int MaxFeaturedTags  => 20;
 	[J("max_note_length")]           public int MaxMemoLength    => maxMemoChars;
+	[J("max_display_name_length")]   public int DisplayNameLimit => 128;
 	[J("max_profile_fields")]        public int MaxProfileFields => Limits.MaxProfileFields;
 	[J("profile_field_name_limit")]  public int FieldNameLimit   => Limits.MaxProfileFieldNameLength;
 	[J("profile_field_value_limit")] public int FieldValueLimit  => Limits.MaxProfileFieldValueLength;
