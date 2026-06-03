@@ -191,6 +191,42 @@ public class StatusController(
 
 		return await GetNote(id);
 	}
+	
+	[HttpGet("{id}/reactions")]
+	[Authenticate("read:statuses")]
+	[LinkPagination(20, 30)]
+	[ProducesResults(HttpStatusCode.OK)]
+	[ProducesErrors(HttpStatusCode.Forbidden, HttpStatusCode.NotFound)]
+	public async Task<IEnumerable<ChuckyaReactionEntity>> GetNoteReactions(string id, ChuckyaReactionQuery query)
+	{
+		var user = HttpContext.GetUser();
+		if (security.Value.PublicPreview == Enums.PublicPreview.Lockdown && user == null)
+			throw GracefulException.Forbidden("Public preview is disabled on this instance");
+
+		var note = await db.Notes.Where(p => p.Id == id)
+		                   .EnsureVisibleFor(user)
+		                   .FilterHidden(user, db, filterMutes: false)
+		                   .FirstOrDefaultAsync() ??
+		           throw GracefulException.RecordNotFound();
+
+		if (security.Value.PublicPreview <= Enums.PublicPreview.Restricted && note.UserHost != null && user == null)
+			throw GracefulException.Forbidden("Public preview is disabled on this instance");
+
+		var reactionsBeforeQuery = db.NoteReactions
+		                        .Where(p => p.NoteId == id);
+
+		if (query.Emoji != null)
+		{
+			if (!EmojiHelpers.IsEmoji(query.Emoji) && !query.Emoji.StartsWith(':'))
+				query.Emoji = $":{query.Emoji}:";
+			
+			reactionsBeforeQuery = reactionsBeforeQuery.Where(p => p.Reaction == query.Emoji);
+		}
+		
+		var reactions = await reactionsBeforeQuery.Paginate(query, ControllerContext).ToListAsync();
+
+		return await noteRenderer.GetChuckyaReactionsAsync(reactions, id, user);
+	}
 
 	[HttpPost("{id}/react/{reaction}")]
 	[Authorize("write:favourites")]

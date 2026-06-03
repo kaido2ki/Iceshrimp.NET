@@ -452,6 +452,38 @@ public class NoteRenderer(
 
 		return res;
 	}
+	
+	public async Task<List<ChuckyaReactionEntity>> GetChuckyaReactionsAsync(List<NoteReaction> reactions, string noteId, User? user)
+	{
+		var accounts         = await db.Users.Where(p => reactions.Select(u => u.UserId).Contains(p.Id)).ToListAsync();
+		var renderedAccounts = (await userRenderer.RenderManyAsync(accounts, user)).ToList();
+
+		var renderedReactions = new List<ChuckyaReactionEntity>();
+		foreach (var item in reactions)
+		{
+			var url      = "";
+			var reaction = item.Reaction;
+			if (item.Reaction.StartsWith(':'))
+			{
+				var hit = await emojiSvc.ResolveEmojiAsync(item.Reaction);
+				if (hit == null) continue;
+				url      = hit.GetAccessUrl(config.Value);
+				reaction = item.Reaction.Trim(':');
+			}
+
+			var chuckyaReaction = new ChuckyaReactionEntity
+			{
+				Account   = renderedAccounts.FirstOrDefault(p => p.Id == item.UserId),
+				Id        = item.Id,
+				Name      = reaction,
+				Url       = string.IsNullOrEmpty(url) ? null : url,
+				StaticUrl = string.IsNullOrEmpty(url) ? null : url
+			};
+			renderedReactions.Add(chuckyaReaction);
+		}
+
+		return renderedReactions;
+	}
 
 	private async Task<List<string>> GetBookmarkedNotesAsync(List<Note> notes, User? user)
 	{
