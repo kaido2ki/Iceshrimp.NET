@@ -2,6 +2,7 @@ using Iceshrimp.Backend.Controllers.Mastodon.Schemas.Entities;
 using Iceshrimp.Backend.Controllers.Pleroma.Schemas.Entities;
 using Iceshrimp.Backend.Core.Configuration;
 using Iceshrimp.Backend.Core.Extensions;
+using Iceshrimp.Shared.Configuration;
 using J = System.Text.Json.Serialization.JsonPropertyNameAttribute;
 
 namespace Iceshrimp.Backend.Controllers.Mastodon.Schemas;
@@ -69,8 +70,11 @@ public class InstanceConfigurationV1(Config.InstanceSection config)
 
 public class InstanceAccountsConfiguration(int maxMemoChars)
 {
-	[J("max_featured_tags")] public int MaxFeaturedTags => 20;
-	[J("max_note_length")]   public int MaxMemoLength   => maxMemoChars;
+	[J("max_featured_tags")]         public int MaxFeaturedTags  => 20;
+	[J("max_note_length")]           public int MaxMemoLength    => maxMemoChars;
+	[J("max_profile_fields")]        public int MaxProfileFields => Limits.MaxProfileFields;
+	[J("profile_field_name_limit")]  public int FieldNameLimit   => Limits.MaxProfileFieldNameLength;
+	[J("profile_field_value_limit")] public int FieldValueLimit  => Limits.MaxProfileFieldValueLength;
 }
 
 public class InstanceStatusesConfiguration(int maxNoteChars)
