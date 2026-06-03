@@ -568,6 +568,8 @@ public static class QueryableExtensions
 			query = query.Where(p => (p.Reply == null && p.ReplyUri == null) || p.ReplyUserId == p.UserId);
 		if (request.ExcludeRenotes)
 			query = query.Where(p => p.Renote == null && p.RenoteUri == null);
+		if (request.ExcludeDirect)
+			query = query.Where(p => p.Visibility != Note.NoteVisibility.Specified);
 		if (request.Tagged != null)
 			query = query.Where(p => p.Tags.Contains(request.Tagged.ToLowerInvariant()));
 		if (request.OnlyMedia)
