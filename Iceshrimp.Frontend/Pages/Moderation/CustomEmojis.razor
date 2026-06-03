@@ -129,6 +129,7 @@
                      .ThenBy(p => p.Id)
                      .GroupBy(p => p.Category)
                      .OrderBy(p => string.IsNullOrEmpty(p.Key))
+                     .ThenBy(p => p.Key != Loc["Other"])
                      .ThenBy(p => p.Key)
                      .Select(p => (p.Key?.ToString(), p.ToList()))
                      .ToList();
