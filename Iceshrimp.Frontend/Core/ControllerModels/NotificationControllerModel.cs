@@ -21,4 +21,13 @@ internal class NotificationControllerModel(ApiClient api)
 
 	public Task DeleteAllNotificationsAsync() =>
 		api.CallAsync(HttpMethod.Delete, "/notifications");
+
+	public Task<WebPushSubscriptionResponse?> GetPushSubscriptionAsync() =>
+		api.CallNullableAsync<WebPushSubscriptionResponse>(HttpMethod.Get, "/notifications/push");
+
+	public Task<WebPushSubscriptionResponse> SubscribePushAsync(WebPushSubscriptionRequest request) =>
+		api.CallAsync<WebPushSubscriptionResponse>(HttpMethod.Post, "/notifications/push", data: request);
+
+	public Task UnsubscribePushAsync() =>
+		api.CallAsync(HttpMethod.Delete, "/notifications/push");
 }

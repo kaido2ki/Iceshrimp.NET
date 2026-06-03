@@ -1,9 +1,13 @@
-﻿@using Iceshrimp.Frontend.Core.Services
+﻿@using Iceshrimp.Frontend.Core.Miscellaneous
+@using Iceshrimp.Frontend.Core.Schemas
+@using Iceshrimp.Frontend.Core.Services
 @using Iceshrimp.Shared.Schemas.Web
 @using Microsoft.AspNetCore.Components.Authorization
 @using Microsoft.AspNetCore.Components.Sections
 @inherits LayoutComponentBase
 @inject ApiService        Api;
+@inject IJSRuntime        Js;
+@inject MetadataService   Metadata;
 @inject NavigationManager Nav;
 @inject SessionService    Session;
 @inject SettingsService   Settings;
@@ -48,7 +52,7 @@
 @code {
     protected override async Task OnInitializedAsync()
     {
-        @if (Session.Current != null)
+        if (Session.Current != null)
         {
             var res = await Api.Auth.GetAuthStatusAsync();
             if (res.Status != AuthStatusEnum.Authenticated)
@@ -58,6 +62,19 @@
                 Session.DeleteUser(id);
                 Nav.NavigateTo("/login");
             }
+        }
+
+        var module = (IJSInProcessObjectReference)await Js.InvokeAsync<IJSObjectReference>("import", "./push.js");
+        var subscription = await module.InvokeAsync<PushSubscriptionJson?>("setupPush", (await Metadata.Instance.Value).VapidKey);
+        if (subscription == null) return;
+
+        try
+        {
+            await Api.Notifications.SubscribePushAsync(new WebPushSubscriptionRequest { Endpoint = subscription.Endpoint, PublicKey = subscription.Keys.P256Dh, AuthSecret = subscription.Keys.Auth });
+        }
+        catch (ApiException e)
+        {
+            Console.WriteLine($"Failed to subscribe to push notifications: {e.Response.Message ?? e.Response.StatusCode.ToString()}");
         }
     }
 }
