@@ -48,7 +48,7 @@ public class InstanceApiVersions
 
 public class InstanceConfigurationV2(Config.InstanceSection config)
 {
-	[J("accounts")]          public InstanceAccountsConfiguration        Accounts        => new();
+	[J("accounts")]          public InstanceAccountsConfiguration        Accounts        => new(config.CharacterLimit);
 	[J("statuses")]          public InstanceStatusesConfiguration        Statuses        => new(config.CharacterLimit);
 	[J("media_attachments")] public InstanceMediaConfiguration           Media           => new();
 	[J("polls")]             public InstancePollConfiguration            Polls           => new();

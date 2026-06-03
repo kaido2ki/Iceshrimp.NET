@@ -59,7 +59,7 @@ public class InstanceStats(long userCount, long noteCount, long instanceCount)
 
 public class InstanceConfigurationV1(Config.InstanceSection config)
 {
-	[J("accounts")]          public InstanceAccountsConfiguration  Accounts  => new();
+	[J("accounts")]          public InstanceAccountsConfiguration  Accounts  => new(config.CharacterLimit);
 	[J("statuses")]          public InstanceStatusesConfiguration  Statuses  => new(config.CharacterLimit);
 	[J("media_attachments")] public InstanceMediaConfiguration     Media     => new();
 	[J("polls")]             public InstancePollConfiguration      Polls     => new();
@@ -67,9 +67,10 @@ public class InstanceConfigurationV1(Config.InstanceSection config)
 	[J("gif_search")]        public InstanceGifSearchConfiguration GifSearch => new();
 }
 
-public class InstanceAccountsConfiguration
+public class InstanceAccountsConfiguration(int maxMemoChars)
 {
 	[J("max_featured_tags")] public int MaxFeaturedTags => 20;
+	[J("max_note_length")]   public int MaxMemoLength   => maxMemoChars;
 }
 
 public class InstanceStatusesConfiguration(int maxNoteChars)
