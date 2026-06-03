@@ -11,7 +11,7 @@
 @inject IStringLocalizer<Localization> Loc;
 @inject NavigationManager              NavigationManager
 
-<div class="notification">
+<div class="notification@(NotificationResponse.Read ? " read" : "")">
     @if (NotificationResponse is not { Type: "mention" } and not { Type: "reply" })
     {
         <div class="notification-header">
@@ -102,7 +102,15 @@
                 }
             </div>
         
-            <span><Timestamp Date="@DateTime.Parse(NotificationResponse.CreatedAt)"/></span>
+            <span class="notification-metadata">
+                <Timestamp Date="@DateTime.Parse(NotificationResponse.CreatedAt)"/>
+                @if (!NotificationResponse.Read)
+                {
+                    <button class="mark-as-read" @onclick="MarkAsRead" title="@Loc["Mark as read"]">
+                        <Icon Name="Icons.Check"/>
+                    </button>
+                }
+            </span>
         </div>
     }
 
@@ -136,9 +144,26 @@
         NavigationManager.NavigateTo($"/{username}");
     }
 
+    private async Task MarkAsRead()
+    {
+        if (NotificationResponse.Read) return;
+
+        NotificationResponse.Read = true;
+        try
+        {
+            await Api.Notifications.MarkNotificationAsReadAsync(NotificationResponse.Id);
+            StateHasChanged();
+        }
+        catch (ApiException)
+        {
+            NotificationResponse.Read = false;
+        }
+    }
+
     private async Task BiteBack()
     {
         if (NotificationResponse is not { Bite: { } bite, User: { } user }) return;
+        await MarkAsRead();
 
         try
         {

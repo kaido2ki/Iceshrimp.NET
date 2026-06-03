@@ -11,6 +11,10 @@
     overflow: hidden;
 }
 
+.notification.read {
+    opacity: 0.7;
+}
+
 .notification-icon {
     display: inline-block;
     padding: 0.15em 0.22em;
@@ -93,6 +97,10 @@
     width: 100%;
 }
 
+.notification-metadata {
+    text-align: right;
+}
+
 .notification-actions {
     display: flex;
     flex-wrap: wrap;
@@ -129,4 +137,13 @@
 
 ::deep .button .ph {
     margin-right: 0.5rem;
+}
+
+.mark-as-read {
+    padding: 0;
+}
+
+.mark-as-read:hover {
+    transition: 250ms;
+    background-color: var(--hover-color);
 }
