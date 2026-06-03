@@ -40,7 +40,9 @@ public class AccountController(
 	IOptionsSnapshot<Config.SecuritySection> config
 ) : ControllerBase
 {
-	[HttpGet("verify_credentials")]
+	[HttpGet]
+	[Route("verify_credentials")]
+	[Route("/api/v1/profile")]
 	[Authorize("read:accounts")]
 	[ProducesResults(HttpStatusCode.OK)]
 	public async Task<AccountEntity> VerifyUserCredentials()
@@ -49,7 +51,9 @@ public class AccountController(
 		return await userRenderer.RenderAsync(user, user.UserProfile, user, source: true);
 	}
 
-	[HttpPatch("update_credentials")]
+	[HttpPatch]
+	[Route("update_credentials")]
+	[Route("/api/v1/profile")]
 	[Authorize("write:accounts")]
 	[ProducesResults(HttpStatusCode.OK)]
 	public async Task<AccountEntity> UpdateUserCredentials([FromHybrid] AccountSchemas.AccountUpdateRequest request)
