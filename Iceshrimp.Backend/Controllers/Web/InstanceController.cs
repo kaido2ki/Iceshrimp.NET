@@ -49,6 +49,9 @@ public class InstanceController(
 			await meta.GetManyAsync(MetaEntity.InstanceName, MetaEntity.IconFileId, MetaEntity.BannerFileId,
 			                        MetaEntity.ThemeColor);
 		var (description, contactEmail) = await meta.GetManyAsync(MetaEntity.InstanceDescription, MetaEntity.AdminContactEmail);
+		
+		// This is separate because it is not nullable while the above values are nullable
+		var vapidKey = await meta.GetAsync(MetaEntity.VapidPublicKey);
 
 		var iconUrl = await db.DriveFiles.Where(p => p.Id == iconId)
 		                      .Select(p => p.PublicUrl ?? p.RawAccessUrl)
@@ -62,6 +65,7 @@ public class InstanceController(
 			AccountDomain = instanceConfig.Value.AccountDomain,
 			WebDomain     = instanceConfig.Value.WebDomain,
 			Registration  = (Registrations)securityConfig.Value.Registrations,
+			VapidKey      = vapidKey,
 			Name          = instanceName ?? instanceConfig.Value.AccountDomain,
 			IconUrl       = iconUrl,
 			BannerUrl     = bannerUrl,
