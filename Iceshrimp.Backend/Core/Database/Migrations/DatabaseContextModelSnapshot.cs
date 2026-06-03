@@ -4105,6 +4105,12 @@ namespace Iceshrimp.Backend.Core.Database.Migrations
                         .HasDefaultValue(false)
                         .HasColumnName("sendReadMessage");
 
+                    b.Property<string>("SessionId")
+                        .IsRequired()
+                        .HasMaxLength(32)
+                        .HasColumnType("character varying(32)")
+                        .HasColumnName("sessionId");
+
                     b.Property<string>("UserId")
                         .IsRequired()
                         .HasMaxLength(32)
@@ -4112,6 +4118,9 @@ namespace Iceshrimp.Backend.Core.Database.Migrations
                         .HasColumnName("userId");
 
                     b.HasKey("Id");
+
+                    b.HasIndex("SessionId")
+                        .IsUnique();
 
                     b.HasIndex("UserId");
 
@@ -5980,11 +5989,19 @@ namespace Iceshrimp.Backend.Core.Database.Migrations
 
             modelBuilder.Entity("Iceshrimp.Backend.Core.Database.Tables.SwSubscription", b =>
                 {
+                    b.HasOne("Iceshrimp.Backend.Core.Database.Tables.Session", "Session")
+                        .WithOne("SwSubscription")
+                        .HasForeignKey("Iceshrimp.Backend.Core.Database.Tables.SwSubscription", "SessionId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
                     b.HasOne("Iceshrimp.Backend.Core.Database.Tables.User", "User")
                         .WithMany("SwSubscriptions")
                         .HasForeignKey("UserId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
+
+                    b.Navigation("Session");
 
                     b.Navigation("User");
                 });
@@ -6315,6 +6332,11 @@ namespace Iceshrimp.Backend.Core.Database.Migrations
                     b.Navigation("PageLikes");
 
                     b.Navigation("UserProfile");
+                });
+
+            modelBuilder.Entity("Iceshrimp.Backend.Core.Database.Tables.Session", b =>
+                {
+                    b.Navigation("SwSubscription");
                 });
 
             modelBuilder.Entity("Iceshrimp.Backend.Core.Database.Tables.User", b =>

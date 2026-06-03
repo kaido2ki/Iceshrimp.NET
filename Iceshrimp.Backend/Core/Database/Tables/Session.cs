@@ -48,6 +48,9 @@ public class Session : IIdentifiable
 	[InverseProperty(nameof(OauthToken.WebSession))]
 	public virtual OauthToken? MastodonToken { get; set; }
 
+	[InverseProperty(nameof(Tables.SwSubscription.Session))]
+	public virtual SwSubscription? SwSubscription { get; set; }
+
 	[Column("lastActiveDate")] public DateTime? LastActiveDate { get; set; }
 
 	private class EntityTypeConfiguration : IEntityTypeConfiguration<Session>

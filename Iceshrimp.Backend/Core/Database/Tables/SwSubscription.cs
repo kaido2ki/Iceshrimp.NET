@@ -7,6 +7,7 @@ namespace Iceshrimp.Backend.Core.Database.Tables;
 
 [Table("sw_subscription")]
 [Index(nameof(UserId))]
+[Index(nameof(SessionId), IsUnique = true)]
 public class SwSubscription
 {
 	[Key]
@@ -17,6 +18,10 @@ public class SwSubscription
 	[Column("createdAt")] public DateTime CreatedAt { get; set; }
 
 	[Column("userId")] [StringLength(32)] public string UserId { get; set; } = null!;
+
+	[Column("sessionId")]
+	[StringLength(32)]
+	public string SessionId { get; set; } = null!;
 
 	[Column("endpoint")]
 	[StringLength(512)]
@@ -34,6 +39,10 @@ public class SwSubscription
 	[InverseProperty(nameof(Tables.User.SwSubscriptions))]
 	public virtual User User { get; set; } = null!;
 
+	[ForeignKey(nameof(SessionId))]
+	[InverseProperty(nameof(Tables.Session.SwSubscription))]
+	public virtual Session Session { get; set; } = null!;
+
 	private class EntityTypeConfiguration : IEntityTypeConfiguration<SwSubscription>
 	{
 		public void Configure(EntityTypeBuilder<SwSubscription> entity)
@@ -42,6 +51,10 @@ public class SwSubscription
 
 			entity.HasOne(d => d.User)
 			      .WithMany(p => p.SwSubscriptions)
+			      .OnDelete(DeleteBehavior.Cascade);
+
+			entity.HasOne(d => d.Session)
+			      .WithOne(p => p.SwSubscription)
 			      .OnDelete(DeleteBehavior.Cascade);
 		}
 	}
