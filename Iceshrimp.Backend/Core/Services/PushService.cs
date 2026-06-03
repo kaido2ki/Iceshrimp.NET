@@ -8,6 +8,7 @@ using Iceshrimp.Backend.Core.Database;
 using Iceshrimp.Backend.Core.Database.Tables;
 using Iceshrimp.Backend.Core.Extensions;
 using Iceshrimp.Backend.Core.Middleware;
+using Iceshrimp.Shared.Schemas.Web;
 using Iceshrimp.WebPush;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Options;
@@ -27,7 +28,7 @@ public class PushService(
 	protected override Task ExecuteAsync(CancellationToken stoppingToken)
 	{
 		eventSvc.Notification += MastodonPushHandlerAsync;
-		//TODO: eventSvc.Notification += WebPushHandler;
+		eventSvc.Notification += WebPushHandlerAsync;
 		return Task.CompletedTask;
 	}
 
@@ -163,6 +164,86 @@ public class PushService(
 		catch (Exception e)
 		{
 			logger.LogError("Event handler MastodonPushHandler threw exception: {e}", e);
+		}
+	}
+
+	private async void WebPushHandlerAsync(Notification notification)
+	{
+		try
+		{
+			await using var scope = scopeFactory.CreateAsyncScope();
+			await using var db    = scope.ServiceProvider.GetRequiredService<DatabaseContext>();
+	
+			var subscriptions = await db.SwSubscriptions.Where(p => p.User == notification.Notifiee)
+			                            .Include(swSubscription => swSubscription.Session)
+			                            .ToListAsync();
+	
+			if (subscriptions.Count == 0)
+				return;
+	
+			var skip =
+				await db.Blockings.AnyAsync(p => p.Blocker == notification.Notifiee
+				                                 && p.Blockee == notification.Notifier)
+				|| await db.Mutings.AnyAsync(p => p.Muter == notification.Notifiee && p.Mutee == notification.Notifier);
+	
+			if (skip)
+			{
+				// Notifier is blocked or muted, so we shouldn't deliver the notification
+				return;
+			}
+	
+			logger.LogDebug("Delivering web push notification {id} for user {userId}", notification.Id,
+			                notification.Notifiee.Id);
+	
+			var meta = scope.ServiceProvider.GetRequiredService<MetaService>();
+			var (priv, pub) = await meta.GetManyAsync(MetaEntity.VapidPrivateKey, MetaEntity.VapidPublicKey);
+			var instanceName = await meta.GetAsync(MetaEntity.InstanceName);
+	
+			var client = new WebPushClient(httpClient);
+			client.SetVapidDetails(new VapidDetails($"https://{config.Value.WebDomain}", pub, priv));
+	
+			foreach (var subscription in subscriptions)
+			{
+				try
+				{
+					var res = new WebPushNotification
+					{
+						Id           = notification.Id,
+						NotifieeId   = notification.NotifieeId,
+						NotifieeName = notification.Notifiee.DisplayName ?? notification.Notifiee.Username,
+						InstanceName = instanceName ?? "Iceshrimp.NET",
+						Type         = notification.Type.ToString(),
+						IconUrl =
+							notification.Notifier?.GetAvatarUrl(config.Value)
+							?? notification.Notifiee.GetAvatarUrl(config.Value),
+						NotifierId   = notification.Notifier?.Id,
+						NotifierName = notification.Notifier?.DisplayName ?? notification.Notifier?.Username,
+						NotifierUsername =
+							notification is { Notifier.Host: not null }
+								? $"{notification.Notifier.Username}@{notification.Notifier.Host}"
+								: notification.Notifier?.Username,
+						NoteId   = notification.Note?.Id,
+						Reaction = notification.Reaction,
+						ReportId = notification.Report?.Id
+					};
+	
+					var sub = new WebPushSubscription
+					{
+						Endpoint = subscription.Endpoint,
+						P256DH   = subscription.PublicKey,
+						Auth     = subscription.AuthSecret,
+						PushMode = PushMode.AesGcm
+					};
+	
+					await client.SendNotificationAsync(sub, JsonSerializer.Serialize(res, JsonSerializerOptions.Web));
+				}
+				catch (Exception)
+				{
+				}
+			}
+		}
+		catch (Exception)
+		{
 		}
 	}
 }
