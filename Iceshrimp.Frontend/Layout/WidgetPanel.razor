@@ -1,7 +1,29 @@
+@using Iceshrimp.Assets.PhosphorIcons
 @using Iceshrimp.Frontend.Components
+@using Iceshrimp.Frontend.Localization
+@using Microsoft.Extensions.Localization
+@inject IStringLocalizer<Localization> Loc;
+
+<section class="widget-panel-header">
+    <span>
+        <Icon Name="Icons.Bell"></Icon>
+        @Loc["Notifications"]
+    </span>
+
+    <button class="button" @onclick="MarkAllAsRead" title="@Loc["Mark all as read"]">
+        <Icon Name="Icons.Checks"/>
+    </button>
+</section>
+
 <div class="widget-panel-elements">
-    <NotificationList/>
+    <NotificationList @ref="NotificationList"/>
 </div>
 
 @code {
+    private NotificationList NotificationList { get; set; } = null!;
+
+    private async Task MarkAllAsRead()
+    {
+        await NotificationList.MarkAllAsRead();
+    }
 }

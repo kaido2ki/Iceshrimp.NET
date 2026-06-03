@@ -14,9 +14,20 @@
 <SectionContent SectionName="top-bar">
     <Icon Name="Icons.Bell"></Icon>
     @Loc["Notifications"]
+
+    <span class="action btn" @onclick="MarkAllAsRead" title="@Loc["Mark all as read"]">
+        <Icon Name="Icons.Checks"/>
+        <span>@Loc["Mark all as read"]</span>
+    </span>
 </SectionContent>
 
-<NotificationList/>
+<NotificationList @ref="NotificationList"/>
 
 @code {
+    private NotificationList NotificationList { get; set; } = null!;
+
+    private async Task MarkAllAsRead()
+    {
+        await NotificationList.MarkAllAsRead();
+    }
 }

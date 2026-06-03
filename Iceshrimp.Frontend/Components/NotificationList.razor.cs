@@ -68,6 +68,25 @@ public partial class NotificationList : IDisposable
 		StateHasChanged();
 	}
 
+	public async Task MarkAllAsRead()
+	{
+		try
+		{
+			await Api.Notifications.MarkAllNotificationsAsReadAsync();
+		}
+		catch (ApiException)
+		{
+			return;
+		}
+
+		foreach (var notification in Notifications)
+		{
+			notification.Read = true;
+		}
+
+		StateHasChanged();
+	}
+
 	private enum State
 	{
 		Loading,

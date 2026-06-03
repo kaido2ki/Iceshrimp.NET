@@ -6,3 +6,12 @@
     top: 0;
     max-height: 100vh;
 }
+
+.widget-panel-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding-left: 0.5em;
+    height: 3rem;
+    border-bottom: 0.05rem solid var(--border-color);
+}
