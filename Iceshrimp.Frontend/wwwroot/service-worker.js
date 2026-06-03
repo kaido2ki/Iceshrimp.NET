@@ -13,13 +13,14 @@ self.addEventListener('push', (event) => {
     if (!("type" in payload && "id" in payload)) return;
 
     /** @type {NotificationOptions} */
-    let options = {tag: payload.id};
+    let options = {data: {}, tag: payload.id};
     if ("iconUrl" in payload) options.icon = payload.iconUrl;
 
     if (payload.notifierId && payload.notifierName && payload.notifierUsername) {
-        options.navigate = `/@${payload.notifierUsername}`;
-        if (payload.noteId) options.navigate = `/notes/${payload.noteId}`;
-        if (payload.reportId) options.navigate = `/mod/reports/${payload.reportId}`;
+        options.data.url = `/@${payload.notifierUsername}`;
+        if (payload.noteId) options.data.url = `/notes/${payload.noteId}`;
+        if (payload.reportId) options.data.url = `/mod/reports/${payload.reportId}`;
+        options.navigate = options.data.url;
 
         // TODO: hook this into localization instead of hardcoding the bodies
         if (payload.type === "Follow") options.body = "followed you";
@@ -45,3 +46,22 @@ self.addEventListener('push', (event) => {
         self.registration.showNotification(payload.notifierName ?? payload.instanceName, options)
     );
 });
+
+self.addEventListener("notificationclick", (event) => {
+    event.notification.close();
+
+    if (!event.notification.data.url) return;
+
+    event.waitUntil(
+        clients
+            .matchAll({
+                type: "window",
+            })
+            .then((clientList) => {
+                for (const client of clientList) {
+                    if (client.url === event.notification.data.url && "focus" in client) return client.focus();
+                }
+                if (clients.openWindow) return clients.openWindow(event.notification.data.url);
+            }),
+    );
+})
