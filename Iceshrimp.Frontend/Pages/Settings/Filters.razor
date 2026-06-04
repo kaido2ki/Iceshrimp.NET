@@ -175,10 +175,10 @@
             </div>
             <div class="expiry-section">
                 <h3>@Loc["Filter Expiry"]</h3>
-                <span>
-                    <input type="checkbox" id="enable-expiry" @bind="TemporaryFilter">
-                    <label for="enable-expiry">@Loc["Enable filter expiration"]</label>
-                </span>
+                <label>
+                    <input type="checkbox" @bind="TemporaryFilter">
+                    @Loc["Enable filter expiration"]
+                </label>
                 <input class="input" @bind="FilterExpiry" type="datetime-local" disabled="@(!TemporaryFilter)"/>
             </div>
             <StateButton OnClick="TryAddFilter" ExtraClasses="button" @ref="ButtonAddFilter">

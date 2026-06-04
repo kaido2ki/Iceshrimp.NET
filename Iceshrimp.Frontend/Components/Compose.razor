@@ -155,8 +155,10 @@
                         </div>
                     }
                 </div>
-                <input type="checkbox" id="poll-multiple" @bind="NoteDraft.Poll.Multiple"/>
-                <label for="poll-multiple">@Loc["Multiple choice"]</label>
+                <label class="inline-label">
+                    <input type="checkbox" @bind="NoteDraft.Poll.Multiple"/>
+                    @Loc["Multiple choice"]
+                </label>
                 <div class="expire">
                     <div>
                         <label for="poll-expires">@Loc["End poll"]</label>

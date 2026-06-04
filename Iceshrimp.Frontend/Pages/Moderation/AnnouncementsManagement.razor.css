@@ -86,10 +86,6 @@
     resize: vertical;
 }
 
-input[type="checkbox"] {
-    display: inline-block;
-}
-
 .separator {
     color: var(--highlight-color);
     margin-top: 0.25rem;

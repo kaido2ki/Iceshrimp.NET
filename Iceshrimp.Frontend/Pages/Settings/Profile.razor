@@ -33,10 +33,10 @@
             @if (Banner != null)
             {
                 <img class="banner" src="@Banner.Url" alt="@Banner.Description" title="@Banner.Description"/>
-                <div>
-                    <input type="checkbox" id="delete-banner" @bind="@DelBanner">
-                    <label for="delete-banner">@Loc["Remove Banner"]</label>
-                </div>
+                <label>
+                    <input type="checkbox" @bind="@DelBanner">
+                    @Loc["Remove Banner"]
+                </label>
             }
             <InputFile class="input" OnChange="OnBannerFileChange" accept="image/*" disabled="@DelBanner"/>
             @if (Banner != null || BannerFile != null)
@@ -50,10 +50,10 @@
             @if (Avatar != null)
             {
                 <img class="avatar" src="@Avatar.Url" alt="@Avatar.Description" title="@Avatar.Description"/>
-                <div>
-                    <input type="checkbox" id="delete-avatar" @bind="@DelAvatar">
-                    <label for="delete-avatar">@Loc["Remove Avatar"]</label>
-                </div>
+                <label>
+                    <input type="checkbox" @bind="@DelAvatar">
+                    @Loc["Remove Avatar"]
+                </label>
             }
             <InputFile class="input" OnChange="OnAvatarFileChange" accept="image/*" disabled="@DelAvatar"/>
             @if (Avatar != null || AvatarFile != null)
@@ -74,10 +74,10 @@
         </div>
         <div class="section">
             <h3>@Loc["Birthday"]</h3>
-            <div>
-                <input type="checkbox" id="set-birthday" @bind="@SetBirthday">
-                <label for="set-birthday">@Loc["Set birthday"]</label>
-            </div>
+            <label>
+                <input type="checkbox" @bind="@SetBirthday">
+                @Loc["Set birthday"]
+            </label>
             <input type="date" class="input" @bind="@Birthday" disabled="@(!SetBirthday)"/>
         </div>
         <div class="section">
@@ -138,18 +138,18 @@
 
         <div class="section">
             <h3>@Loc["Other"]</h3>
-            <div>
-                <input type="checkbox" id="is-bot" @bind="@UserProfile.IsBot" @bind:after="AutomatedAccountToggle">
-                <label for="is-bot">@Loc["Mark as an automated (bot) account"]</label>
-            </div>
-            <div>
-                <input type="checkbox" id="is-cat" @bind="@UserProfile.IsCat">
-                <label for="is-cat">@Loc["Mark as a cat"]</label>
-            </div>
-            <div>
-                <input type="checkbox" id="speak-cat" @bind="@UserProfile.SpeakAsCat" disabled="@(!UserProfile.IsCat)">
-                <label for="speak-cat">@Loc["Speak as a cat"]</label>
-            </div>
+            <label>
+                <input type="checkbox" @bind="@UserProfile.IsBot" @bind:after="AutomatedAccountToggle">
+                @Loc["Mark as an automated (bot) account"]
+            </label>
+            <label>
+                <input type="checkbox" @bind="@UserProfile.IsCat">
+                @Loc["Mark as a cat"]
+            </label>
+            <label>
+                <input type="checkbox" @bind="@UserProfile.SpeakAsCat" disabled="@(!UserProfile.IsCat)">
+                @Loc["Speak as a cat"]
+            </label>
         </div>
 
         <div class="section">

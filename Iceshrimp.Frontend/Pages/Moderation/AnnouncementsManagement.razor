@@ -100,10 +100,10 @@
                         aria-label="emoji">
                     <Icon Name="Icons.Smiley" Size="1.3rem"></Icon>
                 </button>
-                <span>
-                    <input type="checkbox" @bind="Draft.ShowPopup" id="announcement-show-popup">
-                    <label for="announcement-show-popup">@Loc["Show popup"]</label>
-                </span>
+                <label>
+                    <input type="checkbox" @bind="Draft.ShowPopup">
+                    @Loc["Show popup"]
+                </label>
             </div>
             <div class="buttons">
                 <button class="btn" title="@Loc["Preview"]" @onclick="() => Preview = !Preview"

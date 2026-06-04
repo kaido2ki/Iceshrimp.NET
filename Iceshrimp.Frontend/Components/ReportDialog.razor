@@ -64,8 +64,8 @@
                     @foreach (var rule in Rules)
                     {
                         <li>
-                            <input type="checkbox" @onchange="args => UpdateRules(rule.Id, (bool?)args.Value)" id="rule-@rule.Id"/>
-                            <label for="rule-@rule.Id">
+                            <label class="inline-label">
+                                <input type="checkbox" @onchange="args => UpdateRules(rule.Id, (bool?)args.Value)"/>
                                 @rule.Text
                             </label>
                         </li>

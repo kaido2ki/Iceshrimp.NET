@@ -31,10 +31,6 @@
     font-size: 0.9rem;
 }
 
-input[type="checkbox"] {
-    display: inline-block;
-}
-
 .input[disabled] {
     color: color-mix(in srgb, var(--font-color) 50%, transparent);
 }

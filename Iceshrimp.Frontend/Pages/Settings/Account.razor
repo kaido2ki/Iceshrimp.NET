@@ -56,32 +56,32 @@
                     </InputSelect>
                 </label>
                 <label>
-                    @Loc["Private Mode (Forces all posts from all clients to be followers only)"]
                     <InputCheckbox @bind-Value="SettingsForm.PrivateMode"/>
+                    @Loc["Private Mode (Forces all posts from all clients to be followers only)"]
                 </label>
                 <label>
-                    @Loc["Filter replies to inaccessible notes"]
                     <InputCheckbox @bind-Value="SettingsForm.FilterInaccessible"/>
+                    @Loc["Filter replies to inaccessible notes"]
                 </label>
                 <label>
-                    @Loc["Filter replies to people you do not follow"]
                     <InputCheckbox @bind-Value="SettingsForm.HideRepliesNotFollowing"/>
+                    @Loc["Filter replies to people you do not follow"]
                 </label>
                 <label>
-                    @Loc["Manually accept follow requests"]
                     <InputCheckbox @bind-Value="SettingsForm.ManuallyAcceptFollows" disabled="@SettingsForm.PrivateMode"/>
+                    @Loc["Manually accept follow requests"]
                 </label>
                 <label>
-                    @Loc["Auto accept follow requests from users you are following"]
                     <InputCheckbox @bind-Value="SettingsForm.AutoAcceptFollowed"/>
+                    @Loc["Auto accept follow requests from users you are following"]
                 </label>
                 <label>
-                    @Loc["Mark all posts as sensitive"]
                     <InputCheckbox @bind-Value="SettingsForm.AlwaysMarkSensitive"/>
+                    @Loc["Mark all posts as sensitive"]
                 </label>
                 <label>
-                    @Loc["Mark account as Explorable/Discoverable"]
                     <InputCheckbox @bind-Value="SettingsForm.IsExplorable"/>
+                    @Loc["Mark account as Explorable/Discoverable"]
                 </label>
                 <label>
                     @Loc["Domains hosting content that can be attributed to you"]
