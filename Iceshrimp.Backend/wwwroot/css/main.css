@@ -168,6 +168,22 @@ input, textarea, select {
     margin: 0.5em;
 }
 
+input[type="checkbox"] {
+    display: inline;
+    margin: unset;
+    padding: unset;
+    vertical-align: middle;
+}
+
+label:has(>input), label:has(>select), label:has(>textarea) {
+    display: block;
+    margin: 0.5rem 0;
+}
+
+label.inline-label:has(>input), label.inline-label:has(>select), label.inline-label:has(>textarea) {
+    display: inline-block;
+    margin: unset;
+}
 
 select:after {
     padding-right: 0.5em;

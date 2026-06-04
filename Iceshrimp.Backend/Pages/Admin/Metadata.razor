@@ -16,10 +16,10 @@
     @if (IconUrl != null)
     {
         <img class="logo" src="@IconUrl" alt="Instance icon"/>
-        <span class="checkbox">
-            <InputCheckbox @bind-Value="@Model.RemoveIcon" id="remove-icon"/>
-            <label for="remove-icon">Remove icon</label>
-        </span>
+        <label>
+            <InputCheckbox @bind-Value="@Model.RemoveIcon"/>
+            Remove icon
+        </label>
     }
     <InputFile name="Model.IconFile" id="icon" accept="image/*"/>
     <label for="banner">Banner</label>

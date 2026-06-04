@@ -24,10 +24,6 @@ ul > li {
     list-style-type: disc;
 }
 
-::deep input[type="checkbox"] {
-    display: inline-block;
-}
-
 ::deep .hidden-input {
     position: absolute;
     top: -10px;

@@ -57,22 +57,22 @@ The app <span class="app_name">@_app.Name</span> requests the following permissi
 		<div class="margin-bottom-5px">
 			Feature flags:
 		</div>
-		<div>
-			<InputCheckbox @bind-Value="@Model.SupportsHtmlFormatting" id="supportsHtmlFormatting"/>
-			<label for="supportsHtmlFormatting">This app supports HTML formatting</label>
-		</div>
-		<div>
-			<InputCheckbox @bind-Value="@Model.SupportsInlineMedia" id="supportsInlineMedia"/>
-			<label for="supportsInlineMedia">This app supports inline media</label>
-		</div>
-		<div>
-			<InputCheckbox @bind-Value="@Model.AutoDetectQuotes" id="autoDetectQuotes"/>
-			<label for="autoDetectQuotes">Automatically detect quotes</label>
-		</div>
-		<div>
-			<InputCheckbox @bind-Value="@Model.IsPleroma" id="isPleroma"/>
-			<label for="isPleroma">This app is intended for Pleroma or Akkoma</label>
-		</div>
+		<label>
+			<InputCheckbox @bind-Value="@Model.SupportsHtmlFormatting"/>
+			This app supports HTML formatting
+		</label>
+		<label>
+			<InputCheckbox @bind-Value="@Model.SupportsInlineMedia"/>
+			This app supports inline media
+		</label>
+		<label>
+			<InputCheckbox @bind-Value="@Model.AutoDetectQuotes"/>
+			Automatically detect quotes
+		</label>
+		<label>
+			<InputCheckbox @bind-Value="@Model.IsPleroma"/>
+			This app is intended for Pleroma or Akkoma
+		</label>
 		@if (Model is { Username.Length: > 0, Password.Length: > 0 })
 		{
 			<div class="margin-bottom-5px margin-top-10px">
@@ -112,9 +112,9 @@ The app <span class="app_name">@_app.Name</span> requests the following permissi
 		}
 		<button class="button" type="submit">Submit</button>
 	</EditForm>
-	</div>
+</div>
 
-	@code {
+@code {
     [Parameter]
     [SupplyParameterFromQuery(Name = "response_type")]
     public string ResponseType { get; set; } = null!;

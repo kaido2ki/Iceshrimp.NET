@@ -12,7 +12,3 @@
     aspect-ratio: 21/9;
     border-radius: 1rem;
 }
-
-.checkbox ::deep input[type="checkbox"] {
-    display: inline-block;
-}
