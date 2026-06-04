@@ -80,8 +80,8 @@
             @if (ReportedUser?.Host != null && (Session?.Current?.IsModerator ?? false) || (Session?.Current?.IsAdmin ?? false))
             {
                 <label>
-                    @Loc["Forward to {0}", ReportedUser?.Host!]
                     <InputCheckbox @bind-Value="Forward"/>
+                    @Loc["Forward to {0}", ReportedUser?.Host!]
                 </label>
             }
             
