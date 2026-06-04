@@ -213,9 +213,9 @@ public class ModerationController(
 	///	Delete report
 	/// </summary>
 	/// <param name="id">The report's ID</param>
-	[HttpPost("reports/{id}/delete")]
+	[HttpDelete("reports/{id}")]
 	[ProducesResults(HttpStatusCode.OK)]
-	[ProducesErrors(HttpStatusCode.BadRequest, HttpStatusCode.NotFound)]
+	[ProducesErrors(HttpStatusCode.NotFound)]
 	public async Task DeleteReport(string id)
 	{
 		var report = await db.Reports.FirstOrDefaultAsync(p => p.Id == id)
