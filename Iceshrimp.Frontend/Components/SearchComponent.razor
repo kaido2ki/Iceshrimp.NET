@@ -33,48 +33,47 @@
             <div class="filter-groups">
                 <section>
                     <span>@Loc["Note in"] (<code>in:</code>)</span>
-                    <div>
-                        <input @bind="FilterInBookmarks" type="checkbox" id="filter-in-bookmarks"/>
-                        <label for="filter-in-bookmarks">@Loc["Bookmarks"]</label>
-                    </div>
-                    <div>
-                        <input @bind="FilterInLikes" type="checkbox" id="filter-in-likes"/>
-                        <label for="filter-in-likes">@Loc["Likes"]</label>
-                    </div>
-                    <div>
-                        <input @bind="FilterInReactions" type="checkbox" id="filter-in-reactions"/>
-                        <label for="filter-in-reactions">@Loc["Reactions"]</label>
-                    </div>
-                    <div>
-                        <input @bind="FilterInInteractions" type="checkbox" id="filter-in-interactions"/>
-                        <label for="filter-in-interactions">@Loc["Interactions"]</label>
-                    </div>
+                    <label>
+                        <input @bind="FilterInBookmarks" type="checkbox"/>
+                        @Loc["Bookmarks"]
+                    </label>
+                    <label>
+                        <input @bind="FilterInLikes" type="checkbox"/>
+                        @Loc["Likes"]
+                    </label>
+                    <label>
+                        <input @bind="FilterInReactions" type="checkbox"/>
+                        @Loc["Reactions"]
+                    </label>
+                    <label>
+                        <input @bind="FilterInInteractions" type="checkbox"/>
+                        @Loc["Interactions"]
+                    </label>
                     <span class="subgroup">@Loc["Note has"] (<code>has:</code>)</span>
-                    <div>
-                        <input @bind="FilterHasFile" type="checkbox" id="filter-has-file"/>
-                        <label for="filter-has-file">@Loc["File"]</label>
-                    </div>
-                    <div>
-                        <input @bind="FilterHasMedia" type="checkbox" id="filter-has-media"/>
-                        <label for="filter-has-media">@Loc["Media"]</label>
-                    </div>
-                    <div>
-                        <input @bind="FilterHasAudio" type="checkbox" id="filter-has-audio"/>
-                        <label for="filter-has-audio">@Loc["Audio"]</label>
-                    </div>
-                    <div>
-                        <input @bind="FilterHasImage" type="checkbox" id="filter-has-image"/>
-                        <label for="filter-has-image">@Loc["Image"]</label>
-                    </div>
-                    <div>
-                        <input @bind="FilterHasVideo" type="checkbox" id="filter-has-video"/>
-                        <label for="filter-has-video">@Loc["Video"]</label>
-                    </div>
-                    <div>
-                        <input @bind="FilterHasPoll" type="checkbox" id="filter-has-poll"/>
-                        <label for="filter-has-poll">@Loc["Poll"]</label>
-                    </div>
-                    <a class="subgroup" href="https://iceshrimp.net/help/fts" target="_blank">@Loc["More search filters"]</a>
+                    <label>
+                        <input @bind="FilterHasFile" type="checkbox"/>
+                        @Loc["File"]
+                    </label>
+                    <label>
+                        <input @bind="FilterHasMedia" type="checkbox"/>
+                        @Loc["Media"]
+                    </label>
+                    <label>
+                        <input @bind="FilterHasAudio" type="checkbox"/>
+                        @Loc["Audio"]
+                    </label>
+                    <label>
+                        <input @bind="FilterHasImage" type="checkbox"/>
+                        @Loc["Image"]
+                    </label>
+                    <label>
+                        <input @bind="FilterHasVideo" type="checkbox"/>
+                        @Loc["Video"]
+                    </label>
+                    <label>
+                        <input @bind="FilterHasPoll" type="checkbox"/>
+                        @Loc["Poll"]
+                    </label>
                 </section>
                 <section>
                     <label for="filter-from">@Loc["From user"] (<code>from:</code>)</label>
@@ -93,6 +92,7 @@
                     <input @bind="FilterBefore" type="text" class="input" id="filter-before" placeholder="YYYY-MM-DD"/>
                     <label for="filter-after">@Loc["Posted after - exclusive"] (<code>after:</code>)</label>
                     <input @bind="FilterAfter" type="text" class="input" id="filter-after" placeholder="YYYY-MM-DD"/>
+                    <a class="subgroup" href="https://iceshrimp.net/help/fts" target="_blank">@Loc["More search filters"]</a>
                 </section>
             </div>
         </details>

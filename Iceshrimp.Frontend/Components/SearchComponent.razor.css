@@ -17,11 +17,6 @@
     summary {
         text-align: center;
     }
-
-    input[type="checkbox"] {
-        display: inline;
-        margin: 0;
-    }
 }
 
 .filter-groups {
