@@ -134,5 +134,89 @@ namespace Iceshrimp.Frontend.Localization {
                 return ResourceManager.GetString("Common_Close", resourceCulture);
             }
         }
+        
+        internal static string Preferences {
+            get {
+                return ResourceManager.GetString("Preferences", resourceCulture);
+            }
+        }
+        
+        internal static string Preferences_UILanguage {
+            get {
+                return ResourceManager.GetString("Preferences_UILanguage", resourceCulture);
+            }
+        }
+        
+        internal static string StateButton_SaveChanges {
+            get {
+                return ResourceManager.GetString("StateButton_SaveChanges", resourceCulture);
+            }
+        }
+        
+        internal static string Preferences_FollowBrowserPref {
+            get {
+                return ResourceManager.GetString("Preferences_FollowBrowserPref", resourceCulture);
+            }
+        }
+        
+        internal static string Preferences_Appearance {
+            get {
+                return ResourceManager.GetString("Preferences_Appearance", resourceCulture);
+            }
+        }
+        
+        internal static string StateButton_Saved {
+            get {
+                return ResourceManager.GetString("StateButton_Saved", resourceCulture);
+            }
+        }
+        
+        internal static string StateButton_Loading {
+            get {
+                return ResourceManager.GetString("StateButton_Loading", resourceCulture);
+            }
+        }
+        
+        internal static string StateButton_Error {
+            get {
+                return ResourceManager.GetString("StateButton_Error", resourceCulture);
+            }
+        }
+        
+        internal static string Preferences_Theme {
+            get {
+                return ResourceManager.GetString("Preferences_Theme", resourceCulture);
+            }
+        }
+        
+        internal static string Preferences_CustomCSS {
+            get {
+                return ResourceManager.GetString("Preferences_CustomCSS", resourceCulture);
+            }
+        }
+        
+        internal static string Preferences_ThemeLight {
+            get {
+                return ResourceManager.GetString("Preferences_ThemeLight", resourceCulture);
+            }
+        }
+        
+        internal static string Preferences_ThemeDark {
+            get {
+                return ResourceManager.GetString("Preferences_ThemeDark", resourceCulture);
+            }
+        }
+        
+        internal static string Preferences_ThemeSystem {
+            get {
+                return ResourceManager.GetString("Preferences_ThemeSystem", resourceCulture);
+            }
+        }
+        
+        internal static string Preferences_CustomCSS_Warning {
+            get {
+                return ResourceManager.GetString("Preferences_CustomCSS_Warning", resourceCulture);
+            }
+        }
     }
 }

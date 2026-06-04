@@ -64,4 +64,46 @@
     <data name="Common_Close" xml:space="preserve">
         <value>Close</value>
     </data>
+    <data name="Preferences" xml:space="preserve">
+        <value>Preferences</value>
+    </data>
+    <data name="Preferences_UILanguage" xml:space="preserve">
+        <value>Interface language (require restart)</value>
+    </data>
+    <data name="StateButton_SaveChanges" xml:space="preserve">
+        <value>Save Changes</value>
+    </data>
+    <data name="Preferences_FollowBrowserPref" xml:space="preserve">
+        <value>Follow browser preferences</value>
+    </data>
+    <data name="Preferences_Appearance" xml:space="preserve">
+        <value>Appearance</value>
+    </data>
+    <data name="StateButton_Saved" xml:space="preserve">
+        <value>Saved</value>
+    </data>
+    <data name="StateButton_Loading" xml:space="preserve">
+        <value>Loading</value>
+    </data>
+    <data name="StateButton_Error" xml:space="preserve">
+        <value>Error</value>
+    </data>
+    <data name="Preferences_Theme" xml:space="preserve">
+        <value>Theme (require restart)</value>
+    </data>
+    <data name="Preferences_CustomCSS" xml:space="preserve">
+        <value>Custom CSS</value>
+    </data>
+    <data name="Preferences_ThemeLight" xml:space="preserve">
+        <value>Light</value>
+    </data>
+    <data name="Preferences_ThemeDark" xml:space="preserve">
+        <value>Dark</value>
+    </data>
+    <data name="Preferences_ThemeSystem" xml:space="preserve">
+        <value>System</value>
+    </data>
+    <data name="Preferences_CustomCSS_Warning" xml:space="preserve">
+        <value>Custom CSS can possibly break the client. You can reset custom CSS from the login/change account page.</value>
+    </data>
 </root>

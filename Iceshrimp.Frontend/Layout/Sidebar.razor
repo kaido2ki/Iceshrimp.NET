@@ -21,13 +21,13 @@
         <NavLink href="/" Match="NavLinkMatch.All">
             <div class="sidebar-btn">
                 <Icon Name="Icons.House"/>
-                <span class="text">@Loc["Timeline"]</span>
+                <span class="text">@Loc[L.Common_Timeline]</span>
             </div>
         </NavLink>
         <NavLink href="/notifications">
             <div class="sidebar-btn">
                 <Icon Name="Icons.Bell"/>
-                <span class="text">@Loc["Notifications"]</span>
+                <span class="text">@Loc[L.Common_Notifications]</span>
                 @* TODO: Uncomment when we have a way to mark notifications as read *@
                 @* @if (Status is { UnreadNotifications: true }) *@
                 @* { *@
@@ -86,7 +86,7 @@
         }
     <hr class="rule"/>
     <button class="sidebar-btn post-btn" @onclick="Open">
-        <Icon Name="Icons.Pencil"></Icon>@Loc["Note"]
+        <Icon Name="Icons.Pencil"></Icon>@Loc[L.Common_Note]
     </button>
     </div>
     @if (_open)

@@ -22,11 +22,11 @@
 @inject StreamingService               Streaming;
 @implements IDisposable
 
-<HeadTitle Text="@Loc["Timeline"]"/>
+<HeadTitle Text="@Loc[L.Common_Timeline]"/>
 
 <SectionContent SectionName="top-bar">
     <Icon Name="Icons.House"></Icon>
-    @Loc["Timeline"]
+    @Loc[L.Common_Timeline]
     <button class="button selector" @onclick="() => MenuRef.Toggle(MenuButton, false)" @ref="MenuButton">
         <div class="current-timeline">@switch (CurrentTimeline!.Enum)
             {

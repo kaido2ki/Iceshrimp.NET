@@ -19,7 +19,7 @@
 <dialog @onkeydown="HandleKeyDown" class="dialog" @ref="Dialog">
     <div class="compose">
         <div class="header">
-            <button class="btn" title="@Loc["Close"]" @onclick="CloseDialog" aria-label="close" disabled="@(SendLock || UploadingFiles != 0)">
+            <button class="btn" title="@Loc[L.Common_Close]" @onclick="CloseDialog" aria-label="close" disabled="@(SendLock || UploadingFiles != 0)">
                 <Icon Name="Icons.X"/>
             </button>
             @if (string.IsNullOrEmpty(NoteId))
@@ -31,12 +31,12 @@
                 <Initial>
                     @if(string.IsNullOrEmpty(NoteId))
                     {
-                        @Loc["ComposeNote"]
+                        @Loc[L.Compose_PublishNote]
                         <Icon Name="Icons.PaperPlaneRight"/>
                     }
                     else
                     {
-                        @Loc["SaveEdit"]
+                        @Loc[L.Compose_SaveEdit]
                         <Icon Name="Icons.Pencil"/>
                     }
                 </Initial>
