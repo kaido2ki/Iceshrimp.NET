@@ -194,7 +194,7 @@ public class StatusController(
 	
 	[HttpGet("{id}/reactions")]
 	[Authenticate("read:statuses")]
-	[LinkPagination(20, 30)]
+	[LinkPagination(30, 60)]
 	[ProducesResults(HttpStatusCode.OK)]
 	[ProducesErrors(HttpStatusCode.Forbidden, HttpStatusCode.NotFound)]
 	public async Task<IEnumerable<ChuckyaReactionEntity>> GetNoteReactions(string id, ChuckyaReactionQuery query)
