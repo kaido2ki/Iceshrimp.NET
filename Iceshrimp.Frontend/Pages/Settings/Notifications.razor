@@ -1,9 +1,11 @@
 @page "/settings/notifications"
+@using System.Text.Json
 @using Iceshrimp.Assets.PhosphorIcons
 @using Iceshrimp.Frontend.Components
 @using Iceshrimp.Frontend.Core.Schemas
 @using Iceshrimp.Frontend.Core.Services
 @using Iceshrimp.Frontend.Localization
+@using Iceshrimp.Shared.Configuration
 @using Iceshrimp.Shared.Schemas.Web
 @using Microsoft.AspNetCore.Authorization
 @using Microsoft.AspNetCore.Components.Sections
@@ -28,7 +30,7 @@
         </label>
 
         <h3>@Loc["Hide notification types"]</h3>
-        @foreach (var type in typeof(NotificationType).GetEnumNames())
+        @foreach (var type in FilterTypes)
         {
             <label>
                 <input type="checkbox" @onchange="() => ToggleFilterType(type)"
@@ -50,10 +52,12 @@
 @code {
     private StateButton       SaveButton  { get; set; } = null!;
     private ClientPreferences Preferences { get; set; } = null!;
+    private List<string>      FilterTypes { get; set; } = [];
 
     protected override void OnInitialized()
     {
         Preferences = Settings.Preferences;
+        GetSerializedNotificationTypeNames();
     }
 
     private void Submit()
@@ -74,5 +78,12 @@
             Preferences.Notifications.FilterTypes.RemoveAll(p => p == type);
         else
             Preferences.Notifications.FilterTypes.Add(type);
+    }
+
+    private void GetSerializedNotificationTypeNames()
+    {
+        // This was the easiest way I could think to do this
+        foreach (var enumValue in typeof(NotificationType).GetEnumValues())
+            FilterTypes.Add(JsonSerializer.Serialize(enumValue, JsonSerialization.Options).Trim('"'));
     }
 }

@@ -23,24 +23,23 @@ self.addEventListener('push', (event) => {
         options.navigate = options.data.url;
 
         // TODO: hook this into localization instead of hardcoding the bodies
-        if (payload.type === "Follow") options.body = "followed you";
-        else if (payload.type === "Mention") options.body = "mentioned you";
-        else if (payload.type === "Reply") options.body = "replied to your note";
-        else if (payload.type === "Renote") options.body = "renoted your note";
-        else if (payload.type === "Renote") options.body = "quoted your note";
-        else if (payload.type === "Like") options.body = "liked your note";
-        else if (payload.type === "Reaction" && payload.reaction) options.body = `reacted ${payload.reaction} to your note`;
-        else if (payload.type === "PollVote") options.body = "voted in your poll";
-        else if (payload.type === "PollEnded") options.body = "poll has ended";
-        else if (payload.type === "FollowRequestReceived") options.body = "requested to follow you";
-        else if (payload.type === "FollowRequestAccepted") options.body = "accepted your follow request";
-        else if (payload.type === "Edit") options.body = "edited a note";
-        else if (payload.type === "Bite") options.body = "bit you";
-        else if (payload.type === "Report") options.body = "reported a user";
-    } else if (!options.body) {
-        console.warn(`Received unknown notification ${payload.id}`);
-        return;
+        if (payload.type === "follow") options.body = "followed you";
+        else if (payload.type === "mention") options.body = "mentioned you";
+        else if (payload.type === "reply") options.body = "replied to your note";
+        else if (payload.type === "renote") options.body = "renoted your note";
+        else if (payload.type === "quote") options.body = "quoted your note";
+        else if (payload.type === "like") options.body = "liked your note";
+        else if (payload.type === "reaction" && payload.reaction) options.body = `reacted ${payload.reaction} to your note`;
+        else if (payload.type === "poll_vote") options.body = "voted in your poll";
+        else if (payload.type === "poll_ended") options.body = "poll has ended";
+        else if (payload.type === "follow_request_received") options.body = "requested to follow you";
+        else if (payload.type === "follow_request_accepted") options.body = "accepted your follow request";
+        else if (payload.type === "edit") options.body = "edited a note";
+        else if (payload.type === "bite") options.body = "bit you";
+        else if (payload.type === "report") options.body = "reported a user";
     }
+
+    options.body ??= `unknown notification type ${payload.id}`;
 
     event.waitUntil(
         self.registration.showNotification(payload.notifierName ?? payload.instanceName, options)
