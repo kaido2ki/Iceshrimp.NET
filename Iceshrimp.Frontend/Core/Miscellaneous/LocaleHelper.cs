@@ -1,24 +1,40 @@
 using System.Globalization;
 using Blazored.LocalStorage;
-using Microsoft.AspNetCore.Components;
+using Iceshrimp.Frontend.Core.Schemas;
 
 namespace Iceshrimp.Frontend.Core.Miscellaneous;
 
 public class LocaleHelper(ISyncLocalStorageService localStorage)
+
 {
-	[Inject] public ISyncLocalStorageService LocalStorage { get; } = localStorage;
+    public static (CultureInfo Culture, string DisplayName)[] AvailableCultures { get; } =
+    [
+        // Add supported languages here
+        (new CultureInfo("en-150"), "English"), 
+        (new CultureInfo("fr"), "Français"),
+    ];
+    
+    private static CultureInfo ResolveCulture(string language)
+    {
+        if (language == "followBrowser")
+            return CultureInfo.CurrentUICulture;
 
-	public CultureInfo LoadCulture()
-	{
-		var defaultCulture = "en-150";
-		var culture        = LocalStorage.GetItem<string?>("blazorCulture") ?? defaultCulture;
-		var res            = new CultureInfo(culture);
-		return res;
-	}
+        try
+        {
+            return new CultureInfo(language);
+        }
+        catch (CultureNotFoundException)
+        {
+            return CultureInfo.CurrentUICulture;
+        }
+    }
 
-	public void StoreCulture(CultureInfo cultureInfo)
-	{
-		var cultureString = cultureInfo.Name;
-		LocalStorage.SetItem("blazorCulture", cultureString);
-	}
+    private static bool IsValidLanguage(string language) =>
+        language == "followBrowser" || AvailableCultures.Any(c => c.Culture.Name == language);
+
+    public CultureInfo LoadCulture()
+    {
+        var language = localStorage.GetItem<ClientPreferences>("preferences")?.Language ?? "followBrowser";
+        return IsValidLanguage(language) ? ResolveCulture(language) : CultureInfo.CurrentUICulture;
+    }
 }

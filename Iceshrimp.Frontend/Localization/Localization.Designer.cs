@@ -45,75 +45,93 @@ namespace Iceshrimp.Frontend.Localization {
             }
         }
         
-        internal static string Timeline {
+        internal static string Timestamp_Day_X {
             get {
-                return ResourceManager.GetString("Timeline", resourceCulture);
+                return ResourceManager.GetString("Timestamp_Day_X", resourceCulture);
             }
         }
         
-        internal static string Notifications {
+        internal static string Timestamp_Hour_X {
             get {
-                return ResourceManager.GetString("Notifications", resourceCulture);
+                return ResourceManager.GetString("Timestamp_Hour_X", resourceCulture);
             }
         }
         
-        internal static string Note {
+        internal static string Timestamp_Minute_X {
             get {
-                return ResourceManager.GetString("Note", resourceCulture);
+                return ResourceManager.GetString("Timestamp_Minute_X", resourceCulture);
             }
         }
         
-        internal static string _0_yr {
+        internal static string Timestamp_Month_X {
             get {
-                return ResourceManager.GetString("{0}yr", resourceCulture);
+                return ResourceManager.GetString("Timestamp_Month_X", resourceCulture);
             }
         }
         
-        internal static string _0_mo {
+        internal static string Timestamp_Week_X {
             get {
-                return ResourceManager.GetString("{0}mo", resourceCulture);
+                return ResourceManager.GetString("Timestamp_Week_X", resourceCulture);
             }
         }
         
-        internal static string _0_w {
+        internal static string Timestamp_Year_X {
             get {
-                return ResourceManager.GetString("{0}w", resourceCulture);
+                return ResourceManager.GetString("Timestamp_Year_X", resourceCulture);
             }
         }
         
-        internal static string _0_d {
+        internal static string Timestamp_JustNow {
             get {
-                return ResourceManager.GetString("{0}d", resourceCulture);
+                return ResourceManager.GetString("Timestamp_JustNow", resourceCulture);
             }
         }
         
-        internal static string _0_h {
+        internal static string Timestamp_Second_X {
             get {
-                return ResourceManager.GetString("{0}h", resourceCulture);
+                return ResourceManager.GetString("Timestamp_Second_X", resourceCulture);
             }
         }
         
-        internal static string _0_m {
+        internal static string Timestamp_Now {
             get {
-                return ResourceManager.GetString("{0}m", resourceCulture);
+                return ResourceManager.GetString("Timestamp_Now", resourceCulture);
             }
         }
         
-        internal static string Just_now {
+        internal static string Common_Timeline {
             get {
-                return ResourceManager.GetString("Just now", resourceCulture);
+                return ResourceManager.GetString("Common_Timeline", resourceCulture);
             }
         }
         
-        internal static string ComposeNote {
+        internal static string Common_Notifications {
             get {
-                return ResourceManager.GetString("ComposeNote", resourceCulture);
+                return ResourceManager.GetString("Common_Notifications", resourceCulture);
             }
         }
         
-        internal static string SaveEdit {
+        internal static string Common_Note {
             get {
-                return ResourceManager.GetString("SaveEdit", resourceCulture);
+                return ResourceManager.GetString("Common_Note", resourceCulture);
+            }
+        }
+        
+        internal static string Compose_PublishNote {
+            get {
+                return ResourceManager.GetString("Compose_PublishNote", resourceCulture);
+            }
+        }
+        
+        internal static string Compose_SaveEdit {
+            get {
+                return ResourceManager.GetString("Compose_SaveEdit", resourceCulture);
+            }
+        }
+        
+        internal static string Common_Close {
+            get {
+                return ResourceManager.GetString("Common_Close", resourceCulture);
             }
         }
     }

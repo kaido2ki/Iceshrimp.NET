@@ -5,6 +5,7 @@ public class ClientPreferences
 {
     public string                  CustomCss     { get; set; } = "";
     public NotificationPreferences Notifications { get; set; } = new NotificationPreferences();
+    public string                  Language      { get; set; } = "followBrowser";
 }
 
 public class NotificationPreferences

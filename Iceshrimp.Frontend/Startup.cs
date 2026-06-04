@@ -41,6 +41,7 @@ builder.Services.AddSingleton<RelatedStore>();
 builder.Services.AddSingleton<NoteActions>();
 builder.Services.AddSingleton<NotificationStore>();
 builder.Services.AddSingleton<IJSInProcessRuntime>(services => (IJSInProcessRuntime)services.GetRequiredService<IJSRuntime>());
+builder.Services.AddSingleton<LocaleHelper>();
 builder.Services.AddAuthorizationCore();
 builder.Services.AddCascadingAuthenticationState();
 builder.Services.AddBlazoredLocalStorageAsSingleton();
