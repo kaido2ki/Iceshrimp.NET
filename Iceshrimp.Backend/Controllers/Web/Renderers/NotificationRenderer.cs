@@ -49,7 +49,7 @@ public class NotificationRenderer(
 			Bite      = bite,
 			Reaction  = reaction,
 			ReportId  = notification.ReportId,
-			Type      = RenderType(notification.Type)
+			Type      = (NotificationType)notification.Type
 		};
 	}
 
@@ -67,28 +67,6 @@ public class NotificationRenderer(
 
 		return Render(notification, data);
 	}
-
-	private static string RenderType(Notification.NotificationType type) => type switch
-	{
-		Notification.NotificationType.Follow                => "follow",
-		Notification.NotificationType.Mention               => "mention",
-		Notification.NotificationType.Reply                 => "reply",
-		Notification.NotificationType.Renote                => "renote",
-		Notification.NotificationType.Quote                 => "quote",
-		Notification.NotificationType.Like                  => "like",
-		Notification.NotificationType.Reaction              => "reaction",
-		Notification.NotificationType.PollVote              => "pollVote",
-		Notification.NotificationType.PollEnded             => "pollEnded",
-		Notification.NotificationType.FollowRequestReceived => "followRequestReceived",
-		Notification.NotificationType.FollowRequestAccepted => "followRequestAccepted",
-		Notification.NotificationType.GroupInvited          => "groupInvited",
-		Notification.NotificationType.App                   => "app",
-		Notification.NotificationType.Edit                  => "edit",
-		Notification.NotificationType.Bite                  => "bite",
-		Notification.NotificationType.Report                => "report",
-
-		_ => throw new ArgumentOutOfRangeException(nameof(type), type, null)
-	};
 
 	private async Task<List<UserResponse>> GetUsersAsync(IEnumerable<Notification> notifications)
 	{

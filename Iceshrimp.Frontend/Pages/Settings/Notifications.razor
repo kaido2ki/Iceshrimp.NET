@@ -28,7 +28,7 @@
         </label>
 
         <h3>@Loc["Hide notification types"]</h3>
-        @foreach (var type in typeof(WebPushNotification.NotificationType).GetEnumNames())
+        @foreach (var type in typeof(NotificationType).GetEnumNames())
         {
             <label>
                 <input type="checkbox" @onchange="() => ToggleFilterType(type)"

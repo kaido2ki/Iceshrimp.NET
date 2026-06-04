@@ -8,6 +8,7 @@ using Iceshrimp.Backend.Core.Database;
 using Iceshrimp.Backend.Core.Database.Tables;
 using Iceshrimp.Backend.Core.Extensions;
 using Iceshrimp.Backend.Core.Middleware;
+using Iceshrimp.Shared.Configuration;
 using Iceshrimp.Shared.Schemas.Web;
 using Iceshrimp.WebPush;
 using Microsoft.EntityFrameworkCore;
@@ -212,7 +213,7 @@ public class PushService(
 						NotifieeId   = notification.NotifieeId,
 						NotifieeName = notification.Notifiee.DisplayName ?? notification.Notifiee.Username,
 						InstanceName = instanceName ?? "Iceshrimp.NET",
-						Type         = notification.Type.ToString(),
+						Type         = (NotificationType)notification.Type,
 						IconUrl =
 							notification.Notifier?.GetAvatarUrl(config.Value)
 							?? notification.Notifiee.GetAvatarUrl(config.Value),
@@ -235,7 +236,7 @@ public class PushService(
 						PushMode = PushMode.AesGcm
 					};
 	
-					await client.SendNotificationAsync(sub, JsonSerializer.Serialize(res, JsonSerializerOptions.Web));
+					await client.SendNotificationAsync(sub, JsonSerializer.Serialize(res, JsonSerialization.Options));
 				}
 				catch (Exception)
 				{

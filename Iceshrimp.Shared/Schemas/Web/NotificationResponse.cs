@@ -6,14 +6,15 @@ namespace Iceshrimp.Shared.Schemas.Web;
 
 public class NotificationResponse : IIdentifiable
 {
-	public required string        Id        { get; set; }
-	public required string        Type      { get; set; }
-	public required bool          Read      { get; set; }
-	public required string        CreatedAt { get; set; }
-	public          NoteResponse? Note      { get; set; }
-	public          UserResponse? User      { get; set; }
+	public required string           Id        { get; set; }
+	public required NotificationType Type      { get; set; }
+	public required bool             Read      { get; set; }
+	public required string           CreatedAt { get; set; }
+	public          NoteResponse?    Note      { get; set; }
+	public          UserResponse?    User      { get; set; }
+
 	[JI(Condition = JsonIgnoreCondition.WhenWritingNull)]
-	public          BiteResponse? Bite    { get; set; }
+	public BiteResponse? Bite { get; set; }
 	
 	[JI(Condition = JsonIgnoreCondition.WhenWritingNull)]
 	public          ReactionResponse? Reaction { get; set; }
