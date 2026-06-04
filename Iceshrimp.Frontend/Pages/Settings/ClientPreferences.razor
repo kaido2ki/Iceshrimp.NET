@@ -1,0 +1,82 @@
+@page "/settings/preferences"
+@using Blazored.LocalStorage
+@using Iceshrimp.Assets.PhosphorIcons
+@using Iceshrimp.Frontend.Components
+@using Iceshrimp.Frontend.Core.Services
+@using Iceshrimp.Frontend.Core.Miscellaneous
+@using Microsoft.AspNetCore.Authorization
+@using Microsoft.AspNetCore.Components.Sections
+@attribute [Authorize]
+@layout SettingsLayout
+@inject IStringLocalizer<Localization> Loc;
+@inject ISyncLocalStorageService       LocalStorage;
+@inject SettingsService                Settings;
+
+<HeadTitle Text="@Loc[L.Preferences]"/>
+
+<SectionContent SectionName="top-bar">
+    <Icon Name="Icons.SlidersHorizontal"/>
+    @Loc[L.Preferences]
+</SectionContent>
+
+<div class="body">
+    <EditForm OnSubmit="Submit" Model="Preferences">
+        <label>
+            @Loc[L.Preferences_UILanguage]
+            <InputSelect @bind-Value="Preferences.Language">
+                <option value="followBrowser">@Loc[L.Preferences_FollowBrowserPref]</option>
+                @foreach (var culture in LocaleHelper.AvailableCultures)
+                {
+                    <option value="@culture.Culture.Name">@culture.DisplayName</option>
+                }
+            </InputSelect>
+        </label>
+
+        <h2><Icon Name="Icons.PaintBrush"/> @Loc[L.Preferences_Appearance]</h2>
+        <label>
+            @Loc[L.Preferences_Theme]
+            <InputSelect @bind-Value="Theme">
+                <option value="system">@Loc[L.Preferences_ThemeSystem]</option>
+                <option value="light">@Loc[L.Preferences_ThemeLight]</option>
+                <option value="dark">@Loc[L.Preferences_ThemeDark]</option>
+            </InputSelect>
+        </label>
+        <label>
+            @Loc[L.Preferences_CustomCSS]
+            <InputTextArea @bind-Value="Preferences.CustomCss" class="custom-css-input"/>
+        </label>
+        <WarningBanner>@Loc[L.Preferences_CustomCSS_Warning]</WarningBanner>
+        <StateButton ExtraClasses="button" @ref="@SaveButton" OnClick="Submit">
+            <Initial>@Loc[L.StateButton_SaveChanges]</Initial>
+            <Success>@Loc[L.StateButton_Saved]</Success>
+            <Loading>@Loc[L.StateButton_Loading]<LoadingSpinner/>
+            </Loading>
+            <Failed>@Loc[L.StateButton_Error]</Failed>
+        </StateButton>
+    </EditForm>
+</div>
+
+@code {
+    private StateButton                    SaveButton  { get; set; } = null!;
+    private Core.Schemas.ClientPreferences Preferences { get; set; } = null!;
+    private string                         Theme       { get; set; } = "";
+
+    protected override void OnInitialized()
+    {
+        Preferences = Settings.Preferences;
+        Theme       = LocalStorage.GetItemAsString("theme") ?? "system";
+    }
+
+    private void Submit()
+    {
+        if (SaveButton.State == StateButton.StateEnum.Loading) return;
+
+        SaveButton.State = StateButton.StateEnum.Loading;
+
+        Settings.Preferences = Preferences;
+        LocalStorage.SetItemAsString("theme", Theme);
+
+        SaveButton.State = StateButton.StateEnum.Success;
+        StateHasChanged();
+    }
+}

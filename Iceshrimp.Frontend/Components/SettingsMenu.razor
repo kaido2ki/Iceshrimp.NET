@@ -1,10 +1,10 @@
 @using Iceshrimp.Assets.PhosphorIcons
 @inject IStringLocalizer<Localization> Loc;
 <div class="nav">
-    <NavLink href="/settings/appearance">
+    <NavLink href="/settings/preferences">
         <div class="sidebar-btn">
-            <Icon Name="Icons.PaintBrush"/>
-            <span class="text">@Loc["Appearance"]</span>
+            <Icon Name="Icons.SlidersHorizontal"/>
+            <span class="text">@Loc[L.Preferences]</span>
         </div>
     </NavLink>
     <LabeledRuler Label="@Loc["User"]"/>
