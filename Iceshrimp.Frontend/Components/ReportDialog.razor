@@ -79,12 +79,10 @@
             
             @if (ReportedUser?.Host != null && (Session?.Current?.IsModerator ?? false) || (Session?.Current?.IsAdmin ?? false))
             {
-                <div>
-                    <input type="checkbox" @bind="Forward" id="should-forward"/>
-                    <label for="should-forward">
-                        @Loc["Forward to {0}", ReportedUser?.Host!]
-                    </label>
-                </div>
+                <label>
+                    @Loc["Forward to {0}", ReportedUser?.Host!]
+                    <InputCheckbox @bind-Value="Forward"/>
+                </label>
             }
             
             <div class="buttons">
