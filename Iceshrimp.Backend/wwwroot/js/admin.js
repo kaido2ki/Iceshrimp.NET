@@ -101,7 +101,7 @@ async function unsuspendUser(id, target) {
 }
 
 async function deleteUser(id, target) {
-    await confirm(target, () => callApiMethod(`/api/iceshrimp/moderation/users/${id}/delete`));
+    await confirm(target, () => callApiMethod(`/api/iceshrimp/moderation/users/${id}`, 'DELETE'));
 }
 
 async function purgeUser(id, target) {

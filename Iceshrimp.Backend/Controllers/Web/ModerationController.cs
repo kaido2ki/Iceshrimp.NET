@@ -37,7 +37,7 @@ public class ModerationController(
 	/// </summary>
 	/// <remarks>Delete a note from any user and removes it from federation where possible.</remarks>
 	/// <param name="id">The note's ID</param>
-	[HttpPost("notes/{id}/delete")]
+	[HttpDelete("notes/{id}")]
 	[ProducesResults(HttpStatusCode.OK)]
 	[ProducesErrors(HttpStatusCode.NotFound)]
 	public async Task DeleteNote(string id)
@@ -89,7 +89,7 @@ public class ModerationController(
 	/// </summary>
 	/// <remarks><b>This action cannot be undone.</b></remarks>
 	/// <param name="id">The user's ID</param>
-	[HttpPost("users/{id}/delete")]
+	[HttpDelete("users/{id}")]
 	[ProducesResults(HttpStatusCode.OK)]
 	[ProducesErrors(HttpStatusCode.NotFound)]
 	public async Task DeleteUser(string id)
