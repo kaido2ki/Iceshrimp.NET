@@ -1,0 +1,78 @@
+@page "/settings/notifications"
+@using Iceshrimp.Assets.PhosphorIcons
+@using Iceshrimp.Frontend.Components
+@using Iceshrimp.Frontend.Core.Schemas
+@using Iceshrimp.Frontend.Core.Services
+@using Iceshrimp.Frontend.Localization
+@using Iceshrimp.Shared.Schemas.Web
+@using Microsoft.AspNetCore.Authorization
+@using Microsoft.AspNetCore.Components.Sections
+@using Microsoft.Extensions.Localization
+@attribute [Authorize]
+@layout SettingsLayout
+@inject IStringLocalizer<Localization> Loc;
+@inject SettingsService                Settings;
+
+<HeadTitle Text="@Loc["Notification"]"/>
+
+<SectionContent SectionName="top-bar">
+    <Icon Name="Icons.BellRinging"/>
+    @Loc["Notification"]
+</SectionContent>
+
+<div class="body">
+    <EditForm OnSubmit="Submit" Model="Preferences.Notifications">
+        <label>
+            <InputCheckbox @bind-Value="Preferences.Notifications.Enabled"/>
+            @Loc["Enable notifications"]
+        </label>
+
+        <h3>@Loc["Hide notification types"]</h3>
+        @foreach (var type in typeof(WebPushNotification.NotificationType).GetEnumNames())
+        {
+            <label>
+                <input type="checkbox" @onchange="() => ToggleFilterType(type)"
+                       checked="@(Preferences.Notifications.FilterTypes.Contains(type))"/>
+                @type
+            </label>
+        }
+
+        <StateButton ExtraClasses="button" @ref="@SaveButton" OnClick="Submit">
+            <Initial>@Loc["Save changes"]</Initial>
+            <Success>@Loc["Saved"]</Success>
+            <Loading>@Loc["Loading"]<LoadingSpinner/>
+            </Loading>
+            <Failed>@Loc["Error"]</Failed>
+        </StateButton>
+    </EditForm>
+</div>
+
+@code {
+    private StateButton       SaveButton  { get; set; } = null!;
+    private ClientPreferences Preferences { get; set; } = null!;
+
+    protected override void OnInitialized()
+    {
+        Preferences = Settings.Preferences;
+    }
+
+    private void Submit()
+    {
+        if (SaveButton.State == StateButton.StateEnum.Loading) return;
+
+        SaveButton.State = StateButton.StateEnum.Loading;
+
+        Settings.Preferences = Preferences;
+
+        SaveButton.State = StateButton.StateEnum.Success;
+        StateHasChanged();
+    }
+
+    private void ToggleFilterType(string type)
+    {
+        if (Preferences.Notifications.FilterTypes.Contains(type))
+            Preferences.Notifications.FilterTypes.RemoveAll(p => p == type);
+        else
+            Preferences.Notifications.FilterTypes.Add(type);
+    }
+}

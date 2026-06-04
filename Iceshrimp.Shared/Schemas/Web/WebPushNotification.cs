@@ -14,4 +14,25 @@ public class WebPushNotification
     public required string? NoteId           { get; set; }
     public required string? Reaction         { get; set; }
     public required string? ReportId         { get; set; }
+
+    // Keep in sync with Iceshrimp.Backend.Core.Database.Tables.Notification.NotificationType
+    public enum NotificationType
+    {
+        Follow,
+        Mention,
+        Reply,
+        Renote,
+        Quote,
+        Like,
+        Reaction,
+        PollVote,
+        PollEnded,
+        FollowRequestReceived,
+        FollowRequestAccepted,
+        GroupInvited,
+        App,
+        Edit,
+        Bite,
+        Report
+    }
 }
