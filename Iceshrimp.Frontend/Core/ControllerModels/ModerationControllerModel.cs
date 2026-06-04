@@ -25,5 +25,5 @@ internal class ModerationControllerModel(ApiClient api)
         api.CallAsync(HttpMethod.Post, $"/moderation/reports/{id}/forward");
 
     public Task DeleteReportAsync(string id) =>
-        api.CallAsync(HttpMethod.Post, $"/moderation/reports/{id}/delete");
+        api.CallAsync(HttpMethod.Delete, $"/moderation/reports/{id}");
 }
