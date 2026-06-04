@@ -9,14 +9,14 @@
 @inject IStringLocalizer<Localization> Loc;
 @inject NavigationManager              NavigationManager
 
-@if (NotificationResponse is { Type: "mention" or "reply", Note.Filtered.Hide: true })
+@if (NotificationResponse is { Type: NotificationType.Mention or NotificationType.Reply, Note.Filtered.Hide: true })
 {
     // Don't render mention/reply notifs that are hidden by filters
     return;
 }
 
 <div class="notification@(NotificationResponse.Read ? " read" : "")">
-    @if (NotificationResponse is not { Type: "mention" } and not { Type: "reply" })
+    @if (NotificationResponse is not { Type: NotificationType.Mention } and not { Type: NotificationType.Reply })
     {
         <div class="notification-header">
             @if (NotificationResponse is { User: not null })
@@ -34,61 +34,61 @@
                 
                 @switch (NotificationResponse)
                 {
-                    case { Note: not null, Type: "like", User: not null }: 
+                    case { Note: not null, Type: NotificationType.Like, User: not null }: 
                         <span class="notification-icon"><Icon Name="Icons.Heart" Pack="IconStyle.Fill" Size="0.8em"/></span>
                         <span class="notification-text">@Loc[L.Notification_Body_like]</span> 
                         break; 
-                    case { Note: not null, Reaction: not null, Type: "reaction" }:
+                    case { Note: not null, Reaction: not null, Type: NotificationType.Reaction }:
                         <span class="notification-reaction" title="@NotificationResponse.Reaction.Name">
                             <InlineEmoji Name="@NotificationResponse.Reaction.Name" Url="@NotificationResponse.Reaction.Url" Hover="true" Size="1.25em"/>
                         </span>
                         <span class="notification-text">@Loc[L.Notification_Body_reaction]</span>
                         break;
-                    case { Type: "follow", User: not null }:
+                    case { Type: NotificationType.Follow, User: not null }:
                         <span class="notification-icon"><Icon Name="Icons.HandWaving" Size="0.9em"/></span>
                         <span class="notification-text">@Loc[L.Notification_Body_follow]</span>
                         break;
-                    case { Type: "followRequestReceived" }:
+                    case { Type: NotificationType.FollowRequestReceived }:
                         <span class="notification-icon"><Icon Name="Icons.Clock" Size="0.9em"/></span>
                         <span class="notification-text">@Loc[L.Notification_Body_follow_request_received]</span>
                         break;
-                    case { Type: "followRequestAccepted" }:
+                    case { Type: NotificationType.FollowRequestAccepted }:
                         <span class="notification-icon"><Icon Name="Icons.Check" Size="0.9em"/></span>
                         <span class="notification-text">@Loc[L.Notification_Body_follow_request_accepted]</span>
                         break;
-                    case { Type: "renote" }:
+                    case { Type: NotificationType.Renote }:
                         <span class="notification-icon"><Icon Name="Icons.Repeat" Size="0.9em"/></span>
                         <span class="notification-text">@Loc[L.Notification_Body_renote]</span>
                         break;
-                    case { Type: "quote" }:
+                    case { Type: NotificationType.Quote }:
                         <span class="notification-icon"><Icon Name="Icons.Quotes" Size="0.9em"/></span>
                         <span class="notification-text">@Loc[L.Notification_Body_quote]</span>
                         break;
-                    case { Bite: { BiteBack: true }, Type: "bite" }:
+                    case { Bite: { BiteBack: true }, Type: NotificationType.Bite }:
                         <span class="notification-icon"><Icon Name="Icons.Tooth" Size="0.9em"/></span>
                         <span class="notification-text">@Loc[L.Notification_Body_bite_Back]</span>
                         break;
-                    case { Note: not null, Type: "bite" }:
+                    case { Note: not null, Type: NotificationType.Bite }:
                         <span class="notification-icon"><Icon Name="Icons.Tooth" Size="0.9em"/></span>
                         <span class="notification-text">@Loc[L.Notification_Body_bite_Note]</span>
                         break;
-                    case { Type: "bite" }:
+                    case { Type: NotificationType.Bite }:
                         <span class="notification-icon"><Icon Name="Icons.Tooth" Size="0.9em"/></span>
                         <span class="notification-text">@Loc[L.Notification_Body_bite]</span>
                         break;
-                    case { Type: "edit" }:
+                    case { Type: NotificationType.Edit }:
                         <span class="notification-icon"><Icon Name="Icons.PencilLine" Size="0.9em"/></span>
                         <span class="notification-text">@Loc[L.Notification_Body_edit]</span>
                         break;
-                    case { Type: "pollVote" }:
+                    case { Type: NotificationType.PollVote }:
                         <span class="notification-icon"><Icon Name="Icons.MicrophoneStage" Size="0.9em"/></span>
                         <span class="notification-text">@Loc[L.Notification_Body_poll_vote]</span>
                         break;
-                    case { Type: "pollEnded" }:
+                    case { Type: NotificationType.PollEnded }:
                         <span class="notification-icon"><Icon Name="Icons.Timer" Size="0.9em"/></span>
                         <span class="notification-text">@Loc[L.Notification_Body_poll_ended]</span>
                         break;
-                    case { Type: "report", User: not null }:
+                    case { Type: NotificationType.Report, User: not null }:
                         <span class="notification-icon"><Icon Name="Icons.WarningCircle" Size="0.9em"/></span>
                         <span class="notification-text">@Loc[L.Notification_Body_report]</span>
                         break;
@@ -120,14 +120,14 @@
 
     @if (NotificationResponse is { Note: not null })
     {
-        <div class="@(NotificationResponse is not { Type: "mention" or "reply" } ? "notification-note" : "")" @onclick="MarkAsRead">
-            <Note NoteResponse="NotificationResponse.Note" OpenNote="true"/>
+        <div class="@(NotificationResponse is not { Type: NotificationType.Mention or NotificationType.Reply } ? "notification-note" : "")" @onclick="MarkAsRead">
+            <NoteComponent Note="NotificationResponse.Note" AsQuote="@(NotificationResponse is not { Type: NotificationType.Mention } and not { Type: NotificationType.Reply })" OpenNote="true"/>
         </div>
     }
 
     @switch (NotificationResponse)
     {
-        case { Type: "bite", Bite: not null, User: not null }:
+        case { Type: NotificationType.Bite, Bite: not null, User: not null }:
             <div class="notification-actions">
                 <button class="button" @onclick="BiteBack">
                     <Icon Name="Icons.Tooth"/>
