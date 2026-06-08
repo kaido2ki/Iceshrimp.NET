@@ -10,6 +10,9 @@
 }
 
 .widget-panel {
+    position: sticky;
+    top: 0;
+    max-height: 100vh;
     border-left: 0.05rem var(--border-color) solid;
 }
 

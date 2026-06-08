@@ -1,10 +1,9 @@
 .widget-panel-elements {
     display: flex;
     max-width: 23rem;
-    min-width: 23rem;
-    position: sticky;
-    top: 0;
-    max-height: 100vh;
+    max-height: 100%;
+    overflow-y: auto;
+    overscroll-behavior-y: contain;
 }
 
 .widget-panel-header {

@@ -1,7 +1,6 @@
 .scroller {
     width: 100%;
-    overflow-x: auto;
-    overscroll-behavior-y: contain;
+    height: 100%;
     padding-top: 0.5rem;
 }
 
