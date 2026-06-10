@@ -1,3 +1,4 @@
+using System.Runtime.CompilerServices;
 using CommunityToolkit.HighPerformance;
 using Iceshrimp.Backend.Core.Configuration;
 using Iceshrimp.Backend.Core.Helpers;
@@ -68,14 +69,15 @@ public class VipsProcessor : ImageProcessorBase, IImageProcessor,
 	{
 		using var blurhashImageSource =
 			Image.ThumbnailBuffer(buf, 100, height: 100, size: Enums.Size.Down);
-		using var blurhashImage = blurhashImageSource.Interpretation == Enums.Interpretation.Srgb
-			? blurhashImageSource
-			: blurhashImageSource.Colourspace(Enums.Interpretation.Srgb);
+		using var blurhashImageRotated = blurhashImageSource.Autorot();
+		using var blurhashImage = blurhashImageRotated.Interpretation == Enums.Interpretation.Srgb
+			? blurhashImageRotated
+			: blurhashImageRotated.Colourspace(Enums.Interpretation.Srgb);
 		using var blurhashImageFlattened = blurhashImage.HasAlpha() ? blurhashImage.Flatten() : blurhashImage;
 		using var blurhashImageActual    = blurhashImageFlattened.Cast(Enums.BandFormat.Uchar);
 
-		var blurBuf    = blurhashImageActual.WriteToMemory<Rgb24>();
-		var blurPixels = blurBuf.AsSpan2D(blurhashImage.Height, blurhashImage.Width);
+		var blurBuf    = blurhashImageActual.WriteToMemory<byte>();
+		var blurPixels = Unsafe.As<Rgb24[]>(blurBuf).AsSpan2D(blurhashImage.Height, blurhashImage.Width);
 		return BlurhashHelper.Encode(blurPixels, 7, 7);
 	}
 
