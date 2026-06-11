@@ -1,4 +1,3 @@
-using System.Runtime.CompilerServices;
 using CommunityToolkit.HighPerformance;
 using Iceshrimp.Backend.Core.Configuration;
 using Iceshrimp.Backend.Core.Helpers;
@@ -76,9 +75,22 @@ public class VipsProcessor : ImageProcessorBase, IImageProcessor,
 		using var blurhashImageFlattened = blurhashImage.HasAlpha() ? blurhashImage.Flatten() : blurhashImage;
 		using var blurhashImageActual    = blurhashImageFlattened.Cast(Enums.BandFormat.Uchar);
 
-		var blurBuf    = blurhashImageActual.WriteToMemory<byte>();
-		var blurPixels = Unsafe.As<Rgb24[]>(blurBuf).AsSpan2D(blurhashImage.Height, blurhashImage.Width);
-		return BlurhashHelper.Encode(blurPixels, 7, 7);
+		var blurBuf = blurhashImageActual.WriteToMemory<byte>();
+		var bufLen  = blurBuf.Length;
+
+		const int expectedBufLen = 100 * 100 * 3;
+		if (bufLen != expectedBufLen) throw new VipsException("Failed to compute blurhash: buffer length mismatch");
+
+		var         blurBufSpan   = blurBuf.AsSpan();
+		Span<Rgb24> blurPixels = new Rgb24[expectedBufLen];
+
+		for (var i = 0; i < expectedBufLen; i++)
+		{
+			var baseIdx = i * 3;
+			blurPixels[i] = new Rgb24(blurBufSpan[baseIdx], blurBufSpan[baseIdx+1], blurBufSpan[baseIdx+2]);
+		}
+
+		return BlurhashHelper.Encode(blurPixels.AsSpan2D(blurhashImage.Height, blurhashImage.Width), 7, 7);
 	}
 
 	public IImageInfo Identify(byte[] input)
