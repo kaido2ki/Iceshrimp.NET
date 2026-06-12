@@ -478,7 +478,7 @@ public class NoteRenderer(
 
 			var chuckyaReaction = new ChuckyaReactionEntity
 			{
-				Account   = renderedAccounts.FirstOrDefault(p => p.Id == item.UserId),
+				Account   = renderedAccounts.FirstOrDefault(p => p.Id == item.UserId)!,
 				Id        = item.Id,
 				Name      = reaction,
 				Url       = string.IsNullOrEmpty(url) ? null : url,
