@@ -59,11 +59,12 @@ public class InstanceStats(long userCount, long noteCount, long instanceCount)
 
 public class InstanceConfigurationV1(Config.InstanceSection config)
 {
-	[J("accounts")]          public InstanceAccountsConfiguration Accounts  => new();
-	[J("statuses")]          public InstanceStatusesConfiguration Statuses  => new(config.CharacterLimit);
-	[J("media_attachments")] public InstanceMediaConfiguration    Media     => new();
-	[J("polls")]             public InstancePollConfiguration     Polls     => new();
-	[J("reactions")]         public InstanceReactionConfiguration Reactions => new();
+	[J("accounts")]          public InstanceAccountsConfiguration  Accounts  => new();
+	[J("statuses")]          public InstanceStatusesConfiguration  Statuses  => new(config.CharacterLimit);
+	[J("media_attachments")] public InstanceMediaConfiguration     Media     => new();
+	[J("polls")]             public InstancePollConfiguration      Polls     => new();
+	[J("reactions")]         public InstanceReactionConfiguration  Reactions => new();
+	[J("gif_search")]        public InstanceGifSearchConfiguration GifSearch => new();
 }
 
 public class InstanceAccountsConfiguration
@@ -101,4 +102,10 @@ public class InstancePollConfiguration
 public class InstanceReactionConfiguration
 {
 	[J("max_reactions")] public int MaxOptions => 100;
+}
+
+public class InstanceGifSearchConfiguration
+{
+	[J("enabled")]  public bool    Enabled  => false;
+	[J("provider")] public string? Provider => null;
 }
