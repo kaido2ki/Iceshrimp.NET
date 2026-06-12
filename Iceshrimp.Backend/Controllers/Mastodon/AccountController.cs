@@ -40,15 +40,22 @@ public class AccountController(
 	IOptionsSnapshot<Config.SecuritySection> config
 ) : ControllerBase
 {
-	[HttpGet]
-	[Route("verify_credentials")]
-	[Route("/api/v1/profile")]
+	[HttpGet("verify_credentials")]
 	[Authorize("read:accounts")]
 	[ProducesResults(HttpStatusCode.OK)]
 	public async Task<AccountEntity> VerifyUserCredentials()
 	{
 		var user = HttpContext.GetUserOrFail();
-		return await userRenderer.RenderAsync(user, user.UserProfile, user, source: true);
+		return await userRenderer.RenderAsync(user, user.UserProfile, user, source: true, withFormattedFields: false);
+	}
+	
+	[HttpGet("/api/v1/profile")]
+	[Authorize("read:accounts")]
+	[ProducesResults(HttpStatusCode.OK)]
+	public async Task<AccountEntity> GetCurrentUserProfile()
+	{
+		var user = HttpContext.GetUserOrFail();
+		return await userRenderer.RenderAsync(user, user.UserProfile, user, source: true, withFormattedFields: true);
 	}
 
 	[HttpPatch]
@@ -161,7 +168,7 @@ public class AccountController(
 		}
 
 		user = await userSvc.UpdateLocalUserAsync(user, prevAvatarId, prevBannerId);
-		return await userRenderer.RenderAsync(user, user.UserProfile, user, source: true);
+		return await userRenderer.RenderAsync(user, user.UserProfile, user, source: true, withFormattedFields: HttpContext.Request.Path == "/api/v1/profile");
 	}
 
 	[HttpPost("authorize_iceshrimp")]

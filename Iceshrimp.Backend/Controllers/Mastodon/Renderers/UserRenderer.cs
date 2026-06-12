@@ -23,11 +23,11 @@ public class UserRenderer(
 {
 	private readonly string _transparent = $"https://{config.Value.WebDomain}/assets/transparent.png";
 
-	public Task<AccountEntity> RenderAsync(User user, UserProfile? profile, User? localUser, bool source = false)
-		=> RenderAsync(user, profile, localUser, null, source);
+	public Task<AccountEntity> RenderAsync(User user, UserProfile? profile, User? localUser, bool source = false, bool withFormattedFields = false)
+		=> RenderAsync(user, profile, localUser, null, source, withFormattedFields);
 
 	private async Task<AccountEntity> RenderAsync(
-		User user, UserProfile? profile, User? localUser, UserRendererDto? data = null, bool source = false
+		User user, UserProfile? profile, User? localUser, UserRendererDto? data = null, bool source = false, bool withFormattedFields = false
 	)
 	{
 		var acct = user.Username;
@@ -44,7 +44,8 @@ public class UserRenderer(
 			                    VerifiedAt = p.IsVerified.HasValue && p.IsVerified.Value
 				                    ? DateTime.Now.ToStringIso8601Like()
 				                    : null
-		                    });
+		                    })
+		                    .ToList() ?? [];
 
 		var fieldsSource = source
 			? profile?.Fields.Select(p => new Field { Name = p.Name, Value = p.Value }).ToList() ?? []
@@ -84,19 +85,29 @@ public class UserRenderer(
 			FollowersCount     = user.FollowersCount,
 			FollowingCount     = user.FollowingCount,
 			StatusesCount      = user.NotesCount,
-			Note               = mfmConverter.ToHtml(profile?.Description ?? "", mentions, user.Host).Html,
-			Url                = profile?.Url ?? user.Uri ?? user.GetPublicUrl(config.Value),
-			Uri                = user.Uri ?? user.GetPublicUri(config.Value),
-			AvatarStaticUrl    = user.GetAvatarUrl(config.Value), //TODO
-			AvatarDescription  = avatarAlt ?? "",
-			HeaderUrl          = user.GetBannerUrl(config.Value) ?? _transparent,
-			HeaderStaticUrl    = user.GetBannerUrl(config.Value) ?? _transparent, //TODO
-			HeaderDescription  = bannerAlt ?? "",
-			MovedToAccount     = null, //TODO
-			IsBot              = user.IsBot,
-			IsDiscoverable     = user.IsExplorable,
-			Fields             = fields?.ToList() ?? [],
-			Emoji              = profileEmoji,
+			Note               = withFormattedFields 
+				? profile?.Description ?? "" 
+				: mfmConverter.ToHtml(profile?.Description ?? "", mentions, user.Host).Html,
+			FormattedNote      = withFormattedFields 
+				? mfmConverter.ToHtml(profile?.Description ?? "", mentions, user.Host).Html
+				: null,
+			Url               = profile?.Url ?? user.Uri ?? user.GetPublicUrl(config.Value),
+			Uri               = user.Uri ?? user.GetPublicUri(config.Value),
+			AvatarStaticUrl   = user.GetAvatarUrl(config.Value), //TODO
+			AvatarDescription = avatarAlt ?? "",
+			HeaderUrl         = user.GetBannerUrl(config.Value) ?? _transparent,
+			HeaderStaticUrl   = user.GetBannerUrl(config.Value) ?? _transparent, //TODO
+			HeaderDescription = bannerAlt ?? "",
+			MovedToAccount    = null, //TODO
+			IsBot             = user.IsBot,
+			IsDiscoverable    = user.IsExplorable,
+			Fields            = withFormattedFields 
+				? fieldsSource
+				: fields,
+			FormattedFields   = withFormattedFields
+				? fields
+				: null,
+			Emoji             = profileEmoji,
 			Pleroma            = flags.IsPleroma.Value
 				? new PleromaUserExtensions
 				{

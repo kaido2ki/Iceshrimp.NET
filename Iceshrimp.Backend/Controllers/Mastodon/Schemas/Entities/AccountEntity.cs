@@ -35,6 +35,9 @@ public class AccountEntity : IIdentifiable
 
 	[J("avatar_description")] public required string AvatarDescription { get; set; }
 	[J("header_description")] public required string HeaderDescription { get; set; }
+	
+	[J("formatted_note")]   public string?      FormattedNote   { get; set; }
+	[J("formatted_fields")] public List<Field>? FormattedFields { get; set; }
 }
 
 public class Field
