@@ -43,6 +43,7 @@ public class InstanceApiVersions
 	// this is modeled after https://codeberg.org/fediverse-pl/maep/pulls/2, however since the extensions aren't submitted
 	// there (yet?) we'll use our own namespace for it
 	[J("net.iceshrimp.scheduled_boosts")] public ushort ScheduledBoosts { get; set; } = 1;
+	[J("chuckya")]                        public ushort Chuckya         { get; set; } = 2;
 }
 
 public class InstanceConfigurationV2(Config.InstanceSection config)
