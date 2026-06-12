@@ -58,14 +58,8 @@ public class AccountController(
 		return await userRenderer.RenderAsync(user, user.UserProfile, user, source: true, withFormattedFields: true);
 	}
 
-	[HttpPatch]
-	[Route("update_credentials")]
-	[Route("/api/v1/profile")]
-	[Authorize("write:accounts")]
-	[ProducesResults(HttpStatusCode.OK)]
-	public async Task<AccountEntity> UpdateUserCredentials([FromHybrid] AccountSchemas.AccountUpdateRequest request)
+	private async Task<AccountEntity> UpdateUserProfileInternal(AccountSchemas.AccountUpdateRequest request, User user, bool withFormattedFields = false)
 	{
-		var user = HttpContext.GetUserOrFail();
 		if (user.UserProfile == null)
 			throw new Exception("User profile must not be null at this stage");
 
@@ -168,7 +162,25 @@ public class AccountController(
 		}
 
 		user = await userSvc.UpdateLocalUserAsync(user, prevAvatarId, prevBannerId);
-		return await userRenderer.RenderAsync(user, user.UserProfile, user, source: true, withFormattedFields: HttpContext.Request.Path == "/api/v1/profile");
+		return await userRenderer.RenderAsync(user, user.UserProfile, user, source: true, withFormattedFields: withFormattedFields);
+	}
+
+	[HttpPatch("update_credentials")]
+	[Authorize("write:accounts")]
+	[ProducesResults(HttpStatusCode.OK)]
+	public async Task<AccountEntity> UpdateUserCredentials([FromHybrid] AccountSchemas.AccountUpdateRequest request)
+	{
+		var user = HttpContext.GetUserOrFail();
+		return await UpdateUserProfileInternal(request, user, withFormattedFields: false);
+	}
+	
+	[HttpPatch("/api/v1/profile")]
+	[Authorize("write:accounts")]
+	[ProducesResults(HttpStatusCode.OK)]
+	public async Task<AccountEntity> UpdateCurrentUserProfile([FromHybrid] AccountSchemas.AccountUpdateRequest request)
+	{
+		var user = HttpContext.GetUserOrFail();
+		return await UpdateUserProfileInternal(request, user, withFormattedFields: true);
 	}
 
 	[HttpPost("authorize_iceshrimp")]
