@@ -5699,7 +5699,8 @@ namespace Iceshrimp.Backend.Core.Database.Migrations
                 {
                     b.HasOne("Iceshrimp.Backend.Core.Database.Tables.Bite", "Bite")
                         .WithMany()
-                        .HasForeignKey("BiteId");
+                        .HasForeignKey("BiteId")
+                        .OnDelete(DeleteBehavior.Cascade);
 
                     b.HasOne("Iceshrimp.Backend.Core.Database.Tables.FollowRequest", "FollowRequest")
                         .WithMany("Notifications")

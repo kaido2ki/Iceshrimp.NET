@@ -176,6 +176,10 @@ public class Notification : IIdentifiable
 			entity.HasOne(d => d.Report)
 			      .WithMany()
 			      .OnDelete(DeleteBehavior.Cascade);
+
+			entity.HasOne(p => p.Bite)
+			      .WithMany()
+			      .OnDelete(DeleteBehavior.Cascade);
 		}
 	}
 }
