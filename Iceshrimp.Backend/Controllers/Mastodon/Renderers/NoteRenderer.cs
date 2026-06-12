@@ -456,7 +456,11 @@ public class NoteRenderer(
 	
 	public async Task<List<ChuckyaReactionEntity>> GetChuckyaReactionsAsync(List<NoteReaction> reactions, string noteId, User? user)
 	{
-		var accounts         = await db.Users.Where(p => reactions.Select(u => u.UserId).Contains(p.Id)).ToListAsync();
+		var accounts         = await db.Users
+		                               .Where(p => reactions.Select(u => u.UserId)
+		                                                    .Contains(p.Id))
+		                               .IncludeCommonProperties()
+		                               .ToListAsync();
 		var renderedAccounts = (await userRenderer.RenderManyAsync(accounts, user)).ToList();
 
 		var renderedReactions = new List<ChuckyaReactionEntity>();
