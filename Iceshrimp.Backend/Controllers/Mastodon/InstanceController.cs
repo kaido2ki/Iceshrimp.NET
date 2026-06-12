@@ -142,4 +142,11 @@ public class InstanceController(
 		var description = await meta.GetAsync(MetaEntity.InstanceDescription);
 		return new InstanceExtendedDescription(description);
 	}
+
+	[HttpGet("/api/v1/instance/bubble_domains")]
+	[ProducesResults(HttpStatusCode.OK)]
+	public async Task<List<string>> GetBubbleDomains()
+	{
+		return await db.BubbleInstances.Select(p => p.Host).ToListAsync();
+	}
 }
