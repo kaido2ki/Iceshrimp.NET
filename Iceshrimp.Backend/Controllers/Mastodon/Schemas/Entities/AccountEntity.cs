@@ -6,32 +6,33 @@ namespace Iceshrimp.Backend.Controllers.Mastodon.Schemas.Entities;
 
 public class AccountEntity : IIdentifiable
 {
-	[J("username")]        public required string                 Username           { get; set; }
-	[J("acct")]            public required string                 Acct               { get; set; }
-	[J("fqn")]             public required string                 FullyQualifiedName { get; set; }
-	[J("display_name")]    public required string                 DisplayName        { get; set; }
-	[J("locked")]          public required bool                   IsLocked           { get; set; }
-	[J("created_at")]      public required string                 CreatedAt          { get; set; }
-	[J("followers_count")] public required long                   FollowersCount     { get; set; }
-	[J("following_count")] public required long                   FollowingCount     { get; set; }
-	[J("statuses_count")]  public required long                   StatusesCount      { get; set; }
-	[J("note")]            public required string                 Note               { get; set; }
-	[J("url")]             public required string                 Url                { get; set; }
-	[J("uri")]             public required string                 Uri                { get; set; }
-	[J("avatar")]          public required string                 AvatarUrl          { get; set; }
-	[J("avatar_static")]   public required string                 AvatarStaticUrl    { get; set; }
-	[J("header")]          public required string                 HeaderUrl          { get; set; }
-	[J("header_static")]   public required string                 HeaderStaticUrl    { get; set; }
-	[J("moved")]           public required AccountEntity?         MovedToAccount     { get; set; }
-	[J("bot")]             public required bool                   IsBot              { get; set; }
-	[J("discoverable")]    public required bool                   IsDiscoverable     { get; set; }
-	[J("fields")]          public required List<Field>            Fields             { get; set; }
-	[J("source")]          public          AccountSource?         Source             { get; set; }
-	[J("emojis")]          public required List<EmojiEntity>      Emoji              { get; set; }
-	[J("id")]              public required string                 Id                 { get; set; }
-	[J("last_status_at")]  public          string?                LastStatusAt       { get; set; }
-	[J("pleroma")]         public required PleromaUserExtensions? Pleroma            { get; set; }
-	[J("akkoma")]          public required AkkomaUserExtensions?  Akkoma             { get; set; }
+	[J("username")]            public required string                 Username           { get; set; }
+	[J("acct")]                public required string                 Acct               { get; set; }
+	[J("fqn")]                 public required string                 FullyQualifiedName { get; set; }
+	[J("display_name")]        public required string                 DisplayName        { get; set; }
+	[J("locked")]              public required bool                   IsLocked           { get; set; }
+	[J("created_at")]          public required string                 CreatedAt          { get; set; }
+	[J("followers_count")]     public required long                   FollowersCount     { get; set; }
+	[J("following_count")]     public required long                   FollowingCount     { get; set; }
+	[J("statuses_count")]      public required long                   StatusesCount      { get; set; }
+	[J("note")]                public required string                 Note               { get; set; }
+	[J("url")]                 public required string                 Url                { get; set; }
+	[J("uri")]                 public required string                 Uri                { get; set; }
+	[J("avatar")]              public required string                 AvatarUrl          { get; set; }
+	[J("avatar_static")]       public required string                 AvatarStaticUrl    { get; set; }
+	[J("header")]              public required string                 HeaderUrl          { get; set; }
+	[J("header_static")]       public required string                 HeaderStaticUrl    { get; set; }
+	[J("moved")]               public required AccountEntity?         MovedToAccount     { get; set; }
+	[J("bot")]                 public required bool                   IsBot              { get; set; }
+	[J("discoverable")]        public required bool                   IsDiscoverable     { get; set; }
+	[J("fields")]              public required List<Field>            Fields             { get; set; }
+	[J("source")]              public          AccountSource?         Source             { get; set; }
+	[J("emojis")]              public required List<EmojiEntity>      Emoji              { get; set; }
+	[J("id")]                  public required string                 Id                 { get; set; }
+	[J("last_status_at")]      public          string?                LastStatusAt       { get; set; }
+	[J("attribution_domains")] public          List<string>?          AttributionDomains { get; set; }
+	[J("pleroma")]             public required PleromaUserExtensions? Pleroma            { get; set; }
+	[J("akkoma")]              public required AkkomaUserExtensions?  Akkoma             { get; set; }
 
 	[J("avatar_description")] public required string AvatarDescription { get; set; }
 	[J("header_description")] public required string HeaderDescription { get; set; }

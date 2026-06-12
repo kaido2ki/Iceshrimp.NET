@@ -91,23 +91,24 @@ public class UserRenderer(
 			FormattedNote      = withFormattedFields 
 				? mfmConverter.ToHtml(profile?.Description ?? "", mentions, user.Host).Html
 				: null,
-			Url               = profile?.Url ?? user.Uri ?? user.GetPublicUrl(config.Value),
-			Uri               = user.Uri ?? user.GetPublicUri(config.Value),
-			AvatarStaticUrl   = user.GetAvatarUrl(config.Value), //TODO
-			AvatarDescription = avatarAlt ?? "",
-			HeaderUrl         = user.GetBannerUrl(config.Value) ?? _transparent,
-			HeaderStaticUrl   = user.GetBannerUrl(config.Value) ?? _transparent, //TODO
-			HeaderDescription = bannerAlt ?? "",
-			MovedToAccount    = null, //TODO
-			IsBot             = user.IsBot,
-			IsDiscoverable    = user.IsExplorable,
-			Fields            = withFormattedFields 
+			Url                = profile?.Url ?? user.Uri ?? user.GetPublicUrl(config.Value),
+			Uri                = user.Uri ?? user.GetPublicUri(config.Value),
+			AvatarStaticUrl    = user.GetAvatarUrl(config.Value), //TODO
+			AvatarDescription  = avatarAlt ?? "",
+			HeaderUrl          = user.GetBannerUrl(config.Value) ?? _transparent,
+			HeaderStaticUrl    = user.GetBannerUrl(config.Value) ?? _transparent, //TODO
+			HeaderDescription  = bannerAlt ?? "",
+			MovedToAccount     = null, //TODO
+			IsBot              = user.IsBot,
+			IsDiscoverable     = user.IsExplorable,
+			Fields             = withFormattedFields 
 				? fieldsSource
 				: fields,
-			FormattedFields   = withFormattedFields
+			FormattedFields    = withFormattedFields
 				? fields
 				: null,
-			Emoji             = profileEmoji,
+			Emoji              = profileEmoji,
+			AttributionDomains = user.AttributionDomains ?? [],
 			Pleroma            = flags.IsPleroma.Value
 				? new PleromaUserExtensions
 				{
