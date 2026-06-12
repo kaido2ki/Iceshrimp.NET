@@ -58,7 +58,7 @@ public class AccountController(
 		return await userRenderer.RenderAsync(user, user.UserProfile, user, source: true, withFormattedFields: true);
 	}
 
-	private async Task<AccountEntity> UpdateUserProfileInternal(AccountSchemas.AccountUpdateRequest request, User user, bool withFormattedFields = false)
+	private async Task<AccountEntity> UpdateUserProfileInternal(AccountSchemas.AccountUpdateRequest request, User user, bool withFormattedFields)
 	{
 		if (user.UserProfile == null)
 			throw new Exception("User profile must not be null at this stage");
