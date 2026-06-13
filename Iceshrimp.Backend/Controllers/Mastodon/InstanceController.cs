@@ -166,10 +166,9 @@ public class InstanceController(
 	[ProducesResults(HttpStatusCode.OK)]
 	public async Task<List<string>> GetDomainBlocks()
 	{
-		var user                 = HttpContext.GetUserOrFail();
-		var exposeFederationList = config.Value.ExposeFederationList;
+		var user = HttpContext.GetUserOrFail();
 		
-		if (exposeFederationList == Enums.ItemVisibility.Hide && !user.IsAdmin)
+		if (config.Value.ExposeFederationList == Enums.ItemVisibility.Hide && !user.IsAdmin)
 			throw GracefulException.Forbidden("The domain block list is only displayed to admins of this instance.");
 
 		return await db.BlockedInstances.Select(p => p.Host).ToListAsync();
