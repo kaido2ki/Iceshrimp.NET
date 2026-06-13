@@ -8,6 +8,7 @@ using Iceshrimp.Backend.Controllers.Shared.Attributes;
 using Iceshrimp.Backend.Core.Configuration;
 using Iceshrimp.Backend.Core.Database;
 using Iceshrimp.Backend.Core.Extensions;
+using Iceshrimp.Backend.Core.Middleware;
 using Iceshrimp.Backend.Core.Services;
 using Microsoft.AspNetCore.Cors;
 using Microsoft.AspNetCore.Mvc;
@@ -24,7 +25,8 @@ namespace Iceshrimp.Backend.Controllers.Mastodon;
 public class InstanceController(
 	IOptions<Config.InstanceSection> instance,
 	DatabaseContext db,
-	MetaService meta
+	MetaService meta,
+	IOptionsSnapshot<Config.SecuritySection> config
 ) : ControllerBase
 {
 	[HttpGet("/api/v1/instance")]
@@ -144,9 +146,32 @@ public class InstanceController(
 	}
 
 	[HttpGet("/api/v1/instance/bubble_domains")]
+	[Authenticate]
 	[ProducesResults(HttpStatusCode.OK)]
 	public async Task<List<string>> GetBubbleDomains()
 	{
 		return await db.BubbleInstances.Select(p => p.Host).ToListAsync();
+	}
+
+	[HttpGet("/api/v1/instance/peers")]
+	[Authenticate]
+	[ProducesResults(HttpStatusCode.OK)]
+	public async Task<List<string>> GetPeers()
+	{
+		return await db.Instances.Select(p => p.Host).ToListAsync();
+	}
+
+	[HttpGet("/api/v1/instance/domain_blocks")]
+	[Authenticate]
+	[ProducesResults(HttpStatusCode.OK)]
+	public async Task<List<string>> GetDomainBlocks()
+	{
+		var user                 = HttpContext.GetUserOrFail();
+		var exposeFederationList = config.Value.ExposeFederationList;
+		
+		if (exposeFederationList == Enums.ItemVisibility.Hide && !user.IsAdmin)
+			throw GracefulException.Forbidden("The domain block list is only displayed to admins of this instance.");
+
+		return await db.BlockedInstances.Select(p => p.Host).ToListAsync();
 	}
 }
