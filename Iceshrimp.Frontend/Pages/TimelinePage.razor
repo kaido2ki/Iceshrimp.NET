@@ -32,6 +32,10 @@
         <Icon Name="Icons.ArrowLineUp"/>
         <span>@Loc["Scroll to top"]</span>
     </span>
+    <span class="action btn" @onclick="RefetchTimeline" title="@Loc["Refetch"]">
+        <Icon Name="Icons.ArrowsClockwise"/>
+        <span>@Loc["Refetch"]</span>
+    </span>
     <span class="action btn" @onclick="() => MenuRef.Toggle(MenuButton, false)" @ref="MenuButton">
         @switch (CurrentTimeline!.Enum)
         {
@@ -263,6 +267,14 @@
     private async Task ScrollToTop()
     {
         await JsSvc.ScrollToElementAsync(TimelineRef, JsService.ScrollBehavior.Smooth);
+    }
+
+    private async Task RefetchTimeline()
+    {
+        _loaded = false;
+        StateHasChanged();
+        await JsSvc.ScrollToElementAsync(TimelineRef, JsService.ScrollBehavior.Instant);
+        await OnInitializedAsync();
     }
 
     public void Dispose()
