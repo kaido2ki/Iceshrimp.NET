@@ -75,10 +75,17 @@ internal class ApiClient(HttpClient client)
 
 		if (res.IsSuccessStatusCode)
 		{
-			var deserialized = await res.Content.ReadFromJsonAsync<T>(JsonSerialization.Options);
-			if (deserialized == null)
-				throw new Exception("Deserialized API response was null");
-			return (deserialized, null);
+			try
+			{
+				var deserialized = await res.Content.ReadFromJsonAsync<T>(JsonSerialization.Options);
+				if (deserialized == null)
+					throw new Exception("Deserialized API response was null");
+				return (deserialized, null);
+			}
+			catch (JsonException e)
+			{
+				throw new ApiException("API response is malformed", e);
+			}
 		}
 
 		var error = await res.Content.ReadFromJsonAsync<ErrorResponse>(JsonSerialization.Options);
