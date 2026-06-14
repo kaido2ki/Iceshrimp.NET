@@ -114,7 +114,7 @@
 
     @if (NotificationResponse is { Note: not null })
     {
-        <div class="@(NotificationResponse is not { Type: "mention" } and not { Type: "reply" } ? "notification-note" : "")">
+        <div class="@(NotificationResponse is not { Type: "mention" } and not { Type: "reply" } ? "notification-note" : "")" @onclick="MarkAsRead">
             <NoteComponent Note="NotificationResponse.Note" AsQuote="@(NotificationResponse is not { Type: "mention" } and not { Type: "reply" })" OpenNote="true"/>
         </div>
     }
