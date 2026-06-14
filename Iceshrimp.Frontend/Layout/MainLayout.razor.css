@@ -10,9 +10,12 @@
 }
 
 .widget-panel {
+    display: flex;
+    flex-direction: column;
     position: sticky;
     top: 0;
-    max-height: 100vh;
+    height: 100vh;
+    width: 28rem;
     border-left: 0.05rem var(--border-color) solid;
 }
 
