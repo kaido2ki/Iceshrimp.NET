@@ -1,3 +1,4 @@
+@using System.Text.Json
 @using Iceshrimp.Assets.PhosphorIcons
 @using Iceshrimp.Frontend.Core.Miscellaneous
 @using Iceshrimp.Frontend.Core.Services
@@ -64,9 +65,12 @@
             ? exception.Response.Message
             : exception.InnerException switch
             {
-                HttpRequestException       => Loc["API request failed"],
-                OperationCanceledException => Loc["API request timed out"],
-                _                          => Loc["An unknown error occurred"],
+                HttpRequestException { StatusCode: not null } e => Loc["API request failed: status code {0}", e.StatusCode],
+                HttpRequestException e                          => Loc["API request failed: {0}", e.HttpRequestError.ToString()],
+                JsonException { Path: not null } e              => Loc["API responded with unexpected data: {0} {1}", e.Path, e.Message],
+                JsonException e                                 => Loc["API responded with unexpected data: {0}", e.Message],
+                OperationCanceledException                      => Loc["API request timed out"],
+                _                                               => Loc["An unknown error occurred"],
             };
 
         await Display(message, NoticeType.Error);
