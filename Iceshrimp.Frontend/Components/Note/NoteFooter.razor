@@ -286,7 +286,7 @@
         }
         catch (ApiException e)
         {
-            await GlobalComponentSvc.NoticeDialog?.Display(e.Response.Message ?? Loc["Unable to bite {0}", Note.User.DisplayName ?? Note.User.Username], NoticeDialog.NoticeType.Error)!;
+            await GlobalComponentSvc.NoticeDialog?.DisplayApiError(e)!;
         }
     }
 

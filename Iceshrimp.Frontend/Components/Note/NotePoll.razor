@@ -107,7 +107,7 @@
         }
         catch (ApiException e)
         {
-            await Global.NoticeDialog?.Display(e.Response.Message ?? Loc["An unknown error occurred while voting"], NoticeDialog.NoticeType.Error)!;
+            await Global.NoticeDialog?.DisplayApiError(e)!;
         }
     }
 }

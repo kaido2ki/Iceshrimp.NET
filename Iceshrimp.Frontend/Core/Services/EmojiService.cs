@@ -23,8 +23,7 @@ internal class EmojiService(ApiService api, GlobalComponentSvc global)
 		}
 		catch (ApiException e)
 		{
-			await Global.NoticeDialog?.Display(e.Response.Message ?? "Unable to load emojis",
-			                                   NoticeDialog.NoticeType.Error)!;
+			await Global.NoticeDialog?.DisplayApiError(e)!;
 			return [];
 		}
 		catch (JsonException)

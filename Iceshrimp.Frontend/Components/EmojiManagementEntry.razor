@@ -117,7 +117,7 @@
         }
         catch (ApiException e)
         {
-            await Global.NoticeDialog?.Display(e.Response.Message ?? Loc["An unknown error occurred"], NoticeDialog.NoticeType.Error)!;
+            await Global.NoticeDialog?.DisplayApiError(e)!;
         }
     }
 
@@ -139,7 +139,7 @@
         }
         catch (ApiException e)
         {
-            await Global.NoticeDialog?.Display(e.Response.Message ?? Loc["An unknown error occurred"], NoticeDialog.NoticeType.Error)!;
+            await Global.NoticeDialog?.DisplayApiError(e)!;
         }
     }
 
@@ -156,7 +156,7 @@
         }
         catch (ApiException e)
         {
-            await Global.NoticeDialog?.Display(e.Response.Message ?? Loc["An unknown error occurred"], NoticeDialog.NoticeType.Error)!;
+            await Global.NoticeDialog?.DisplayApiError(e)!;
         }
     }
 
@@ -182,7 +182,7 @@
         }
         catch (ApiException e)
         {
-            await Global.NoticeDialog?.Display(e.Response.Message ?? Loc["An unknown error occurred"], NoticeDialog.NoticeType.Error)!;
+            await Global.NoticeDialog?.DisplayApiError(e)!;
         }
     }
 
@@ -204,7 +204,7 @@
         }
         catch (ApiException e)
         {
-            await Global.NoticeDialog?.Display(e.Response.Message ?? Loc["An unknown error occurred"], NoticeDialog.NoticeType.Error)!;
+            await Global.NoticeDialog?.DisplayApiError(e)!;
         }
     }
 
@@ -226,7 +226,7 @@
         }
         catch (ApiException e)
         {
-            await Global.NoticeDialog?.Display(e.Response.Message ?? Loc["An unknown error occurred"], NoticeDialog.NoticeType.Error)!;
+            await Global.NoticeDialog?.DisplayApiError(e)!;
         }
     }
 
@@ -247,7 +247,7 @@
         }
         catch (ApiException e)
         {
-            await Global.NoticeDialog?.Display(e.Response.Message ?? Loc["An unknown error occurred"], NoticeDialog.NoticeType.Error)!;
+            await Global.NoticeDialog?.DisplayApiError(e)!;
         }
     }
 }

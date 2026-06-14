@@ -290,7 +290,7 @@
         }
         catch (ApiException e)
         {
-            await GlobalComponentSvc.NoticeDialog?.Display(e.Response.Message ?? Loc["Unable to bite {0}", User.DisplayName ?? User.Username], NoticeDialog.NoticeType.Error)!;
+            await GlobalComponentSvc.NoticeDialog?.DisplayApiError(e)!;
         }
     }
 
@@ -328,7 +328,7 @@
         }
         catch (ApiException e)
         {
-            await GlobalComponentSvc.NoticeDialog?.Display(e.Response.Message ?? Loc["An unknown error occurred"], NoticeDialog.NoticeType.Error)!;
+            await GlobalComponentSvc.NoticeDialog?.DisplayApiError(e)!;
         }
     }
 
@@ -350,7 +350,7 @@
         }
         catch (ApiException e)
         {
-            await GlobalComponentSvc.NoticeDialog?.Display(e.Response.Message ?? Loc["An unknown error occurred"], NoticeDialog.NoticeType.Error)!;
+            await GlobalComponentSvc.NoticeDialog?.DisplayApiError(e)!;
         }
     }
 
@@ -372,7 +372,7 @@
         }
         catch (ApiException e)
         {
-            await GlobalComponentSvc.NoticeDialog?.Display(e.Response.Message ?? Loc["An unknown error occurred"], NoticeDialog.NoticeType.Error)!;
+            await GlobalComponentSvc.NoticeDialog?.DisplayApiError(e)!;
         }
     }
     
@@ -394,7 +394,7 @@
         }
         catch (ApiException e)
         {
-            await GlobalComponentSvc.NoticeDialog?.Display(e.Response.Message ?? Loc["An unknown error occurred"], NoticeDialog.NoticeType.Error)!;
+            await GlobalComponentSvc.NoticeDialog?.DisplayApiError(e)!;
         }
     }
     
@@ -416,7 +416,7 @@
         }
         catch (ApiException e)
         {
-            await GlobalComponentSvc.NoticeDialog?.Display(e.Response.Message ?? Loc["An unknown error occurred"], NoticeDialog.NoticeType.Error)!;
+            await GlobalComponentSvc.NoticeDialog?.DisplayApiError(e)!;
         }
     }
     
@@ -442,7 +442,7 @@
         }
         catch (ApiException e)
         {
-            await GlobalComponentSvc.NoticeDialog?.Display(e.Response.Message ?? Loc["An unknown error occurred"], NoticeDialog.NoticeType.Error)!;
+            await GlobalComponentSvc.NoticeDialog?.DisplayApiError(e)!;
         }
     }
 
@@ -464,7 +464,7 @@
         }
         catch (ApiException e)
         {
-            await GlobalComponentSvc.NoticeDialog?.Display(e.Response.Message ?? Loc["An unknown error occurred"], NoticeDialog.NoticeType.Error)!;
+            await GlobalComponentSvc.NoticeDialog?.DisplayApiError(e)!;
         }
     }
 
@@ -522,7 +522,7 @@
         }
         catch (ApiException e)
         {
-            await GlobalComponentSvc.NoticeDialog?.Display(e.Response.Message ?? Loc["An unknown error occurred"], NoticeDialog.NoticeType.Error)!;
+            await GlobalComponentSvc.NoticeDialog?.DisplayApiError(e)!;
         }
     }
 

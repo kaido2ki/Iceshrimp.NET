@@ -170,7 +170,7 @@
         }
         catch (ApiException e)
         {
-            await Global.NoticeDialog?.Display(e.Response.Message ?? Loc["Unable to bite {0}", user.DisplayName ?? user.Username], NoticeDialog.NoticeType.Error)!;
+            await Global.NoticeDialog?.DisplayApiError(e)!;
         }
     }
 }

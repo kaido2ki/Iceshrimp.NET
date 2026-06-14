@@ -131,7 +131,15 @@
         }
         catch (ApiException e)
         {
-            RegistrationError = e.Response.Message;
+            RegistrationError = e is { Response.Message: not null }
+                ? e.Response.Message
+                : e.InnerException switch
+                {
+                    HttpRequestException       => Loc["API request failed"],
+                    OperationCanceledException => Loc["API request timed out"],
+                    _                          => Loc["An unknown error occurred"],
+                };
+
             Error             = true;
             LoginButton.State = StateButton.StateEnum.Failed;
             StateHasChanged();

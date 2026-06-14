@@ -213,7 +213,7 @@
         }
         catch (ApiException e)
         {
-            await Global.NoticeDialog?.Display(e.Response.Message ?? Loc["Unable to forward report"], NoticeDialog.NoticeType.Error)!;
+            await Global.NoticeDialog?.DisplayApiError(e)!;
         }
     }
     
@@ -233,7 +233,7 @@
         }
         catch (ApiException e)
         {
-            await Global.NoticeDialog?.Display(e.Response.Message ?? Loc["Unable to resolve report"], NoticeDialog.NoticeType.Error)!;
+            await Global.NoticeDialog?.DisplayApiError(e)!;
         }
     }
     
@@ -252,7 +252,7 @@
         }
         catch (ApiException e)
         {
-            await Global.NoticeDialog?.Display(e.Response.Message ?? Loc["Unable to suspend user"], NoticeDialog.NoticeType.Error)!;
+            await Global.NoticeDialog?.DisplayApiError(e)!;
         }
     }
 
@@ -270,7 +270,7 @@
         }
         catch (ApiException e)
         {
-            await Global.NoticeDialog?.Display(e.Response.Message ?? Loc["Unable to delete report"], NoticeDialog.NoticeType.Error)!;
+            await Global.NoticeDialog?.DisplayApiError(e)!;
         }
     }
 

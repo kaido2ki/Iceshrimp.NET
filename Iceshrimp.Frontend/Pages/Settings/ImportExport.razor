@@ -191,7 +191,7 @@
         }
         catch (ApiException e)
         {
-            await Global.NoticeDialog?.Display(e.Response.Message ?? Loc["An unknown error occurred"], NoticeDialog.NoticeType.Error)!;
+            await Global.NoticeDialog?.DisplayApiError(e)!;
             ExportBlockingButton.State = StateButton.StateEnum.Failed;
             return;
         }
@@ -211,7 +211,7 @@
         }
         catch (ApiException e)
         {
-            await Global.NoticeDialog?.Display(e.Response.Message ?? Loc["An unknown error occurred"], NoticeDialog.NoticeType.Error)!;
+            await Global.NoticeDialog?.DisplayApiError(e)!;
             ExportFollowingButton.State = StateButton.StateEnum.Failed;
             return;
         }
@@ -231,7 +231,7 @@
         }
         catch (ApiException e)
         {
-            await Global.NoticeDialog?.Display(e.Response.Message ?? Loc["An unknown error occurred"], NoticeDialog.NoticeType.Error)!;
+            await Global.NoticeDialog?.DisplayApiError(e)!;
             ExportMutingButton.State = StateButton.StateEnum.Failed;
             return;
         }
@@ -251,7 +251,7 @@
         }
         catch (ApiException e)
         {
-            await Global.NoticeDialog?.Display(e.Response.Message ?? Loc["An unknown error occurred"], NoticeDialog.NoticeType.Error)!;
+            await Global.NoticeDialog?.DisplayApiError(e)!;
             ImportBlockingButton.State = StateButton.StateEnum.Failed;
             return;
         }
@@ -276,7 +276,7 @@
         }
         catch (ApiException e)
         {
-            await Global.NoticeDialog?.Display(e.Response.Message ?? Loc["An unknown error occurred"], NoticeDialog.NoticeType.Error)!;
+            await Global.NoticeDialog?.DisplayApiError(e)!;
             ImportFollowingButton.State = StateButton.StateEnum.Failed;
             return;
         }
@@ -301,7 +301,7 @@
         }
         catch (ApiException e)
         {
-            await Global.NoticeDialog?.Display(e.Response.Message ?? Loc["An unknown error occurred"], NoticeDialog.NoticeType.Error)!;
+            await Global.NoticeDialog?.DisplayApiError(e)!;
             ImportMutingButton.State = StateButton.StateEnum.Failed;
             return;
         }

@@ -145,7 +145,7 @@
         }
         catch (ApiException e)
         {
-            await Global.NoticeDialog?.Display(e.Response.Message ?? Loc["An unknown error occurred while migrating"], NoticeDialog.NoticeType.Error)!;
+            await Global.NoticeDialog?.DisplayApiError(e)!;
             MoveButton.State = StateButton.StateEnum.Failed;
         }
     }
@@ -162,7 +162,7 @@
         }
         catch (ApiException e)
         {
-            await Global.NoticeDialog?.Display(e.Response.Message ?? Loc["An unknown error occurred while migrating"], NoticeDialog.NoticeType.Error)!;
+            await Global.NoticeDialog?.DisplayApiError(e)!;
             MoveButton.State = StateButton.StateEnum.Failed;
         }
     }
@@ -185,7 +185,7 @@
         }
         catch (ApiException e)
         {
-            await Global.NoticeDialog?.Display(e.Response.Message ?? Loc["An unknown error occurred while adding an alias"], NoticeDialog.NoticeType.Error)!;
+            await Global.NoticeDialog?.DisplayApiError(e)!;
             AliasButton.State = StateButton.StateEnum.Failed;
             return;
         }
@@ -202,7 +202,7 @@
         }
         catch (ApiException e)
         {
-            await Global.NoticeDialog?.Display(e.Response.Message ?? Loc["An unknown error occurred while removing an alias"], NoticeDialog.NoticeType.Error)!;
+            await Global.NoticeDialog?.DisplayApiError(e)!;
         }
 
         Status = await Api.Migrations.GetMigrationStatusAsync();

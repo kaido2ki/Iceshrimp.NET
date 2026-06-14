@@ -522,7 +522,7 @@
         catch (ApiException e)
         {
             SendButton.State = StateButton.StateEnum.Failed;
-            await GlobalComponentSvc.NoticeDialog?.Display(e.Response.Message ?? Loc["An unknown error occurred while posting"], NoticeDialog.NoticeType.Error)!;
+            await GlobalComponentSvc.NoticeDialog?.DisplayApiError(e)!;
             return;
         }
 
@@ -581,7 +581,7 @@
                 var res = await ApiService.Drive.UploadFileAsync(file);
                 Attachments.Add(res);
             }
-            catch (ApiException ex) when (ex.Response.StatusCode is 413 && ex.Response.Details is { Length: > 0 } details)
+            catch (ApiException ex) when (ex.Response is { StatusCode: 413, Details: { Length: > 0 } details })
             {
                 const string prefix = "The media upload size limit is set to ";
                 const string suffix = " bytes.";
@@ -595,7 +595,7 @@
             }
             catch (ApiException ex)
             { 
-                await GlobalComponentSvc.NoticeDialog?.Display(ex.Response.Message ?? ex.Message, NoticeDialog.NoticeType.Error)!;
+                await GlobalComponentSvc.NoticeDialog?.DisplayApiError(ex)!;
             }
             catch (Exception ex)
             { 
@@ -721,7 +721,7 @@
         }
         catch (ApiException e)
         {
-            await GlobalComponentSvc.NoticeDialog?.Display(e.Response.Message ?? Loc["An unknown error occurred"], NoticeDialog.NoticeType.Error)!;
+            await GlobalComponentSvc.NoticeDialog?.DisplayApiError(e)!;
         }
     }
 

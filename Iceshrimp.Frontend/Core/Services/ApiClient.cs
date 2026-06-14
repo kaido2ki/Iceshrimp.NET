@@ -120,6 +120,17 @@ internal class ApiClient(HttpClient client)
 			                                    Encoding.UTF8, MediaTypeNames.Application.Json);
 		}
 
-		return await client.SendAsync(request);
+		try
+		{
+			return await client.SendAsync(request);
+		}
+		catch (HttpRequestException e)
+		{
+			throw new ApiException("API request failed", e);
+		}
+		catch (OperationCanceledException e)
+		{
+			throw new ApiException("API request timed out", e);
+		}
 	}
 }

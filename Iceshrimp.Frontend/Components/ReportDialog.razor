@@ -161,7 +161,7 @@
         catch (ApiException e)
         {
             Waiting = false;
-            await GlobalComponentSvc.NoticeDialog?.Display(Loc[e.Response.Message ?? "Unable to submit report"], NoticeDialog.NoticeType.Error)!;
+            await GlobalComponentSvc.NoticeDialog?.DisplayApiError(e)!;
         }
     }
 
