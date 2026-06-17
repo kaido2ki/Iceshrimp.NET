@@ -41,7 +41,7 @@
         <value>Just now</value>
     </data>
     <data name="Timestamp_Second_X" xml:space="preserve">
-        <value>(0}s</value>
+        <value>{0}s</value>
     </data>
     <data name="Timestamp_Now" xml:space="preserve">
         <value>now</value>
