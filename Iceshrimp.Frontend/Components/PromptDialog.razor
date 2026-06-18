@@ -23,8 +23,8 @@
 
             <div class="buttons">
                 <button class="button submit-btn" @onclick="ConfirmAction"
-                        disabled="@(Required && string.IsNullOrWhiteSpace(Input))">@(ButtonText ?? Loc["Submit"])</button>
-                <button class="button" @onclick="CancelAction">@Loc["Cancel"]</button>
+                        disabled="@(Required && string.IsNullOrWhiteSpace(Input))">@(ButtonText ?? Loc[L.Dialog_Submit])</button>
+                <button class="button" @onclick="CancelAction">@Loc[L.Dialog_Cancel]</button>
             </div>
         }
     </div>

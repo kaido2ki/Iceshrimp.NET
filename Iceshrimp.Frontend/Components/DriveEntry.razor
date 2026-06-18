@@ -137,7 +137,7 @@
     private void SelectFile() => FileMenu.Toggle(FileButton);
 
     private async Task RenameFile() =>
-        await Global.PromptDialog?.Prompt(new EventCallback<string?>(this, RenameFileCallback), Loc[L.Common_Rename], Loc[L.Drive_Entry_RenameDialog_FilePlaceholder], File!.Filename, buttonText: Loc[L.Drive_Entry_RenameDialog_Confirm])!;
+        await Global.PromptDialog?.Prompt(new EventCallback<string?>(this, RenameFileCallback), Loc[L.Common_Rename], Loc[L.Drive_Entry_RenameDialog_FilePlaceholder], File!.Filename, buttonText: Loc[L.Drive_Entry_RenameDialog_Submit])!;
 
     private async Task RenameFileCallback(string? filename)
     {
@@ -255,7 +255,7 @@
     private async Task RenameFolder()
     {
         if (Folder is not { Id: not null, Name: not null }) return;
-        await Global.PromptDialog?.Prompt(new EventCallback<string?>(this, RenameFolderCallback), Loc[L.Common_Rename], Loc[L.Drive_Entry_RenameDialog_FolderPlaceholder], Folder!.Name, buttonText: Loc[L.Drive_Entry_RenameDialog_Confirm])!;
+        await Global.PromptDialog?.Prompt(new EventCallback<string?>(this, RenameFolderCallback), Loc[L.Common_Rename], Loc[L.Drive_Entry_RenameDialog_FolderPlaceholder], Folder!.Name, buttonText: Loc[L.Drive_Entry_RenameDialog_Submit])!;
     }
 
     private async Task RenameFolderCallback(string? name)

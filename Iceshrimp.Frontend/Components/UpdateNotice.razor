@@ -7,33 +7,33 @@
 
 <dialog class="dialog" @ref="Dialog">
     <div class="notice">
-        @Loc["Update required!"]
+        @Loc[L.Update_Notice]
         <div class="version">
             <span class="name">Iceshrimp.NET</span>
             <span class="value">
             <code>@UpdateSvc.BackendVersion?.Version</code>
         </span>
-            <span class="name">Codename</span>
+            <span class="name">@Loc[L.Update_Codename]</span>
             <span class="value">
             <code>@UpdateSvc.BackendVersion?.Codename</code>
         </span>
             @if (UpdateSvc.BackendVersion?.CommitHash != null)
             {
-                <span class="name">Commit</span>
+                <span class="name">@Loc[L.Update_Commit]</span>
                 <span class="value">
                 <code>@UpdateSvc.BackendVersion?.CommitHash</code>
             </span>
             }
             <span class="name">
-                <a href="@UpdateSvc.BackendVersion?.ReleaseUrl" target="_blank">Release notes</a>
+                <a href="@UpdateSvc.BackendVersion?.ReleaseUrl" target="_blank">@Loc[L.Update_ReleaseNotes]</a>
             </span>
         </div>
         <StateButton @ref="UpdateButton" OnClick="SwitchVersion" ExtraClasses="button">
-            <Success>@Loc["Reloading..."]</Success>
-            <Initial>@Loc["Switch to new version"]</Initial>
-            <Loading>@Loc["Update loading"]<LoadingSpinner/>
+            <Success>@Loc[L.Update_StateButton_Success]</Success>
+            <Initial>@Loc[L.Update_StateButton_Initial]</Initial>
+            <Loading>@Loc[L.StateButton_Loading]<LoadingSpinner/>
             </Loading>
-            <Failed>@Loc["Failed to install update"]</Failed>
+            <Failed>@Loc[L.Update_StateButton_Error]</Failed>
         </StateButton>
     </div>
 </dialog>

@@ -417,9 +417,9 @@ namespace Iceshrimp.Frontend.Localization {
             }
         }
         
-        internal static string Note_Menu_Report {
+        internal static string Report_Note {
             get {
-                return ResourceManager.GetString("Note_Menu_Report", resourceCulture);
+                return ResourceManager.GetString("Report_Note", resourceCulture);
             }
         }
         
@@ -549,9 +549,9 @@ namespace Iceshrimp.Frontend.Localization {
             }
         }
         
-        internal static string Drive_CreateFolderDialog_Confirm {
+        internal static string Drive_CreateFolderDialog_Submit {
             get {
-                return ResourceManager.GetString("Drive_CreateFolderDialog_Confirm", resourceCulture);
+                return ResourceManager.GetString("Drive_CreateFolderDialog_Submit", resourceCulture);
             }
         }
         
@@ -615,15 +615,333 @@ namespace Iceshrimp.Frontend.Localization {
             }
         }
         
-        internal static string Drive_Entry_RenameDialog_Confirm {
+        internal static string Drive_Entry_RenameDialog_Submit {
             get {
-                return ResourceManager.GetString("Drive_Entry_RenameDialog_Confirm", resourceCulture);
+                return ResourceManager.GetString("Drive_Entry_RenameDialog_Submit", resourceCulture);
             }
         }
         
         internal static string Drive_Entry_DeleteDialog_Question {
             get {
                 return ResourceManager.GetString("Drive_Entry_DeleteDialog_Question", resourceCulture);
+            }
+        }
+        
+        internal static string Dialog_Confirm {
+            get {
+                return ResourceManager.GetString("Dialog_Confirm", resourceCulture);
+            }
+        }
+        
+        internal static string Dialog_Cancel {
+            get {
+                return ResourceManager.GetString("Dialog_Cancel", resourceCulture);
+            }
+        }
+        
+        internal static string Dialog_Submit {
+            get {
+                return ResourceManager.GetString("Dialog_Submit", resourceCulture);
+            }
+        }
+        
+        internal static string User_Username {
+            get {
+                return ResourceManager.GetString("User_Username", resourceCulture);
+            }
+        }
+        
+        internal static string User_Host {
+            get {
+                return ResourceManager.GetString("User_Host", resourceCulture);
+            }
+        }
+        
+        internal static string Report_User {
+            get {
+                return ResourceManager.GetString("Report_User", resourceCulture);
+            }
+        }
+        
+        internal static string Common_Notes {
+            get {
+                return ResourceManager.GetString("Common_Notes", resourceCulture);
+            }
+        }
+        
+        internal static string Report_Dialog_AddNote {
+            get {
+                return ResourceManager.GetString("Report_Dialog_AddNote", resourceCulture);
+            }
+        }
+        
+        internal static string Report_Dialog_AddPlaceholder {
+            get {
+                return ResourceManager.GetString("Report_Dialog_AddPlaceholder", resourceCulture);
+            }
+        }
+        
+        internal static string Report_Dialog_Rules {
+            get {
+                return ResourceManager.GetString("Report_Dialog_Rules", resourceCulture);
+            }
+        }
+        
+        internal static string Report_Dialog_DetailsPlaceholder {
+            get {
+                return ResourceManager.GetString("Report_Dialog_DetailsPlaceholder", resourceCulture);
+            }
+        }
+        
+        internal static string Report_Dialog_Forward_Host {
+            get {
+                return ResourceManager.GetString("Report_Dialog_Forward_Host", resourceCulture);
+            }
+        }
+        
+        internal static string Error_NoteNotFound {
+            get {
+                return ResourceManager.GetString("Error_NoteNotFound", resourceCulture);
+            }
+        }
+        
+        internal static string Report_Dialog_Error_NoteOwner {
+            get {
+                return ResourceManager.GetString("Report_Dialog_Error_NoteOwner", resourceCulture);
+            }
+        }
+        
+        internal static string Compose_Sending {
+            get {
+                return ResourceManager.GetString("Compose_Sending", resourceCulture);
+            }
+        }
+        
+        internal static string Note_Poll {
+            get {
+                return ResourceManager.GetString("Note_Poll", resourceCulture);
+            }
+        }
+        
+        internal static string Note_Cw {
+            get {
+                return ResourceManager.GetString("Note_Cw", resourceCulture);
+            }
+        }
+        
+        internal static string User_AddMention {
+            get {
+                return ResourceManager.GetString("User_AddMention", resourceCulture);
+            }
+        }
+        
+        internal static string Common_Emojis {
+            get {
+                return ResourceManager.GetString("Common_Emojis", resourceCulture);
+            }
+        }
+        
+        internal static string Compose_Quote_Add {
+            get {
+                return ResourceManager.GetString("Compose_Quote_Add", resourceCulture);
+            }
+        }
+        
+        internal static string Compose_CharacterLimit {
+            get {
+                return ResourceManager.GetString("Compose_CharacterLimit", resourceCulture);
+            }
+        }
+        
+        internal static string Compose_TogglePreview {
+            get {
+                return ResourceManager.GetString("Compose_TogglePreview", resourceCulture);
+            }
+        }
+        
+        internal static string Compose_Quote {
+            get {
+                return ResourceManager.GetString("Compose_Quote", resourceCulture);
+            }
+        }
+        
+        internal static string Compose_Quote_Remove {
+            get {
+                return ResourceManager.GetString("Compose_Quote_Remove", resourceCulture);
+            }
+        }
+        
+        internal static string Drive_Uploading {
+            get {
+                return ResourceManager.GetString("Drive_Uploading", resourceCulture);
+            }
+        }
+        
+        internal static string Drive_Uploading_Count {
+            get {
+                return ResourceManager.GetString("Drive_Uploading_Count", resourceCulture);
+            }
+        }
+        
+        internal static string Compose_Poll_ChoicePlaceholder {
+            get {
+                return ResourceManager.GetString("Compose_Poll_ChoicePlaceholder", resourceCulture);
+            }
+        }
+        
+        internal static string Common_Add {
+            get {
+                return ResourceManager.GetString("Common_Add", resourceCulture);
+            }
+        }
+        
+        internal static string Compose_Poll_ExpiresAt {
+            get {
+                return ResourceManager.GetString("Compose_Poll_ExpiresAt", resourceCulture);
+            }
+        }
+        
+        internal static string Compose_Poll_ExpiresAt_Never {
+            get {
+                return ResourceManager.GetString("Compose_Poll_ExpiresAt_Never", resourceCulture);
+            }
+        }
+        
+        internal static string Compose_Poll_ExpiresAt_AfterDuration {
+            get {
+                return ResourceManager.GetString("Compose_Poll_ExpiresAt_AfterDuration", resourceCulture);
+            }
+        }
+        
+        internal static string Compose_Poll_ExpiresAt_DateTime {
+            get {
+                return ResourceManager.GetString("Compose_Poll_ExpiresAt_DateTime", resourceCulture);
+            }
+        }
+        
+        internal static string Compose_Poll_Duration {
+            get {
+                return ResourceManager.GetString("Compose_Poll_Duration", resourceCulture);
+            }
+        }
+        
+        internal static string Duration_Minutes {
+            get {
+                return ResourceManager.GetString("Duration_Minutes", resourceCulture);
+            }
+        }
+        
+        internal static string Duration_Hours {
+            get {
+                return ResourceManager.GetString("Duration_Hours", resourceCulture);
+            }
+        }
+        
+        internal static string Duration_Days {
+            get {
+                return ResourceManager.GetString("Duration_Days", resourceCulture);
+            }
+        }
+        
+        internal static string Compose_NoPreview {
+            get {
+                return ResourceManager.GetString("Compose_NoPreview", resourceCulture);
+            }
+        }
+        
+        internal static string Compose_Error_AttachmentSize {
+            get {
+                return ResourceManager.GetString("Compose_Error_AttachmentSize", resourceCulture);
+            }
+        }
+        
+        internal static string Compose_Error_AttachmentSize_Bytes {
+            get {
+                return ResourceManager.GetString("Compose_Error_AttachmentSize_Bytes", resourceCulture);
+            }
+        }
+        
+        internal static string Compose_AttachQuoteDialog_Question {
+            get {
+                return ResourceManager.GetString("Compose_AttachQuoteDialog_Question", resourceCulture);
+            }
+        }
+        
+        internal static string Compose_AddMentionDialog_Submit {
+            get {
+                return ResourceManager.GetString("Compose_AddMentionDialog_Submit", resourceCulture);
+            }
+        }
+        
+        internal static string Compose_AttachQuoteDialog_Placeholder {
+            get {
+                return ResourceManager.GetString("Compose_AttachQuoteDialog_Placeholder", resourceCulture);
+            }
+        }
+        
+        internal static string Compose_Error_AttachQuote {
+            get {
+                return ResourceManager.GetString("Compose_Error_AttachQuote", resourceCulture);
+            }
+        }
+        
+        internal static string Compose_BodyPlaceholder_Note {
+            get {
+                return ResourceManager.GetString("Compose_BodyPlaceholder_Note", resourceCulture);
+            }
+        }
+        
+        internal static string Compose_BodyPlaceholder_Reply {
+            get {
+                return ResourceManager.GetString("Compose_BodyPlaceholder_Reply", resourceCulture);
+            }
+        }
+        
+        internal static string Compose_BodyPlaceholder_Quote {
+            get {
+                return ResourceManager.GetString("Compose_BodyPlaceholder_Quote", resourceCulture);
+            }
+        }
+        
+        internal static string Update_Notice {
+            get {
+                return ResourceManager.GetString("Update_Notice", resourceCulture);
+            }
+        }
+        
+        internal static string Update_Codename {
+            get {
+                return ResourceManager.GetString("Update_Codename", resourceCulture);
+            }
+        }
+        
+        internal static string Update_Commit {
+            get {
+                return ResourceManager.GetString("Update_Commit", resourceCulture);
+            }
+        }
+        
+        internal static string Update_ReleaseNotes {
+            get {
+                return ResourceManager.GetString("Update_ReleaseNotes", resourceCulture);
+            }
+        }
+        
+        internal static string Update_StateButton_Success {
+            get {
+                return ResourceManager.GetString("Update_StateButton_Success", resourceCulture);
+            }
+        }
+        
+        internal static string Update_StateButton_Initial {
+            get {
+                return ResourceManager.GetString("Update_StateButton_Initial", resourceCulture);
+            }
+        }
+        
+        internal static string Update_StateButton_Error {
+            get {
+                return ResourceManager.GetString("Update_StateButton_Error", resourceCulture);
             }
         }
     }

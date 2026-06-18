@@ -41,13 +41,13 @@
                     }
                 </Initial>
                 <Loading>
-                    @Loc["Sending"]<LoadingSpinner />
+                    @Loc[L.Compose_Sending]<LoadingSpinner />
                 </Loading>
                 <Success>
-                    @Loc["Done"]<Icon Name="Icons.Check"/>
+                    @Loc[L.Dialog_Confirm]<Icon Name="Icons.Check"/>
                 </Success>
                 <Failed>
-                    @Loc["Retry"]<Icon Name="Icons.X"/>
+                    @Loc[L.StateButton_Error]<Icon Name="Icons.X"/>
                 </Failed>
             </StateButton>
         </div>
@@ -64,40 +64,40 @@
             <hr class="separator"/>
         }
         <textarea @ref="Textarea" @bind="NoteDraft.Text" @bind:event="oninput" class="textarea"
-                  placeholder="@TextPlaceholder" rows="5"
+                  placeholder="@Loc[TextPlaceholder ?? L.Compose_BodyPlaceholder_Note]" rows="5"
                   cols="35" autofocus="autofocus" aria-label="note text" data-quote="@((NoteDraft.RenoteId != null || AttachedQuote != null).ToString())"></textarea>
         <div class="footer">
             <div class="buttons">
-                <button class="btn" title="@Loc["Upload file"]" @onclick="OpenUpload" aria-label="upload">
+                <button class="btn" title="@Loc[L.Drive_UploadFile]" @onclick="OpenUpload" aria-label="upload">
                     <Icon Name="Icons.Upload" Size="1.3rem"></Icon>
                 </button>
                 <div class="file-input">
                     <InputFile @ref="UploadInput" OnChange="Upload" multiple>Upload!</InputFile>
                 </div>
-                <button class="btn" title="@Loc["Poll"]" @onclick="TogglePoll" aria-label="poll">
+                <button class="btn" title="@Loc[L.Note_Poll]" @onclick="TogglePoll" aria-label="poll">
                     <Icon Name="Icons.MicrophoneStage" Size="1.3rem"></Icon>
                 </button>
-                <button class="btn" title="@Loc["Content warning"]" @onclick="ToggleCw" aria-label="content warning">
+                <button class="btn" title="@Loc[L.Note_Cw]" @onclick="ToggleCw" aria-label="content warning">
                     <Icon Name="Icons.EyeSlash" Size="1.3rem"></Icon>
                 </button>
-                <button class="btn" title="@Loc["Mention"]" @onclick="AddMention" aria-label="add mention">
+                <button class="btn" title="@Loc[L.User_AddMention]" @onclick="AddMention" aria-label="add mention">
                     <Icon Name="Icons.At" Size="1.3rem"></Icon>
                 </button>
-                <button @ref="EmojiButton" class="btn" title="@Loc["Emoji"]" @onclick="ToggleEmojiPicker"
+                <button @ref="EmojiButton" class="btn" title="@Loc[L.Common_Emojis]" @onclick="ToggleEmojiPicker"
                         aria-label="emoji">
                     <Icon Name="Icons.Smiley" Size="1.3rem"></Icon>
                 </button>
                 @if (NoteDraft.RenoteId == null && AttachedQuote == null)
                 {
-                    <button class="btn" title="@Loc["Add quote"]" @onclick="AddQuote" aria-label="add quote">
+                    <button class="btn" title="@Loc[L.Compose_Quote_Add]" @onclick="AddQuote" aria-label="add quote">
                         <Icon Name="Icons.Quotes" Size="1.3rem"></Icon>
                     </button>
                 }
             </div>
             <div class="buttons">
-                <span title="@Loc["Character limit"]"
+                <span title="@Loc[L.Compose_CharacterLimit]"
                       aria-label="character limit">@(NoteLength - ((NoteDraft.Cw?.Length ?? 0) + NoteDraft.Text.Length))</span>
-                <button class="btn" title="@Loc["Preview"]" @onclick="() => Preview = !Preview"
+                <button class="btn" title="@Loc[L.Compose_TogglePreview]" @onclick="() => Preview = !Preview"
                         aria-label="preview">
                     <Icon Name="Icons.Binoculars" Size="1.3rem"></Icon>
                 </button>
@@ -108,8 +108,8 @@
             <div>
                 <span>
                     <Icon Name="Icons.Quotes"/>
-                    <a href="@($"/notes/{AttachedQuote}")" target="_blank">@Loc["Attached quote"]</a>
-                    <button class="btn" title="@Loc["Remove quote"]" @onclick="RemoveQuote" aria-label="remove quote">
+                    <a href="@($"/notes/{AttachedQuote}")" target="_blank">@Loc[L.Compose_Quote]</a>
+                    <button class="btn" title="@Loc[L.Compose_Quote_Remove]" @onclick="RemoveQuote" aria-label="remove quote">
                         <Icon Name="Icons.Trash" Size="1rem"></Icon>
                     </button>
                 </span>
@@ -118,7 +118,7 @@
         @if (UploadingFiles != 0)
         {
             <div>
-                <span><LoadingSpinner/> @(UploadingFiles == 1 ? Loc["Uploading file"] : Loc["Uploading {0} files", UploadingFiles])</span>
+                <span><LoadingSpinner/> @(UploadingFiles == 1 ? Loc[L.Drive_Uploading] : Loc[L.Drive_Uploading_Count, UploadingFiles])</span>
             </div>
         }
         @if (Attachments.Count != 0)
@@ -137,8 +137,8 @@
                     @foreach (var entry in PollChoices)
                     {
                         <div class="choice">
-                            <input class="input" placeholder="@Loc["Choice"]" @bind="@entry.Value"/>
-                            <button class="button" title="@Loc["Delete Choice"]" @onclick="() => DeletePollChoice(entry)">
+                            <input class="input" placeholder="@Loc[L.Compose_Poll_ChoicePlaceholder]" @bind="@entry.Value"/>
+                            <button class="button" title="@Loc[L.Common_Delete]" @onclick="() => DeletePollChoice(entry)">
                                 <Icon Name="Icons.Trash"/>
                             </button>
                         </div>
@@ -146,8 +146,8 @@
                     @if (PollChoices.Count < 10)
                     {
                         <div class="choice">
-                            <input class="input" placeholder="@Loc["Choice"]" @bind="@PollEntry"/>
-                            <button class="button" title="@Loc["Add Choice"]" @onclick="AddPollChoice">
+                            <input class="input" placeholder="@Loc[L.Compose_Poll_ChoicePlaceholder]" @bind="@PollEntry"/>
+                            <button class="button" title="@Loc[L.Common_Add]" @onclick="AddPollChoice">
                                 <Icon Name="Icons.Plus"/>
                             </button>
                         </div>
@@ -155,15 +155,15 @@
                 </div>
                 <label class="inline-label">
                     <input type="checkbox" @bind="NoteDraft.Poll.Multiple"/>
-                    @Loc["Multiple choice"]
+                    @Loc[L.Note_Poll_MultipleChoice]
                 </label>
                 <div class="expire">
                     <div>
-                        <label for="poll-expires">@Loc["End poll"]</label>
+                        <label for="poll-expires">@Loc[L.Compose_Poll_ExpiresAt]</label>
                         <select @bind="PollExpires" id="poll-expires">
-                            <option value="@PollExpire.Never">@Loc["Never"]</option>
-                            <option value="@PollExpire.ExpiresAt">@Loc["End at"]</option>
-                            <option value="@PollExpire.ExpiresAfter">@Loc["End after"]</option>
+                            <option value="@PollExpire.Never">@Loc[L.Compose_Poll_ExpiresAt_Never]</option>
+                            <option value="@PollExpire.ExpiresAt">@Loc[L.Compose_Poll_ExpiresAt_DateTime]</option>
+                            <option value="@PollExpire.ExpiresAfter">@Loc[L.Compose_Poll_ExpiresAt_AfterDuration]</option>
                         </select>
                     </div>
                     @switch (PollExpires)
@@ -174,11 +174,11 @@
                             <input type="datetime-local" class="input" @bind="PollExpireTime"/>
                             break;
                         case PollExpire.ExpiresAfter:
-                            <input type="number" class="input" placeholder="@Loc["Duration"]" min="@(PollExpiresAft == PollExpireAfter.Minutes ? 5 : 1)" @bind="PollExpireLen"/>
+                            <input type="number" class="input" placeholder="@Loc[L.Compose_Poll_Duration]" min="@(PollExpiresAft == PollExpireAfter.Minutes ? 5 : 1)" @bind="PollExpireLen"/>
                             <select @bind="PollExpiresAft">
-                                <option value="@PollExpireAfter.Minutes">@Loc["Minutes"]</option>
-                                <option value="@PollExpireAfter.Hours">@Loc["Hours"]</option>
-                                <option value="@PollExpireAfter.Days">@Loc["Days"]</option>
+                                <option value="@PollExpireAfter.Minutes">@Loc[L.Duration_Minutes]</option>
+                                <option value="@PollExpireAfter.Hours">@Loc[L.Duration_Hours]</option>
+                                <option value="@PollExpireAfter.Days">@Loc[L.Duration_Days]</option>
                             </select>
                             break;
                         default:
@@ -192,7 +192,7 @@
             <div class="preview">
                 @if (string.IsNullOrWhiteSpace(NoteDraft.Text))
                 {
-                    <span>@Loc["Nothing to preview"]</span>
+                    <span>@Loc[L.Compose_NoPreview]</span>
                 }
                 else
                 {
@@ -239,7 +239,7 @@
         Cw         = null
     };
 
-    private Dictionary<string, string> AvailablePlaceholders { get; set; } = new() { { "default", "What's on your mind?" }, { "reply", "Reply goes here!" }, { "quote", "Quote this post!" } };
+    private Dictionary<string, string> AvailablePlaceholders { get; set; } = new() { { "default", L.Compose_BodyPlaceholder_Note }, { "reply", L.Compose_BodyPlaceholder_Reply }, { "quote", L.Compose_BodyPlaceholder_Quote } };
 
     private class Choice
     {
@@ -292,10 +292,10 @@
     {
         return vis switch
         {
-            NoteVisibility.Public => (@<span class="dropdown-title">Public</span>),
-            NoteVisibility.Home => (@<span class="dropdown-title">Unlisted</span>),
-            NoteVisibility.Followers => (@<span class="dropdown-title">Followers</span>),
-            NoteVisibility.Specified => (@<span class="dropdown-title">Direct</span>),
+            NoteVisibility.Public => (@<span class="dropdown-title">@Loc[L.Note_Visibility_Public]</span>),
+            NoteVisibility.Home => (@<span class="dropdown-title">@Loc[L.Note_Visibility_Unlisted]</span>),
+            NoteVisibility.Followers => (@<span class="dropdown-title">@Loc[L.Note_Visibility_Followers]</span>),
+            NoteVisibility.Specified => (@<span class="dropdown-title">@Loc[L.Note_Visibility_Specified]</span>),
             _ => throw new ArgumentOutOfRangeException()
         };
     }
@@ -587,9 +587,9 @@
                 const string suffix = " bytes.";
                 string       msg;
                 if (details.StartsWith(prefix) && long.TryParse(details[prefix.Length..^suffix.Length], out var bytes))
-                    msg = Loc["Attachment is too large. The server set this limit to {0} bytes.", bytes.ToString()]; //TODO: fix grammar
+                    msg = Loc[L.Compose_Error_AttachmentSize_Bytes, bytes.ToString()]; //TODO: fix grammar
                 else
-                    msg = Loc["Attachment is too large."];
+                    msg = Loc[L.Compose_Error_AttachmentSize];
 
                 await GlobalComponentSvc.NoticeDialog?.Display(msg, NoticeDialog.NoticeType.Error)!;
             }
@@ -650,7 +650,7 @@
             }
 
             PastedText = (pastedText, res.TargetUrl.Split('/').Last());
-            await GlobalComponentSvc.ConfirmDialog?.Confirm(new EventCallback<bool>(this, PasteQuoteCallback), Loc["Attach as quote?"], Icons.Quotes)!;
+            await GlobalComponentSvc.ConfirmDialog?.Confirm(new EventCallback<bool>(this, PasteQuoteCallback), Loc[L.Compose_AttachQuoteDialog_Question], Icons.Quotes)!;
         }
         catch (ApiException)
         {
@@ -687,7 +687,7 @@
     }
 
     private async Task AddMention() =>
-        await GlobalComponentSvc.UserDialog?.Select(new EventCallback<UserResponse?>(this, AddMentionCallback), Loc["Select user"])!;
+        await GlobalComponentSvc.UserDialog?.Select(new EventCallback<UserResponse?>(this, AddMentionCallback), Loc[L.Compose_AddMentionDialog_Submit])!;
 
     private async Task AddMentionCallback(UserResponse? user)
     {
@@ -699,7 +699,7 @@
     }
 
     private async Task AddQuote() =>
-        await GlobalComponentSvc.PromptDialog?.Prompt(new EventCallback<string?>(this, AddQuoteCallback), Loc["Add quote"], Loc["Link to note"], "")!;
+        await GlobalComponentSvc.PromptDialog?.Prompt(new EventCallback<string?>(this, AddQuoteCallback), Loc[L.Compose_Quote_Add], Loc[L.Compose_AttachQuoteDialog_Placeholder], "")!;
 
     private async Task AddQuoteCallback(string? url)
     {
@@ -712,7 +712,7 @@
             {
                 if (!res.TargetUrl.StartsWith("/notes/"))
                 {
-                    await GlobalComponentSvc.NoticeDialog?.Display(Loc["You cannot quote a user profile"], NoticeDialog.NoticeType.Error)!;
+                    await GlobalComponentSvc.NoticeDialog?.Display(Loc[L.Compose_Error_AttachQuote], NoticeDialog.NoticeType.Error)!;
                     return;
                 }
 

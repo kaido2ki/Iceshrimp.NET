@@ -165,7 +165,7 @@
     }
 
     private async Task CreateFolder() =>
-        await Global.PromptDialog?.Prompt(new EventCallback<string?>(this, CreateFolderCallback), Loc[L.Drive_Folder_Create], Loc[L.Drive_CreateFolderDialog_Placeholder], null, buttonText: Loc[L.Drive_CreateFolderDialog_Confirm])!;
+        await Global.PromptDialog?.Prompt(new EventCallback<string?>(this, CreateFolderCallback), Loc[L.Drive_Folder_Create], Loc[L.Drive_CreateFolderDialog_Placeholder], null, buttonText: Loc[L.Drive_CreateFolderDialog_Submit])!;
 
     private async Task CreateFolderCallback(string? name)
     {

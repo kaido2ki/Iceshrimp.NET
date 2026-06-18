@@ -205,7 +205,7 @@
     <data name="Note_Menu_Redraft" xml:space="preserve">
         <value>Delete &amp; redraft</value>
     </data>
-    <data name="Note_Menu_Report" xml:space="preserve">
+    <data name="Report_Note" xml:space="preserve">
         <value>Report note</value>
     </data>
     <data name="Note_Visibility_Public" xml:space="preserve">
@@ -271,7 +271,7 @@
     <data name="Drive_CreateFolderDialog_Placeholder" xml:space="preserve">
         <value>Folder name</value>
     </data>
-    <data name="Drive_CreateFolderDialog_Confirm" xml:space="preserve">
+    <data name="Drive_CreateFolderDialog_Submit" xml:space="preserve">
         <value>Create</value>
     </data>
     <data name="Drive_Entry_Avatar" xml:space="preserve">
@@ -304,10 +304,169 @@
     <data name="Drive_Entry_RenameDialog_FolderPlaceholder" xml:space="preserve">
         <value>New folder name</value>
     </data>
-    <data name="Drive_Entry_RenameDialog_Confirm" xml:space="preserve">
+    <data name="Drive_Entry_RenameDialog_Submit" xml:space="preserve">
         <value>Rename</value>
     </data>
     <data name="Drive_Entry_DeleteDialog_Question" xml:space="preserve">
         <value>Delete {0}?</value>
+    </data>
+    <data name="Dialog_Confirm" xml:space="preserve">
+        <value>OK</value>
+    </data>
+    <data name="Dialog_Cancel" xml:space="preserve">
+        <value>Cancel</value>
+    </data>
+    <data name="Dialog_Submit" xml:space="preserve">
+        <value>Submit</value>
+    </data>
+    <data name="User_Username" xml:space="preserve">
+        <value>Username</value>
+    </data>
+    <data name="User_Host" xml:space="preserve">
+        <value>Host</value>
+    </data>
+    <data name="Report_User" xml:space="preserve">
+        <value>Report user</value>
+    </data>
+    <data name="Common_Notes" xml:space="preserve">
+        <value>Notes</value>
+    </data>
+    <data name="Report_Dialog_AddNote" xml:space="preserve">
+        <value>Add note</value>
+    </data>
+    <data name="Report_Dialog_AddPlaceholder" xml:space="preserve">
+        <value>Note ID or URL</value>
+    </data>
+    <data name="Report_Dialog_Rules" xml:space="preserve">
+        <value>Rules this user has broken</value>
+    </data>
+    <data name="Report_Dialog_DetailsPlaceholder" xml:space="preserve">
+        <value>Additional details</value>
+    </data>
+    <data name="Report_Dialog_Forward_Host" xml:space="preserve">
+        <value>Forward to {0}</value>
+    </data>
+    <data name="Error_NoteNotFound" xml:space="preserve">
+        <value>Note not found</value>
+    </data>
+    <data name="Report_Dialog_Error_NoteOwner" xml:space="preserve">
+        <value>Note doesn't belong to the reported user.</value>
+    </data>
+    <data name="Compose_Sending" xml:space="preserve">
+        <value>Sending</value>
+    </data>
+    <data name="Note_Poll" xml:space="preserve">
+        <value>Poll</value>
+    </data>
+    <data name="Note_Cw" xml:space="preserve">
+        <value>Content warning</value>
+    </data>
+    <data name="User_AddMention" xml:space="preserve">
+        <value>Mention user</value>
+    </data>
+    <data name="Common_Emojis" xml:space="preserve">
+        <value>Emojis</value>
+    </data>
+    <data name="Compose_Quote_Add" xml:space="preserve">
+        <value>Add quote</value>
+    </data>
+    <data name="Compose_CharacterLimit" xml:space="preserve">
+        <value>Character limit</value>
+    </data>
+    <data name="Compose_TogglePreview" xml:space="preserve">
+        <value>Toggle note preview</value>
+    </data>
+    <data name="Compose_Quote" xml:space="preserve">
+        <value>Attached quote</value>
+    </data>
+    <data name="Compose_Quote_Remove" xml:space="preserve">
+        <value>Remove quote</value>
+    </data>
+    <data name="Drive_Uploading" xml:space="preserve">
+        <value>Uploading file</value>
+    </data>
+    <data name="Drive_Uploading_Count" xml:space="preserve">
+        <value>Uploading {0} files</value>
+    </data>
+    <data name="Compose_Poll_ChoicePlaceholder" xml:space="preserve">
+        <value>Choice</value>
+    </data>
+    <data name="Common_Add" xml:space="preserve">
+        <value>Add</value>
+    </data>
+    <data name="Compose_Poll_ExpiresAt" xml:space="preserve">
+        <value>Poll ends</value>
+    </data>
+    <data name="Compose_Poll_ExpiresAt_Never" xml:space="preserve">
+        <value>Never</value>
+    </data>
+    <data name="Compose_Poll_ExpiresAt_AfterDuration" xml:space="preserve">
+        <value>End after</value>
+    </data>
+    <data name="Compose_Poll_ExpiresAt_DateTime" xml:space="preserve">
+        <value>End at</value>
+    </data>
+    <data name="Compose_Poll_Duration" xml:space="preserve">
+        <value>Duration</value>
+    </data>
+    <data name="Duration_Minutes" xml:space="preserve">
+        <value>Hours</value>
+    </data>
+    <data name="Duration_Hours" xml:space="preserve">
+        <value>Minutes</value>
+    </data>
+    <data name="Duration_Days" xml:space="preserve">
+        <value>Days</value>
+    </data>
+    <data name="Compose_NoPreview" xml:space="preserve">
+        <value>Nothing to preview</value>
+    </data>
+    <data name="Compose_Error_AttachmentSize" xml:space="preserve">
+        <value>Attachment is too large.</value>
+    </data>
+    <data name="Compose_Error_AttachmentSize_Bytes" xml:space="preserve">
+        <value>Attachment is too large. The server set this limit to {0} bytes.</value>
+    </data>
+    <data name="Compose_AttachQuoteDialog_Question" xml:space="preserve">
+        <value>Attach as quote?</value>
+    </data>
+    <data name="Compose_AddMentionDialog_Submit" xml:space="preserve">
+        <value>Mention user</value>
+    </data>
+    <data name="Compose_AttachQuoteDialog_Placeholder" xml:space="preserve">
+        <value>Note URL</value>
+    </data>
+    <data name="Compose_Error_AttachQuote" xml:space="preserve">
+        <value>Quote must be a valid note URL.</value>
+    </data>
+    <data name="Compose_BodyPlaceholder_Note" xml:space="preserve">
+        <value>What's on your mind?</value>
+    </data>
+    <data name="Compose_BodyPlaceholder_Reply" xml:space="preserve">
+        <value>Reply goes here!</value>
+    </data>
+    <data name="Compose_BodyPlaceholder_Quote" xml:space="preserve">
+        <value>Quote this note!</value>
+    </data>
+    <data name="Update_Notice" xml:space="preserve">
+        <value>Update required!</value>
+    </data>
+    <data name="Update_Codename" xml:space="preserve">
+        <value>Codename</value>
+    </data>
+    <data name="Update_Commit" xml:space="preserve">
+        <value>Commit</value>
+    </data>
+    <data name="Update_ReleaseNotes" xml:space="preserve">
+        <value>Release notes</value>
+    </data>
+    <data name="Update_StateButton_Success" xml:space="preserve">
+        <value>Reloading</value>
+    </data>
+    <data name="Update_StateButton_Initial" xml:space="preserve">
+        <value>Switch to new version</value>
+    </data>
+    <data name="Update_StateButton_Error" xml:space="preserve">
+        <value>Failed to install update</value>
     </data>
 </root>

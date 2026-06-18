@@ -18,14 +18,14 @@
         {
             @if (ReportedNote != null)
             {
-                <span>@Loc["Report note"]</span>
+                <span>@Loc[L.Report_Note]</span>
                 <div class="report-note">
                     <NoteComponent Note="ReportedNote" AsQuote="true" OpenNote="false"/>
                 </div>
             }
             else if (ReportedUser != null)
             {
-                <span>@Loc["Report user"]</span>
+                <span>@Loc[L.Report_User]</span>
                 <div class="report-user">
                     <UserAvatar User="ReportedUser" Title="true"/>
                     <div class="name-section">
@@ -40,7 +40,7 @@
                     </div>
                 </div>
                 
-                <span>@Loc["Notes"]</span>
+                <span>@Loc[L.Common_Notes]</span>
 
                 <div class="note-ids">
                     @foreach (var id in NoteIds)
@@ -50,14 +50,14 @@
                 </div>
 
                 <div class="report-note-add">
-                    <input type="text" @bind="NewNoteId" placeholder="@Loc["Note ID or URL"]"/>
-                    <button @onclick="AddNoteId" class="button">@Loc["Add note"]</button>
+                    <input type="text" @bind="NewNoteId" placeholder="@Loc[L.Report_Dialog_AddPlaceholder]"/>
+                    <button @onclick="AddNoteId" class="button">@Loc[L.Report_Dialog_AddNote]</button>
                 </div>
             }
 
             @if (Rules.Count != 0)
             {
-                <span>@Loc["Rule violations"]</span>
+                <span>@Loc[L.Report_Dialog_Rules]</span>
 
                 <ol class="rules">
                     @foreach (var rule in Rules)
@@ -73,20 +73,20 @@
             }
 
             <textarea class="input" @bind="Comment" @bind:event="oninput" rows="5"
-                      placeholder="@Loc["Report details"]"></textarea>
+                      placeholder="@Loc[L.Report_Dialog_DetailsPlaceholder]"></textarea>
             
             @if (ReportedUser?.Host != null && (Session?.Current?.IsModerator ?? false) || (Session?.Current?.IsAdmin ?? false))
             {
                 <label>
                     <InputCheckbox @bind-Value="Forward"/>
-                    @Loc["Forward to {0}", ReportedUser?.Host!]
+                    @Loc[L.Report_Dialog_Forward_Host, ReportedUser?.Host!]
                 </label>
             }
             
             <div class="buttons">
                 <button class="button submit-btn" @onclick="Submit"
-                        disabled="@string.IsNullOrWhiteSpace(Comment)">@Loc["Submit"]</button>
-                <button class="button" @onclick="Cancel">@Loc["Cancel"]</button>
+                        disabled="@string.IsNullOrWhiteSpace(Comment)">@Loc[L.Dialog_Submit]</button>
+                <button class="button" @onclick="Cancel">@Loc[L.Dialog_Cancel]</button>
             </div>
         }
     </div>
@@ -196,7 +196,7 @@
                 return;
             }
 
-            await GlobalComponentSvc.NoticeDialog?.Display(Loc["Note not found"], NoticeDialog.NoticeType.Error)!;
+            await GlobalComponentSvc.NoticeDialog?.Display(Loc[L.Error_NoteNotFound], NoticeDialog.NoticeType.Error)!;
             return;
         }
 
@@ -221,13 +221,13 @@
             }
             else
             {
-                await GlobalComponentSvc.NoticeDialog?.Display(Loc["Note doesn't belong to reported user"], NoticeDialog.NoticeType.Error)!;
+                await GlobalComponentSvc.NoticeDialog?.Display(Loc[L.Report_Dialog_Error_NoteOwner], NoticeDialog.NoticeType.Error)!;
             }
 
             return;
         }
 
-        await GlobalComponentSvc.NoticeDialog?.Display(Loc["Note not found"], NoticeDialog.NoticeType.Error)!;
+        await GlobalComponentSvc.NoticeDialog?.Display(Loc[L.Error_NoteNotFound], NoticeDialog.NoticeType.Error)!;
     }
 
     protected override async Task OnInitializedAsync()

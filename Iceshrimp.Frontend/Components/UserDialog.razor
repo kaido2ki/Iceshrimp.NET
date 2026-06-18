@@ -16,8 +16,8 @@
         {
             <span>@Text</span>
             <div class="search">
-                <input type="text" class="input" id="username" @bind="Username" @bind:event="oninput" @bind:after="Search" placeholder="@Loc["Username"]" aria-label="username"/>
-                <input type="text" class="input" id="host" @bind="Host" @bind:event="oninput" @bind:after="Search" placeholder="@Loc["Host"]" aria-label="host"/>
+                <input type="text" class="input" id="username" @bind="Username" @bind:event="oninput" @bind:after="Search" placeholder="@Loc[L.User_Username]" aria-label="username"/>
+                <input type="text" class="input" id="host" @bind="Host" @bind:event="oninput" @bind:after="Search" placeholder="@Loc[L.User_Host]" aria-label="host"/>
             </div>
             
             @foreach (var user in Users)
@@ -34,8 +34,8 @@
             }
 
             <div class="buttons">
-                <button class="button submit-btn" @onclick="ConfirmAction" disabled="@(Selected == null)">@(ButtonText ?? Loc["Submit"])</button>
-                <button class="button" @onclick="CancelAction">@Loc["Cancel"]</button>
+                <button class="button submit-btn" @onclick="ConfirmAction" disabled="@(Selected == null)">@(ButtonText ?? Loc[L.Dialog_Submit])</button>
+                <button class="button" @onclick="CancelAction">@Loc[L.Dialog_Cancel]</button>
             </div>
         }
     </div>

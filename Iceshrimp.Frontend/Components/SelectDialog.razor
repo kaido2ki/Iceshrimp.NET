@@ -19,8 +19,8 @@
                 }
             </select>
             <div class="buttons">
-                <button class="button submit-btn" @onclick="ConfirmAction">@(ButtonText ?? Loc["Submit"])</button>
-                <button class="button" @onclick="CancelAction">@Loc["Cancel"]</button>
+                <button class="button submit-btn" @onclick="ConfirmAction">@(ButtonText ?? Loc[L.Dialog_Submit])</button>
+                <button class="button" @onclick="CancelAction">@Loc[L.Dialog_Cancel]</button>
             </div>
         }
     </div>
