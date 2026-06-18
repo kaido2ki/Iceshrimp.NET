@@ -7,15 +7,14 @@
 @using Iceshrimp.Frontend.Components
 @inject IStringLocalizer<Localization> Loc;
 
-<HeadTitle Text="@Loc["Moderation"]"/>
+<HeadTitle Text="@Loc[L.Moderation_Overview]"/>
 
 <SectionContent SectionName="top-bar">
     <Icon Name="Icons.Shield"></Icon>
-    @Loc["Moderation"]
+    @Loc[L.Moderation_Overview]
 </SectionContent>
 
 <div class="body">
-    <i>@Loc["Moderation overview"]</i>
 </div>
 
 @code {

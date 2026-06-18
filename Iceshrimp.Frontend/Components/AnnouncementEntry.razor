@@ -15,12 +15,12 @@
     </span>
     @if (Announcement.ImageUrl != null)
     {
-        <img src="@Announcement.ImageUrl" alt="@Loc["Announcement image"]"/>
+        <img src="@Announcement.ImageUrl"/>
     }
     <span class="metadata">
         @if (Announcement.UpdatedAt != null)
         {
-            @Loc["Announced {0} - Edited {1}", Announcement.CreatedAt.ToLocalTime().ToString("G"), Announcement.UpdatedAt.Value.ToLocalTime().ToString("G")]
+            @Loc[L.Announcement_Date_CreatedAt_UpdatedAt, Announcement.CreatedAt.ToLocalTime().ToString("G"), Announcement.UpdatedAt.Value.ToLocalTime().ToString("G")]
         }
         else
         {
@@ -30,7 +30,7 @@
     @if (Announcement.ReadCount != null)
     {
         <span class="metadata">
-            @Loc["Users read: {0}/{1}", Announcement.ReadCount, Meta.Instance.Value.Result.UserCount]
+            @Loc[L.Moderation_Announcements_ReadCount, Announcement.ReadCount, Meta.Instance.Value.Result.UserCount]
         </span>
     }
     <div class="buttons">
@@ -38,18 +38,18 @@
         {
             <span class="button" @onclick="MarkAsReadAsync">
                     <Icon Name="Icons.Check"/>
-                @Loc["Mark as read"]
+                @Loc[L.Notification_MarkRead]
                 </span>
         }
         @if (Moderator)
         {
             <span class="button" @onclick="() => Edit.InvokeAsync(Announcement.Id)">
                 <Icon Name="Icons.Pencil"/>
-                @Loc["Edit"]
+                @Loc[L.Common_Edit]
             </span>
             <span class="button danger" @onclick="DeleteAnnouncementAsync">
                 <Icon Name="Icons.Trash"/>
-                @Loc["Delete"]
+                @Loc[L.Common_Delete]
             </span>
         }
     </div>
@@ -68,7 +68,7 @@
     }
 
     private Task DeleteAnnouncementAsync() =>
-        Global.ConfirmDialog?.Confirm(new EventCallback<bool>(this, DeleteAnnouncementCallback), Loc["Delete announcement?"], Icons.Trash, Loc["Delete"])!;
+        Global.ConfirmDialog?.Confirm(new EventCallback<bool>(this, DeleteAnnouncementCallback), Loc[L.Moderation_Announcements_DeleteDialog_Question], Icons.Trash, Loc[L.Common_Delete])!;
 
     private async Task DeleteAnnouncementCallback(bool confirm)
     {

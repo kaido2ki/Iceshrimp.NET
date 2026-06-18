@@ -26,7 +26,7 @@
         <span class="labels">
             @if (Emoji.Sensitive)
             {
-                <Icon Name="Icons.EyeSlash" title="@Loc["Sensitive"]"/>
+                <Icon Name="Icons.EyeSlash" title="@Loc[L.Drive_Entry_Sensitive]"/>
             }
             @if (!string.IsNullOrWhiteSpace(Emoji.License))
             {
@@ -38,41 +38,41 @@
         @if (Remote)
         {
             <MenuElement Icon="Icons.Copy" OnSelect="Clone">
-                <Text>@Loc["Clone"]</Text>
+                <Text>@Loc[L.Moderation_Emojis_Clone]</Text>
             </MenuElement>
         }
         else
         {
             <MenuElement Icon="Icons.CursorText" OnSelect="Rename">
-                <Text>@Loc["Rename"]</Text>
+                <Text>@Loc[L.Common_Rename]</Text>
             </MenuElement>
         }
         @if (Emoji.Sensitive)
         {
             <MenuElement Icon="Icons.Eye" OnSelect="MarkNotSensitive">
-                <Text>@Loc["Mark as not sensitive"]</Text>
+                <Text>@Loc[L.Drive_Entry_Menu_Sensitive_Remove]</Text>
             </MenuElement>
         }
         else
         {
             <MenuElement Icon="Icons.EyeSlash" OnSelect="MarkAsSensitive">
-                <Text>@Loc["Mark as sensitive"]</Text>
+                <Text>@Loc[L.Drive_Entry_Menu_Sensitive_Add]</Text>
             </MenuElement>
         }
         @if (!Remote)
         {
             <MenuElement Icon="Icons.TextAa" OnSelect="SetTags">
-                <Text>@Loc["Set tags"]</Text>
+                <Text>@Loc[L.Moderation_Emojis_SetTags]</Text>
             </MenuElement>
             <MenuElement Icon="Icons.Folder" OnSelect="SetCategory">
-                <Text>@Loc["Set category"]</Text>
+                <Text>@Loc[L.Moderation_Emojis_SetCategory]</Text>
             </MenuElement>
             <MenuElement Icon="Icons.Article" OnSelect="SetLicense">
-                <Text>@Loc["Set license"]</Text>
+                <Text>@Loc[L.Moderation_Emojis_SetLicense]</Text>
             </MenuElement>
             <hr class="rule"/>
             <MenuElement Icon="Icons.Trash" OnSelect="Delete" Danger>
-                <Text>@Loc["Delete"]</Text>
+                <Text>@Loc[L.Common_Delete]</Text>
             </MenuElement>
         }
         <ClosingBackdrop OnClose="EmojiMenu.Close"></ClosingBackdrop>
@@ -103,7 +103,7 @@
     }
 
     private async Task Clone() =>
-        await Global.ConfirmDialog?.Confirm(new EventCallback<bool>(this, CloneCallback), @Loc["Clone {0} from {1}?", Emoji.Name, Emoji.Category ?? ""], Icons.Copy, @Loc["Clone"])!;
+        await Global.ConfirmDialog?.Confirm(new EventCallback<bool>(this, CloneCallback), @Loc[L.Moderation_Emojis_CloneDialog_Question_Name_Host, Emoji.Name, Emoji.Category ?? ""], Icons.Copy)!;
 
     private async Task CloneCallback(bool confirm)
     {
@@ -113,7 +113,7 @@
         {
             // Remote emojis endpoint sets EmojiResponse.Category to the emoji's host
             var res = await Api.Emoji.CloneEmojiAsync(Emoji.Name, Emoji.Category);
-            if (res != null) await Global.NoticeDialog?.Display(Loc["Cloned {0} from {1}", Emoji.Name, Emoji.Category])!;
+            if (res != null) await Global.NoticeDialog?.Display(Loc[L.Moderation_Emojis_CloneDialog_SuccessNotice_Name_Host, Emoji.Name, Emoji.Category])!;
         }
         catch (ApiException e)
         {
@@ -122,7 +122,7 @@
     }
 
     private async Task Rename() =>
-        await Global.PromptDialog?.Prompt(new EventCallback<string?>(this, RenameCallback), Loc["Rename emoji"], "", Emoji.Name, buttonText: Loc["Rename"])!;
+        await Global.PromptDialog?.Prompt(new EventCallback<string?>(this, RenameCallback), Loc[L.Common_Rename], "", Emoji.Name)!;
 
     private async Task RenameCallback(string? name)
     {
@@ -165,7 +165,7 @@
     private async Task MarkAsSensitive() => await MarkSensitive(true);
 
     private async Task SetTags() =>
-        await Global.PromptDialog?.Prompt(new EventCallback<string?>(this, SetTagsCallback), Loc["Set tags (separated by new line)"], "one\ntwo\nthree", string.Join("\n", Emoji.Tags), true, true)!;
+        await Global.PromptDialog?.Prompt(new EventCallback<string?>(this, SetTagsCallback), Loc[L.Moderation_Emojis_TagsDialog_Prompt], "one\ntwo\nthree", string.Join("\n", Emoji.Tags), true, true)!;
 
     private async Task SetTagsCallback(string? tags)
     {
@@ -187,7 +187,7 @@
     }
 
     private async Task SetCategory() =>
-        await Global.PromptDialog?.Prompt(new EventCallback<string?>(this, SetCategoryCallback), Loc["Set category"], "", Emoji.Category, true)!;
+        await Global.PromptDialog?.Prompt(new EventCallback<string?>(this, SetCategoryCallback), Loc[L.Moderation_Emojis_SetCategory], "", Emoji.Category, true)!;
 
     private async Task SetCategoryCallback(string? category)
     {
@@ -209,7 +209,7 @@
     }
 
     private async Task SetLicense() =>
-        await Global.PromptDialog?.Prompt(new EventCallback<string?>(this, SetLicenseCallback), Loc["Set license"], "", Emoji.License, true, true)!;
+        await Global.PromptDialog?.Prompt(new EventCallback<string?>(this, SetLicenseCallback), Loc[L.Moderation_Emojis_SetLicense], "", Emoji.License, true, true)!;
 
     private async Task SetLicenseCallback(string? license)
     {
@@ -231,7 +231,7 @@
     }
 
     private async Task Delete() =>
-        await Global.ConfirmDialog?.Confirm(new EventCallback<bool>(this, DeleteCallback), Loc["Delete {0}?", Emoji.Name], Icons.Trash, Loc["Delete"])!;
+        await Global.ConfirmDialog?.Confirm(new EventCallback<bool>(this, DeleteCallback), Loc[L.Moderation_Emojis_SingleDeleteDialog_Question, Emoji.Name], Icons.Trash, Loc[L.Common_Delete])!;
 
     private async Task DeleteCallback(bool delete)
     {

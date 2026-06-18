@@ -12,16 +12,16 @@
 @inject ApiService                     Api;
 @inject IStringLocalizer<Localization> Loc;
 
-<HeadTitle Text="@Loc["Reports"]"/>
+<HeadTitle Text="@Loc[L.Moderation_Reports]"/>
 
 <SectionContent SectionName="top-bar">
     <Icon Name="Icons.WarningCircle"></Icon>
-    @Loc["Reports"]
+    @Loc[L.Moderation_Reports]
     @if (State is State.Empty or State.Loaded)
     {
         <span class="action btn" @onclick="ToggleResolved">
             <Icon Name="@(Resolved ? Icons.XCircle : Icons.CheckCircle)"/>
-            <span>@Loc[Resolved ? "Unresolved" : "Resolved"]</span>
+            <span>@Loc[Resolved ? L.Moderation_Reports_Unresolved : L.Moderation_Reports_Resolved]</span>
         </span>
     }
 </SectionContent>
@@ -37,16 +37,16 @@
                     <Timestamp Date="report.CreatedAt"/>
                     @if (report.Resolved)
                     {
-                        <span class="report-resolved">@Loc["Resolved"]</span>
+                        <span class="report-resolved">@Loc[L.Moderation_Reports_Resolved]</span>
                     }
                     else
                     {
-                        <span class="report-unresolved">@Loc["Unresolved"]</span>
+                        <span class="report-unresolved">@Loc[L.Moderation_Reports_Unresolved]</span>
                     }
                 </div>
             </div>
             <div>
-                <MfmText Text="@Loc["Reported by {0}", report.Reporter.DisplayName ?? report.Reporter.Username]"
+                <MfmText Text="@Loc[L.Moderation_Reports_ByLabel, report.Reporter.DisplayName ?? report.Reporter.Username]"
                          Emoji="@report.Reporter.Emojis" Simple="true"/>
             </div>
             <span class="report-comment">@report.Comment</span>
@@ -54,11 +54,11 @@
                 @{
                     var attachments = new List<string>();
                     if (report is { Forwarded: true, TargetUser.Host: not null })
-                        attachments.Add(Loc["Forwarded to {0}", report.TargetUser.Host]);
+                        attachments.Add(Loc[L.Moderation_Reports_Forwarded_Host, report.TargetUser.Host]);
                     if (report.Notes.Length != 0)
-                        attachments.Add(Loc["{0} notes", report.Notes.Length]);
+                        attachments.Add(Loc[L.Moderation_Reports_NoteCount, report.Notes.Length]);
                     if (report.Rules.Length != 0)
-                        attachments.Add(Loc["{0} rule violations", report.Rules.Length]);
+                        attachments.Add(Loc[L.Moderation_Reports_RuleCount, report.Rules.Length]);
 
                     @string.Join(", ", attachments)
                 }
@@ -72,7 +72,7 @@
 
 @if (State == State.Empty)
 {
-    <i>@Loc["No reports"]</i>
+    <i>@Loc[L.Moderation_Reports_Empty]</i>
 }
 
 @if (State == State.Loading)

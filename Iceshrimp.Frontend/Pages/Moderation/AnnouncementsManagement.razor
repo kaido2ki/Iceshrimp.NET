@@ -14,16 +14,16 @@
 @inject JsService                      Js;
 @inject IStringLocalizer<Localization> Loc;
 
-<HeadTitle Text="@Loc["Manage announcements"]"/>
+<HeadTitle Text="@Loc[L.Moderation_Announcements]"/>
 
 <SectionContent SectionName="top-bar">
     <Icon Name="Icons.Megaphone"></Icon>
-    @Loc["Manage announcements"]
+    @Loc[L.Moderation_Announcements]
     @if (State is State.Empty or State.Loaded)
     {
         <span class="action btn" @onclick="NewAnnouncement">
             <Icon Name="Icons.Plus"/>
-            <span>@Loc["New"]</span>
+            <span>@Loc[L.Common_New]</span>
         </span>
     }
 </SectionContent>
@@ -43,7 +43,7 @@
 }
 @if (State is State.Empty)
 {
-    <i>@Loc["No announcements have been made"]</i>
+    <i>@Loc[L.Moderation_Announcements_Empty]</i>
 }
 @if (State is State.Loading)
 {
@@ -55,34 +55,34 @@
 <dialog class="dialog" @ref="ComposeDialog">
     <div class="compose">
         <div class="header">
-            <button class="btn" title="@Loc["Close"]" @onclick="CloseDialog" aria-label="close">
+            <button class="btn" title="@Loc[L.Common_Close]" @onclick="CloseDialog" aria-label="close">
                 <Icon Name="Icons.X"/>
             </button>
-            <span>@Loc["Announcement"]</span>
+            <span>@Loc[L.Announcement]</span>
             <StateButton OnClick="Send" @ref="SendButton" ExtraClasses="announce-btn" AriaLabel="aanounce"
                          Disabled="@(string.IsNullOrWhiteSpace(Draft.Title) || string.IsNullOrWhiteSpace(Draft.Text))">
                 <Initial>
-                    @Loc["Announce"]<Icon Name="Icons.PaperPlaneRight"/>
+                    @Loc[L.Moderation_Announcements_StateButton_Initial]<Icon Name="Icons.PaperPlaneRight"/>
                 </Initial>
                 <Loading>
-                    @Loc["Sending"]<LoadingSpinner />
+                    @Loc[L.Compose_Sending]<LoadingSpinner />
                 </Loading>
                 <Success>
-                    @Loc["Done"]<Icon Name="Icons.Check"/>
+                    @Loc[L.Dialog_Confirm]<Icon Name="Icons.Check"/>
                 </Success>
                 <Failed>
-                    @Loc["Retry"]<Icon Name="Icons.X"/>
+                    @Loc[L.StateButton_Error]<Icon Name="Icons.X"/>
                 </Failed>
             </StateButton>
         </div>
-        <input @bind="Draft.Title" @bind:event="oninput" class="input" placeholder="@Loc["Title"]" aria-label="title"
+        <input @bind="Draft.Title" @bind:event="oninput" class="input" placeholder="@Loc[L.Moderation_Announcements_Title]" aria-label="title"
                autofocus="autofocus"/>
         <hr class="separator"/>
         <textarea @ref="Textarea" @bind="Draft.Text" @bind:event="oninput" class="textarea"
-                  placeholder="@Loc["Announcement text"]" rows="5" cols="35" aria-label="announcement text"></textarea>
+                  placeholder="@Loc[L.Compose_BodyPlaceholder_Note]" rows="5" cols="35" aria-label="announcement text"></textarea>
         <div class="footer">
             <div class="buttons">
-                <button class="btn" title="@Loc["Upload image"]" @onclick="OpenUploadImage" aria-label="upload">
+                <button class="btn" title="@Loc[L.Moderation_Announcements_Image_Add]" @onclick="OpenUploadImage" aria-label="upload">
                     <Icon Name="Icons.Upload" Size="1.3rem"></Icon>
                 </button>
                 <div class="file-input">
@@ -90,21 +90,21 @@
                 </div>
                 @if (Draft.ImageUrl != null)
                 {
-                    <button class="btn" title="@Loc["Remove image"]" @onclick="() => Draft.ImageUrl = null" aria-label="upload">
+                    <button class="btn" title="@Loc[L.Moderation_Announcements_Image_Remove]" @onclick="() => Draft.ImageUrl = null" aria-label="upload">
                         <Icon Name="Icons.Trash" Size="1.3rem"></Icon>
                     </button>
                 }
-                <button @ref="EmojiButton" class="btn" title="@Loc["Emoji"]" @onclick="ToggleEmojiPicker"
+                <button @ref="EmojiButton" class="btn" title="@Loc[L.Common_Emojis]" @onclick="ToggleEmojiPicker"
                         aria-label="emoji">
                     <Icon Name="Icons.Smiley" Size="1.3rem"></Icon>
                 </button>
                 <label>
                     <input type="checkbox" @bind="Draft.ShowPopup">
-                    @Loc["Show popup"]
+                    @Loc[L.Moderation_Announcements_Popup]
                 </label>
             </div>
             <div class="buttons">
-                <button class="btn" title="@Loc["Preview"]" @onclick="() => Preview = !Preview"
+                <button class="btn" title="@Loc[L.Moderation_Announcements_TogglePreview]" @onclick="() => Preview = !Preview"
                         aria-label="preview">
                     <Icon Name="Icons.Binoculars" Size="1.3rem"></Icon>
                 </button>
@@ -115,7 +115,7 @@
             <div class="preview">
                 @if (string.IsNullOrWhiteSpace(Draft.Text))
                 {
-                    <span>@Loc["Nothing to preview"]</span>
+                    <span>@Loc[L.Compose_NoPreview]</span>
                 }
                 else
                 {
@@ -125,7 +125,7 @@
         }
         @if (Draft.ImageUrl != null)
         {
-            <img src="@Draft.ImageUrl" alt="@Loc["Attachment image"]"/>
+            <img src="@Draft.ImageUrl"/>
         }
         <div @onclick="CloseDialog" class="backdrop"></div>
     </div>

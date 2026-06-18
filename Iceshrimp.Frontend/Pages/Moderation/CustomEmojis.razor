@@ -13,45 +13,45 @@
 @inject JsService                      Js;
 @inject IStringLocalizer<Localization> Loc;
 
-<HeadTitle Text="@Loc["Custom Emojis"]"/>
+<HeadTitle Text="@Loc[L.Moderation_Emojis]"/>
 
 <SectionContent SectionName="top-bar">
     <Icon Name="Icons.Smiley"></Icon>
-    @Loc["Custom Emojis"]
+    @Loc[L.Moderation_Emojis]
     @if (State is State.Empty or State.Loaded)
     {
         @if (BatchSelection)
         {
             <span class="action btn" @onclick="BatchSetCategory" disabled="@(Selected.Count == 0)">
                 <Icon Name="Icons.Folder"/>
-                <span>@Loc["Set category"]</span>
+                <span>@Loc[L.Moderation_Emojis_SetCategory]</span>
             </span>
             <span class="action btn" @onclick="BatchSetLicense" disabled="@(Selected.Count == 0)">
                 <Icon Name="Icons.Article"/>
-                <span>@Loc["Set license"]</span>
+                <span>@Loc[L.Moderation_Emojis_SetLicense]</span>
             </span>
             <span class="action btn" @onclick="BatchDelete" disabled="@(Selected.Count == 0)">
                 <Icon Name="Icons.Trash"/>
-                <span>@Loc["Delete"]</span>
+                <span>@Loc[L.Common_Delete]</span>
             </span>
             <span class="action btn" @onclick="ToggleBatchSelection">
                 <Icon Name="Icons.Selection"/>
-                <span>@Loc["Single select"]</span>
+                <span>@Loc[L.Moderation_Emojis_Select_Single]</span>
             </span>
         }
         else
         {
             <span class="action btn" @onclick="OpenUpload">
                 <Icon Name="Icons.Upload"/>
-                <span>@Loc["Upload"]</span>
+                <span>@Loc[L.Drive_UploadFile]</span>
             </span>
             <span class="action btn" @onclick="OpenImport">
                 <Icon Name="Icons.FileArrowUp"/>
-                <span>@Loc["Import pack"]</span>
+                <span>@Loc[L.Moderation_Emojis_ImportPack]</span>
             </span>
             <span class="action btn" @onclick="ToggleBatchSelection">
                 <Icon Name="Icons.SelectionPlus"/>
-                <span>@Loc["Batch select"]</span>
+                <span>@Loc[L.Moderation_Emojis_Select_Multiple]</span>
             </span>
         }
     }
@@ -59,7 +59,7 @@
     {
         <a class="action btn" href="/mod/emojis/remote">
             <Icon Name="Icons.ArrowSquareOut"/>
-            <span>@Loc["Remote"]</span>
+            <span>@Loc[L.Timeline_Remote]</span>
         </a>
     }
 </SectionContent>
@@ -67,8 +67,8 @@
 @if (State is State.Empty or State.Error or State.Loaded)
 {
     <div class="emoji-search">
-        <input @bind="EmojiFilter" class="search" type="text" placeholder="@Loc["Name"]" aria-label="search name"/>
-        <button @onclick="FilterEmojis" class="button">@Loc["Search"]</button>
+        <input @bind="EmojiFilter" class="search" type="text" placeholder="@Loc[L.Common_Name]" aria-label="search name"/>
+        <button @onclick="FilterEmojis" class="button">@Loc[L.Search]</button>
     </div>
 }
 @if (State is State.Loaded)
@@ -88,7 +88,7 @@
 }
 @if (State is State.Empty || (State is State.Loaded && Categories.Count == 0))
 {
-    @Loc["No emojis were found"]
+    @Loc[L.Moderation_Emojis_Empty]
 }
 @if (State is State.Loading)
 {
@@ -120,14 +120,14 @@
                      .Where(p => p.Name.Contains(EmojiFilter.Trim()) || p.Tags.Count(a => a.Contains(EmojiFilter.Trim())) != 0)
                      .Select(p =>
                      {
-                         p.Category ??= Loc["Other"];
+                         p.Category ??= Loc[L.Common_Other];
                          return p;
                      })
                      .OrderBy(p => p.Name)
                      .ThenBy(p => p.Id)
                      .GroupBy(p => p.Category)
                      .OrderBy(p => string.IsNullOrEmpty(p.Key))
-                     .ThenBy(p => p.Key != Loc["Other"]) // ensure the "Other" category comes first
+                     .ThenBy(p => p.Key != Loc[L.Common_Other]) // ensure the "Other" category comes first
                      .ThenBy(p => p.Key)
                      .Select(p => (p.Key?.ToString(), p.ToList()))
                      .ToList();
@@ -197,7 +197,7 @@
     private async Task BatchSetCategory()
     {
         if (!BatchSelection || Selected.Count == 0) return;
-        await Global.PromptDialog?.Prompt(new EventCallback<string?>(this, BatchSetCategoryCallback), Loc["Set category for {0} emojis", Selected.Count], "", null, true)!;
+        await Global.PromptDialog?.Prompt(new EventCallback<string?>(this, BatchSetCategoryCallback), Loc[L.Moderation_Emojis_MultiCategoryDialog_Text, Selected.Count], "", null, true)!;
     }
 
     private async Task BatchSetCategoryCallback(string? category)
@@ -225,7 +225,7 @@
     private async Task BatchSetLicense()
     {
         if (!BatchSelection || Selected.Count == 0) return;
-        await Global.PromptDialog?.Prompt(new EventCallback<string?>(this, BatchSetLicenseCallback), Loc["Set license for {0} emojis", Selected.Count], "", null, true, true)!;
+        await Global.PromptDialog?.Prompt(new EventCallback<string?>(this, BatchSetLicenseCallback), Loc[L.Moderation_Emojis_MultiLicenseDialog_Text, Selected.Count], "", null, true, true)!;
     }
 
     private async Task BatchSetLicenseCallback(string? license)
@@ -253,7 +253,7 @@
     private async Task BatchDelete()
     {
         if (!BatchSelection || Selected.Count == 0) return;
-        await Global.ConfirmDialog?.Confirm(new EventCallback<bool>(this, BatchDeleteCallback), Loc["Delete {0} emojis?", Selected.Count], Icons.Trash, Loc["Delete"])!;
+        await Global.ConfirmDialog?.Confirm(new EventCallback<bool>(this, BatchDeleteCallback), Loc[L.Moderation_Emojis_MultiDeleteDialog_Question, Selected.Count], Icons.Trash, Loc[L.Common_Delete])!;
     }
 
     private async Task BatchDeleteCallback(bool delete)
@@ -279,7 +279,7 @@
     {
         if (!e.File.ContentType.StartsWith("image/")) return;
         UploadFile = e.File;
-        await Global.PromptDialog?.Prompt(new EventCallback<string?>(this, UploadCallback), Loc["Set emoji name"], "", e.File.Name.Split(".")[0], buttonText: Loc["Upload"])!;
+        await Global.PromptDialog?.Prompt(new EventCallback<string?>(this, UploadCallback), Loc[L.Moderation_Emojis_UploadDialog_Prompt], "", e.File.Name.Split(".")[0])!;
     }
 
     private async Task UploadCallback(string? name)
@@ -289,7 +289,7 @@
         try
         {
             await Api.Emoji.UploadEmojiAsync(UploadFile, name);
-            await Global.NoticeDialog?.Display(Loc["Successfully uploaded {0}", name])!;
+            await Global.NoticeDialog?.Display(Loc[L.Moderation_Emojis_UploadDialog_SuccessNotice, name])!;
             await GetEmojis();
         }
         catch (ApiException e)
@@ -302,7 +302,7 @@
     {
         if (e.File.ContentType != "application/zip") return;
         ImportFile = e.File;
-        await Global.ConfirmDialog?.Confirm(new EventCallback<bool>(this, ImportCallback), Loc["Import {0}?", e.File.Name], Icons.FileArrowUp, Loc["Import"])!;
+        await Global.ConfirmDialog?.Confirm(new EventCallback<bool>(this, ImportCallback), Loc[L.Moderation_Emojis_ImportDialog_Question, e.File.Name], Icons.FileArrowUp)!;
     }
 
     private async Task ImportCallback(bool import)
@@ -312,7 +312,7 @@
         try
         {
             await Api.Emoji.ImportEmojiAsync(ImportFile);
-            await Global.NoticeDialog?.Display(Loc["Successfully imported emoji pack"])!;
+            await Global.NoticeDialog?.Display(Loc[L.Moderation_Emojis_ImportDialog_SuccessNotice])!;
             await GetEmojis();
         }
         catch (ApiException e)

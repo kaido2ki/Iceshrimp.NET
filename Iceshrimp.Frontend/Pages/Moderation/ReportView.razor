@@ -15,11 +15,19 @@
 @inject NavigationManager              Nav;
 @inject SessionService                 Session;
 
-<HeadTitle Text="@Loc["Report details"]"/>
+<HeadTitle Text="@(Report != null ? Loc[L.Moderation_Report_From, Report.Reporter.DisplayName ?? Report.Reporter.Username] : Loc[L.Moderation_Reports])"/>
 
 <SectionContent SectionName="top-bar">
     <Icon Name="Icons.WarningCircle"></Icon>
-    @Loc["Report details"]
+    @if (Report != null)
+    {
+        <MfmText Text="@Loc[L.Moderation_Report_From, Report.Reporter.DisplayName ?? Report.Reporter.Username]"
+                 Emoji="Report.Reporter.Emojis" Simple="true"/>
+    }
+    else
+    {
+        @Loc[L.Moderation_Reports]
+    }
 </SectionContent>
 
 @if (State == State.Loaded && Report != null)
@@ -31,11 +39,11 @@
                 <Timestamp Date="Report.CreatedAt"/>
                 @if (Report.Resolved)
                 {
-                    <span class="report-resolved">@Loc["Resolved"]</span>
+                    <span class="report-resolved">@Loc[L.Moderation_Reports_Resolved]</span>
                 }
                 else
                 {
-                    <span class="report-unresolved">@Loc["Unresolved"]</span>
+                    <span class="report-unresolved">@Loc[L.Moderation_Reports_Unresolved]</span>
                 }
             </div>
         </div>
@@ -43,7 +51,7 @@
         @if (UserProfile != null)
         {
             <details>
-                <summary>@Loc["Bio"]</summary>
+                <summary>@Loc[L.User_Bio]</summary>
                 <MfmText Text="@UserProfile.Bio" Emoji="@Report.TargetUser.Emojis"/>
             </details>
 
@@ -51,16 +59,16 @@
             {
                 <div class="field">
                     <span class="field-name">
-                        @Loc["Instance"]
+                        @Loc[L.Moderation_Reports_InstanceName]
                     </span>
                     <span class="field-value">
-                        @(Report.TargetUser.InstanceName != null ? Loc["{0} ({1})", Report.TargetUser.InstanceName, Report.TargetUser.Host] : Report.TargetUser.Host)
+                        @(Report.TargetUser.InstanceName != null ? Loc[L.Moderation_Reports_InstanceName_Host, Report.TargetUser.InstanceName, Report.TargetUser.Host] : Report.TargetUser.Host)
                     </span>
                 </div>
             }
             <div class="field">
                 <span class="field-name">
-                    @Loc["Account created"]
+                    @Loc[L.Moderation_Reports_TargetCreatedAt]
                 </span>
                 <span class="field-value">
                     @UserProfile.CreatedAt.ToString("G")
@@ -70,7 +78,7 @@
             {
                 <div class="field">
                     <span class="field-name">
-                        @Loc["Last active"]
+                        @Loc[L.Moderation_Reports_TargetActiveAt]
                     </span>
                     <span class="field-value">
                         <Timestamp Date="@(UserProfile.ActiveAt ?? UserProfile.CreatedAt)"/>
@@ -81,7 +89,7 @@
             {
                 <div class="field">
                     <span class="field-name">
-                        @Loc["Birthday"]
+                        @Loc[L.User_Birthday]
                     </span>
                     <span class="field-value">
                         @UserProfile.Birthday
@@ -92,7 +100,7 @@
             {
                 <div class="field">
                     <span class="field-name">
-                        @Loc["Pronouns"]
+                        @Loc[L.User_Pronouns]
                     </span>
                     <span class="field-value">
                         @string.Join(", ", UserProfile.Pronouns.Select(p => $"{p.Value} ({LanguageHelper.Bcp47Languages[p.Key]})"))
@@ -107,7 +115,7 @@
             <div class="report-details">
                 @if (Report.Reporter.Host != null)
                 {
-                    <span class="report-resolved">@Loc["Remote report"]</span>
+                    <span class="report-resolved">@Loc[L.Moderation_Reports_FromRemote, Report.Reporter.Host]</span>
                 }
             </div>
         </div>
@@ -115,7 +123,7 @@
 
         @if (Report.Rules.Length != 0)
         {
-            <h3>@Loc["Rule violations"]</h3>
+            <h3>@Loc[L.Report_Dialog_Rules]</h3>
 
             <ul class="rules">
                 @foreach (var rule in Report.Rules)
@@ -146,15 +154,15 @@
     }
     
     <div class="report">
-        <h3>@Loc["Report actions"]</h3>
+        <h3>@Loc[L.Moderation_Reports_Actions]</h3>
         @if (Report.TargetUser.IsSuspended)
         {
-            <MfmText Text="@Loc["{0} is suspended", Report.TargetUser.DisplayName ?? Report.TargetUser.Username]"
+            <MfmText Text="@Loc[L.Moderation_Reports_TargetSuspended, Report.TargetUser.DisplayName ?? Report.TargetUser.Username]"
                      Emoji="Report.TargetUser.Emojis" Simple="true"/>
         }
         @if (Report.Resolved && Report.Assignee != null)
         {
-            <MfmText Text="@Loc["Resolved by {0}", Report.Assignee.DisplayName ?? Report.Assignee.Username]"
+            <MfmText Text="@Loc[L.Moderation_Reports_ResolvedBy_Username, Report.Assignee.DisplayName ?? Report.Assignee.Username]"
                      Emoji="Report.Assignee.Emojis" Simple="true"/>
         }
         <div class="buttons">
@@ -164,21 +172,21 @@
                 {
                     <span class="button" @onclick="Forward">
                         <Icon Name="Icons.PaperPlaneRight"/>
-                        @Loc["Forward to {0}", Report.TargetUser.Host]
+                        @Loc[L.Report_Dialog_Forward_Host, Report.TargetUser.Host]
                     </span>
                 }
                 <span class="button" @onclick="Resolve">
                     <Icon Name="Icons.CheckCircle"/>
-                    @Loc["Mark as resolved"]
+                    @Loc[L.Moderation_Reports_MarkResolved]
                 </span>
                 <span class="button danger" @onclick="Suspend">
                     <Icon Name="Icons.Gavel"/>
-                    @Loc["Suspend user"]
+                    @Loc[L.Moderation_Reports_SuspendTarget]
                 </span>
             }
             <span class="button danger" @onclick="DeleteReport">
                 <Icon Name="Icons.Trash"/>
-                @Loc["Delete report"]
+                @Loc[L.Common_Delete]
             </span>
         </div>
     </div>
@@ -199,7 +207,7 @@
     private UserProfileResponse? UserProfile { get; set; }
 
     private void Forward() =>
-        Global.ConfirmDialog?.Confirm(new EventCallback<bool>(this, ForwardCallback), Loc["Forward report?"], Icons.PaperPlaneRight, Loc["Forward"]);
+        Global.ConfirmDialog?.Confirm(new EventCallback<bool>(this, ForwardCallback), Loc[L.Moderation_Reports_ForwardDialog_Question], Icons.PaperPlaneRight);
 
     private async Task ForwardCallback(bool confirm)
     {
@@ -218,7 +226,7 @@
     }
     
     private void Resolve() =>
-        Global.ConfirmDialog?.Confirm(new EventCallback<bool>(this, ResolveCallback), Loc["Resolve report?"], Icons.CheckCircle, Loc["Resolve"]);
+        Global.ConfirmDialog?.Confirm(new EventCallback<bool>(this, ResolveCallback), Loc[L.Moderation_Reports_ResolveDialog_Question], Icons.CheckCircle);
 
     private async Task ResolveCallback(bool confirm)
     {
@@ -238,7 +246,7 @@
     }
     
     private void Suspend() =>
-        Global.ConfirmDialog?.Confirm(new EventCallback<bool>(this, SuspendCallback), Loc["Suspend {0}?", Report?.TargetUser.DisplayName ?? Report?.TargetUser.Username ?? "user"], Icons.Gavel, Loc["Suspend"]);
+        Global.ConfirmDialog?.Confirm(new EventCallback<bool>(this, SuspendCallback), Loc[L.Moderation_Reports_SuspendDialog_Question, Report!.TargetUser.DisplayName ?? Report.TargetUser.Username], Icons.Gavel);
 
     private async Task SuspendCallback(bool confirm)
     {
@@ -257,7 +265,7 @@
     }
 
     private void DeleteReport() =>
-        Global.ConfirmDialog?.Confirm(new EventCallback<bool>(this, DeleteReportCallback), Loc["Delete this report?"]);
+        Global.ConfirmDialog?.Confirm(new EventCallback<bool>(this, DeleteReportCallback), Loc[L.Moderation_Reports_DeleteDialog_Question]);
 
     private async Task DeleteReportCallback(bool confirm)
     {

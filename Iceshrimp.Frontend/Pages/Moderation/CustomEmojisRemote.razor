@@ -11,16 +11,16 @@
 @inject ApiService                     Api;
 @inject IStringLocalizer<Localization> Loc;
 
-<HeadTitle Text="@Loc["Remote Emojis"]"/>
+<HeadTitle Text="@Loc[L.Moderation_Emojis_Remote]"/>
 
 <SectionContent SectionName="top-bar">
     <Icon Name="Icons.Smiley"></Icon>
-    @Loc["Remote Emojis"]
+    @Loc[L.Moderation_Emojis_Remote]
     @if (State is not State.Loading)
     {
         <a class="action btn" href="/mod/emojis">
             <Icon Name="Icons.ArrowSquareIn"/>
-            <span>@Loc["Local"]</span>
+            <span>@Loc[L.Timeline_Local]</span>
         </a>
     }
 </SectionContent>
@@ -28,9 +28,9 @@
 @if (State is State.Empty or State.Error or State.Loaded)
 {
     <div class="emoji-search">
-        <input @bind="EmojiFilter" class="search" type="text" placeholder="@Loc["Name"]" aria-label="search name"/>
-        <input @bind="HostFilter" class="search" type="text" placeholder="@Loc["Host"]" aria-label="search host"/>
-        <button @onclick="Search" class="button">@Loc["Search"]</button>
+        <input @bind="EmojiFilter" class="search" type="text" placeholder="@Loc[L.Common_Name]" aria-label="search name"/>
+        <input @bind="HostFilter" class="search" type="text" placeholder="@Loc[L.User_Host]" aria-label="search host"/>
+        <button @onclick="Search" class="button">@Loc[L.Search]</button>
     </div>
 }
 @if (State is State.Loaded)
@@ -48,7 +48,7 @@
 }
 @if (State is State.Empty)
 {
-    <i>@Loc["No emojis were found"]</i>
+    <i>@Loc[L.Moderation_Emojis_Empty]</i>
 }
 @if (State is State.Loading)
 {

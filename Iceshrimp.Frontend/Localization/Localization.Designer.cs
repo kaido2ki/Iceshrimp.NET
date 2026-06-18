@@ -1808,5 +1808,371 @@ namespace Iceshrimp.Frontend.Localization {
                 return ResourceManager.GetString("Settings_External_ApiReference", resourceCulture);
             }
         }
+        
+        internal static string Moderation {
+            get {
+                return ResourceManager.GetString("Moderation", resourceCulture);
+            }
+        }
+        
+        internal static string Moderation_Announcements {
+            get {
+                return ResourceManager.GetString("Moderation_Announcements", resourceCulture);
+            }
+        }
+        
+        internal static string Common_New {
+            get {
+                return ResourceManager.GetString("Common_New", resourceCulture);
+            }
+        }
+        
+        internal static string Announcements {
+            get {
+                return ResourceManager.GetString("Announcements", resourceCulture);
+            }
+        }
+        
+        internal static string Moderation_Announcements_Empty {
+            get {
+                return ResourceManager.GetString("Moderation_Announcements_Empty", resourceCulture);
+            }
+        }
+        
+        internal static string Announcement {
+            get {
+                return ResourceManager.GetString("Announcement", resourceCulture);
+            }
+        }
+        
+        internal static string Moderation_Announcements_StateButton_Initial {
+            get {
+                return ResourceManager.GetString("Moderation_Announcements_StateButton_Initial", resourceCulture);
+            }
+        }
+        
+        internal static string Moderation_Announcements_Title {
+            get {
+                return ResourceManager.GetString("Moderation_Announcements_Title", resourceCulture);
+            }
+        }
+        
+        internal static string Moderation_Announcements_Image_Add {
+            get {
+                return ResourceManager.GetString("Moderation_Announcements_Image_Add", resourceCulture);
+            }
+        }
+        
+        internal static string Moderation_Announcements_Image_Remove {
+            get {
+                return ResourceManager.GetString("Moderation_Announcements_Image_Remove", resourceCulture);
+            }
+        }
+        
+        internal static string Moderation_Announcements_Popup {
+            get {
+                return ResourceManager.GetString("Moderation_Announcements_Popup", resourceCulture);
+            }
+        }
+        
+        internal static string Moderation_Announcements_TogglePreview {
+            get {
+                return ResourceManager.GetString("Moderation_Announcements_TogglePreview", resourceCulture);
+            }
+        }
+        
+        internal static string Announcement_Date_CreatedAt_UpdatedAt {
+            get {
+                return ResourceManager.GetString("Announcement_Date_CreatedAt_UpdatedAt", resourceCulture);
+            }
+        }
+        
+        internal static string Moderation_Announcements_ReadCount {
+            get {
+                return ResourceManager.GetString("Moderation_Announcements_ReadCount", resourceCulture);
+            }
+        }
+        
+        internal static string Moderation_Announcements_DeleteDialog_Question {
+            get {
+                return ResourceManager.GetString("Moderation_Announcements_DeleteDialog_Question", resourceCulture);
+            }
+        }
+        
+        internal static string Moderation_Overview {
+            get {
+                return ResourceManager.GetString("Moderation_Overview", resourceCulture);
+            }
+        }
+        
+        internal static string Moderation_Emojis {
+            get {
+                return ResourceManager.GetString("Moderation_Emojis", resourceCulture);
+            }
+        }
+        
+        internal static string Moderation_Emojis_SetCategory {
+            get {
+                return ResourceManager.GetString("Moderation_Emojis_SetCategory", resourceCulture);
+            }
+        }
+        
+        internal static string Moderation_Emojis_SetLicense {
+            get {
+                return ResourceManager.GetString("Moderation_Emojis_SetLicense", resourceCulture);
+            }
+        }
+        
+        internal static string Moderation_Emojis_Select_Single {
+            get {
+                return ResourceManager.GetString("Moderation_Emojis_Select_Single", resourceCulture);
+            }
+        }
+        
+        internal static string Moderation_Emojis_Select_Multiple {
+            get {
+                return ResourceManager.GetString("Moderation_Emojis_Select_Multiple", resourceCulture);
+            }
+        }
+        
+        internal static string Moderation_Emojis_ImportPack {
+            get {
+                return ResourceManager.GetString("Moderation_Emojis_ImportPack", resourceCulture);
+            }
+        }
+        
+        internal static string Search {
+            get {
+                return ResourceManager.GetString("Search", resourceCulture);
+            }
+        }
+        
+        internal static string Moderation_Emojis_Empty {
+            get {
+                return ResourceManager.GetString("Moderation_Emojis_Empty", resourceCulture);
+            }
+        }
+        
+        internal static string Moderation_Emojis_MultiCategoryDialog_Text {
+            get {
+                return ResourceManager.GetString("Moderation_Emojis_MultiCategoryDialog_Text", resourceCulture);
+            }
+        }
+        
+        internal static string Moderation_Emojis_MultiLicenseDialog_Text {
+            get {
+                return ResourceManager.GetString("Moderation_Emojis_MultiLicenseDialog_Text", resourceCulture);
+            }
+        }
+        
+        internal static string Moderation_Emojis_MultiDeleteDialog_Question {
+            get {
+                return ResourceManager.GetString("Moderation_Emojis_MultiDeleteDialog_Question", resourceCulture);
+            }
+        }
+        
+        internal static string Moderation_Emojis_UploadDialog_Prompt {
+            get {
+                return ResourceManager.GetString("Moderation_Emojis_UploadDialog_Prompt", resourceCulture);
+            }
+        }
+        
+        internal static string Moderation_Emojis_UploadDialog_SuccessNotice {
+            get {
+                return ResourceManager.GetString("Moderation_Emojis_UploadDialog_SuccessNotice", resourceCulture);
+            }
+        }
+        
+        internal static string Moderation_Emojis_ImportDialog_Question {
+            get {
+                return ResourceManager.GetString("Moderation_Emojis_ImportDialog_Question", resourceCulture);
+            }
+        }
+        
+        internal static string Moderation_Emojis_ImportDialog_SuccessNotice {
+            get {
+                return ResourceManager.GetString("Moderation_Emojis_ImportDialog_SuccessNotice", resourceCulture);
+            }
+        }
+        
+        internal static string Moderation_Emojis_Remote {
+            get {
+                return ResourceManager.GetString("Moderation_Emojis_Remote", resourceCulture);
+            }
+        }
+        
+        internal static string Moderation_Emojis_Clone {
+            get {
+                return ResourceManager.GetString("Moderation_Emojis_Clone", resourceCulture);
+            }
+        }
+        
+        internal static string Moderation_Emojis_SetTags {
+            get {
+                return ResourceManager.GetString("Moderation_Emojis_SetTags", resourceCulture);
+            }
+        }
+        
+        internal static string Moderation_Emojis_CloneDialog_Question_Name_Host {
+            get {
+                return ResourceManager.GetString("Moderation_Emojis_CloneDialog_Question_Name_Host", resourceCulture);
+            }
+        }
+        
+        internal static string Moderation_Emojis_CloneDialog_SuccessNotice_Name_Host {
+            get {
+                return ResourceManager.GetString("Moderation_Emojis_CloneDialog_SuccessNotice_Name_Host", resourceCulture);
+            }
+        }
+        
+        internal static string Moderation_Emojis_TagsDialog_Prompt {
+            get {
+                return ResourceManager.GetString("Moderation_Emojis_TagsDialog_Prompt", resourceCulture);
+            }
+        }
+        
+        internal static string Moderation_Emojis_SingleDeleteDialog_Question {
+            get {
+                return ResourceManager.GetString("Moderation_Emojis_SingleDeleteDialog_Question", resourceCulture);
+            }
+        }
+        
+        internal static string Moderation_Reports {
+            get {
+                return ResourceManager.GetString("Moderation_Reports", resourceCulture);
+            }
+        }
+        
+        internal static string Moderation_Reports_Resolved {
+            get {
+                return ResourceManager.GetString("Moderation_Reports_Resolved", resourceCulture);
+            }
+        }
+        
+        internal static string Moderation_Reports_Unresolved {
+            get {
+                return ResourceManager.GetString("Moderation_Reports_Unresolved", resourceCulture);
+            }
+        }
+        
+        internal static string Moderation_Reports_ByLabel {
+            get {
+                return ResourceManager.GetString("Moderation_Reports_ByLabel", resourceCulture);
+            }
+        }
+        
+        internal static string Moderation_Reports_Forwarded_Host {
+            get {
+                return ResourceManager.GetString("Moderation_Reports_Forwarded_Host", resourceCulture);
+            }
+        }
+        
+        internal static string Moderation_Reports_NoteCount {
+            get {
+                return ResourceManager.GetString("Moderation_Reports_NoteCount", resourceCulture);
+            }
+        }
+        
+        internal static string Moderation_Reports_RuleCount {
+            get {
+                return ResourceManager.GetString("Moderation_Reports_RuleCount", resourceCulture);
+            }
+        }
+        
+        internal static string Moderation_Reports_Empty {
+            get {
+                return ResourceManager.GetString("Moderation_Reports_Empty", resourceCulture);
+            }
+        }
+        
+        internal static string Moderation_Report_From {
+            get {
+                return ResourceManager.GetString("Moderation_Report_From", resourceCulture);
+            }
+        }
+        
+        internal static string Moderation_Reports_InstanceName {
+            get {
+                return ResourceManager.GetString("Moderation_Reports_InstanceName", resourceCulture);
+            }
+        }
+        
+        internal static string Moderation_Reports_InstanceName_Host {
+            get {
+                return ResourceManager.GetString("Moderation_Reports_InstanceName_Host", resourceCulture);
+            }
+        }
+        
+        internal static string Moderation_Reports_TargetCreatedAt {
+            get {
+                return ResourceManager.GetString("Moderation_Reports_TargetCreatedAt", resourceCulture);
+            }
+        }
+        
+        internal static string Moderation_Reports_TargetActiveAt {
+            get {
+                return ResourceManager.GetString("Moderation_Reports_TargetActiveAt", resourceCulture);
+            }
+        }
+        
+        internal static string Moderation_Reports_FromRemote {
+            get {
+                return ResourceManager.GetString("Moderation_Reports_FromRemote", resourceCulture);
+            }
+        }
+        
+        internal static string Moderation_Reports_Actions {
+            get {
+                return ResourceManager.GetString("Moderation_Reports_Actions", resourceCulture);
+            }
+        }
+        
+        internal static string Moderation_Reports_TargetSuspended {
+            get {
+                return ResourceManager.GetString("Moderation_Reports_TargetSuspended", resourceCulture);
+            }
+        }
+        
+        internal static string Moderation_Reports_ResolvedBy_Username {
+            get {
+                return ResourceManager.GetString("Moderation_Reports_ResolvedBy_Username", resourceCulture);
+            }
+        }
+        
+        internal static string Moderation_Reports_MarkResolved {
+            get {
+                return ResourceManager.GetString("Moderation_Reports_MarkResolved", resourceCulture);
+            }
+        }
+        
+        internal static string Moderation_Reports_SuspendTarget {
+            get {
+                return ResourceManager.GetString("Moderation_Reports_SuspendTarget", resourceCulture);
+            }
+        }
+        
+        internal static string Moderation_Reports_ForwardDialog_Question {
+            get {
+                return ResourceManager.GetString("Moderation_Reports_ForwardDialog_Question", resourceCulture);
+            }
+        }
+        
+        internal static string Moderation_Reports_ResolveDialog_Question {
+            get {
+                return ResourceManager.GetString("Moderation_Reports_ResolveDialog_Question", resourceCulture);
+            }
+        }
+        
+        internal static string Moderation_Reports_SuspendDialog_Question {
+            get {
+                return ResourceManager.GetString("Moderation_Reports_SuspendDialog_Question", resourceCulture);
+            }
+        }
+        
+        internal static string Moderation_Reports_DeleteDialog_Question {
+            get {
+                return ResourceManager.GetString("Moderation_Reports_DeleteDialog_Question", resourceCulture);
+            }
+        }
     }
 }

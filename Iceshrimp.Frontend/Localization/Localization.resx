@@ -901,4 +901,187 @@
     <data name="Settings_External_ApiReference" xml:space="preserve">
         <value>API Reference</value>
     </data>
+    <data name="Moderation" xml:space="preserve">
+        <value>Moderation</value>
+    </data>
+    <data name="Moderation_Announcements" xml:space="preserve">
+        <value>Manage announcements</value>
+    </data>
+    <data name="Common_New" xml:space="preserve">
+        <value>New</value>
+    </data>
+    <data name="Announcements" xml:space="preserve">
+        <value>Announcements</value>
+    </data>
+    <data name="Moderation_Announcements_Empty" xml:space="preserve">
+        <value>No announcements have been made.</value>
+    </data>
+    <data name="Announcement" xml:space="preserve">
+        <value>Announcement</value>
+    </data>
+    <data name="Moderation_Announcements_StateButton_Initial" xml:space="preserve">
+        <value>Announce</value>
+    </data>
+    <data name="Moderation_Announcements_Title" xml:space="preserve">
+        <value>Title</value>
+    </data>
+    <data name="Moderation_Announcements_Image_Add" xml:space="preserve">
+        <value>Upload image</value>
+    </data>
+    <data name="Moderation_Announcements_Image_Remove" xml:space="preserve">
+        <value>Remove image</value>
+    </data>
+    <data name="Moderation_Announcements_Popup" xml:space="preserve">
+        <value>Show popup</value>
+    </data>
+    <data name="Moderation_Announcements_TogglePreview" xml:space="preserve">
+        <value>Toggle announcement preview</value>
+    </data>
+    <data name="Announcement_Date_CreatedAt_UpdatedAt" xml:space="preserve">
+        <value>Announced {0} - Edited {1}</value>
+    </data>
+    <data name="Moderation_Announcements_ReadCount" xml:space="preserve">
+        <value>Users read: {0}/{1}</value>
+    </data>
+    <data name="Moderation_Announcements_DeleteDialog_Question" xml:space="preserve">
+        <value>Delete announcement?</value>
+    </data>
+    <data name="Moderation_Overview" xml:space="preserve">
+        <value>Overview</value>
+    </data>
+    <data name="Moderation_Emojis" xml:space="preserve">
+        <value>Custom Emojis</value>
+    </data>
+    <data name="Moderation_Emojis_SetCategory" xml:space="preserve">
+        <value>Set category</value>
+    </data>
+    <data name="Moderation_Emojis_SetLicense" xml:space="preserve">
+        <value>Set license</value>
+    </data>
+    <data name="Moderation_Emojis_Select_Single" xml:space="preserve">
+        <value>Select single</value>
+    </data>
+    <data name="Moderation_Emojis_Select_Multiple" xml:space="preserve">
+        <value>Select multiple</value>
+    </data>
+    <data name="Moderation_Emojis_ImportPack" xml:space="preserve">
+        <value>Import pack</value>
+    </data>
+    <data name="Search" xml:space="preserve">
+        <value>Search</value>
+    </data>
+    <data name="Moderation_Emojis_Empty" xml:space="preserve">
+        <value>No emojis were found.</value>
+    </data>
+    <data name="Moderation_Emojis_MultiCategoryDialog_Text" xml:space="preserve">
+        <value>Set category for {0} emojis</value>
+    </data>
+    <data name="Moderation_Emojis_MultiLicenseDialog_Text" xml:space="preserve">
+        <value>Set license for {0} emojis</value>
+    </data>
+    <data name="Moderation_Emojis_MultiDeleteDialog_Question" xml:space="preserve">
+        <value>Delete {0} emojis?</value>
+    </data>
+    <data name="Moderation_Emojis_UploadDialog_Prompt" xml:space="preserve">
+        <value>Set emoji name</value>
+    </data>
+    <data name="Moderation_Emojis_UploadDialog_SuccessNotice" xml:space="preserve">
+        <value>Successfully uploaded {0}</value>
+    </data>
+    <data name="Moderation_Emojis_ImportDialog_Question" xml:space="preserve">
+        <value>Import {0}?</value>
+    </data>
+    <data name="Moderation_Emojis_ImportDialog_SuccessNotice" xml:space="preserve">
+        <value>Successfully imported emoji pack</value>
+    </data>
+    <data name="Moderation_Emojis_Remote" xml:space="preserve">
+        <value>Remote Emojis</value>
+    </data>
+    <data name="Moderation_Emojis_Clone" xml:space="preserve">
+        <value>Clone</value>
+    </data>
+    <data name="Moderation_Emojis_SetTags" xml:space="preserve">
+        <value>Set tags</value>
+    </data>
+    <data name="Moderation_Emojis_CloneDialog_Question_Name_Host" xml:space="preserve">
+        <value>Clone {0} from {1}?</value>
+    </data>
+    <data name="Moderation_Emojis_CloneDialog_SuccessNotice_Name_Host" xml:space="preserve">
+        <value>Cloned {0} from {1}</value>
+    </data>
+    <data name="Moderation_Emojis_TagsDialog_Prompt" xml:space="preserve">
+        <value>Set tags (separated by new line)</value>
+    </data>
+    <data name="Moderation_Emojis_SingleDeleteDialog_Question" xml:space="preserve">
+        <value>Delete {0}?</value>
+    </data>
+    <data name="Moderation_Reports" xml:space="preserve">
+        <value>Reports</value>
+    </data>
+    <data name="Moderation_Reports_Resolved" xml:space="preserve">
+        <value>Resolved</value>
+    </data>
+    <data name="Moderation_Reports_Unresolved" xml:space="preserve">
+        <value>Unresolved</value>
+    </data>
+    <data name="Moderation_Reports_ByLabel" xml:space="preserve">
+        <value>Reported by {0}</value>
+    </data>
+    <data name="Moderation_Reports_Forwarded_Host" xml:space="preserve">
+        <value>Forwarded to {0}</value>
+    </data>
+    <data name="Moderation_Reports_NoteCount" xml:space="preserve">
+        <value>{0} notes</value>
+    </data>
+    <data name="Moderation_Reports_RuleCount" xml:space="preserve">
+        <value>{0} broken rules</value>
+    </data>
+    <data name="Moderation_Reports_Empty" xml:space="preserve">
+        <value>No reports were found.</value>
+    </data>
+    <data name="Moderation_Report_From" xml:space="preserve">
+        <value>Report from {0}</value>
+    </data>
+    <data name="Moderation_Reports_InstanceName" xml:space="preserve">
+        <value>Instance name</value>
+    </data>
+    <data name="Moderation_Reports_InstanceName_Host" xml:space="preserve">
+        <value>{0} ({1})</value>
+    </data>
+    <data name="Moderation_Reports_TargetCreatedAt" xml:space="preserve">
+        <value>User created at</value>
+    </data>
+    <data name="Moderation_Reports_TargetActiveAt" xml:space="preserve">
+        <value>User last active at</value>
+    </data>
+    <data name="Moderation_Reports_FromRemote" xml:space="preserve">
+        <value>Report from remote instance ({0})</value>
+    </data>
+    <data name="Moderation_Reports_Actions" xml:space="preserve">
+        <value>Actions</value>
+    </data>
+    <data name="Moderation_Reports_TargetSuspended" xml:space="preserve">
+        <value>{0} is suspended</value>
+    </data>
+    <data name="Moderation_Reports_ResolvedBy_Username" xml:space="preserve">
+        <value>Resolved by {0}</value>
+    </data>
+    <data name="Moderation_Reports_MarkResolved" xml:space="preserve">
+        <value>Mark as resolved</value>
+    </data>
+    <data name="Moderation_Reports_SuspendTarget" xml:space="preserve">
+        <value>Suspend user</value>
+    </data>
+    <data name="Moderation_Reports_ForwardDialog_Question" xml:space="preserve">
+        <value>Forward report?</value>
+    </data>
+    <data name="Moderation_Reports_ResolveDialog_Question" xml:space="preserve">
+        <value>Resolve report?</value>
+    </data>
+    <data name="Moderation_Reports_SuspendDialog_Question" xml:space="preserve">
+        <value>Suspend {0}?</value>
+    </data>
+    <data name="Moderation_Reports_DeleteDialog_Question" xml:space="preserve">
+        <value>Delete report?</value>
+    </data>
 </root>
