@@ -106,4 +106,22 @@
     <data name="Preferences_CustomCSS_Warning" xml:space="preserve">
         <value>Custom CSS can possibly break the client. You can reset custom CSS from the login/change account page.</value>
     </data>
+    <data name="Error_Api_Unknown" xml:space="preserve">
+        <value>An unknown API error occurred.</value>
+    </data>
+    <data name="Error_Api_Timeout" xml:space="preserve">
+        <value>The API request timed out.</value>
+    </data>
+    <data name="Error_Api_Json_Message" xml:space="preserve">
+        <value>The API responded with unexpected data: {0}</value>
+    </data>
+    <data name="Error_Api_Json_Path_Message" xml:space="preserve">
+        <value>The API responded with unexpected data: {0} {1}</value>
+    </data>
+    <data name="Error_Api_Http_Request" xml:space="preserve">
+        <value>The API request failed: {0}</value>
+    </data>
+    <data name="Error_Api_Http_Status" xml:space="preserve">
+        <value>The API request failed with status code {0}.</value>
+    </data>
 </root>

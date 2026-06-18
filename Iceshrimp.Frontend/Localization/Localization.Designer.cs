@@ -218,5 +218,41 @@ namespace Iceshrimp.Frontend.Localization {
                 return ResourceManager.GetString("Preferences_CustomCSS_Warning", resourceCulture);
             }
         }
+        
+        internal static string Error_Api_Unknown {
+            get {
+                return ResourceManager.GetString("Error_Api_Unknown", resourceCulture);
+            }
+        }
+        
+        internal static string Error_Api_Timeout {
+            get {
+                return ResourceManager.GetString("Error_Api_Timeout", resourceCulture);
+            }
+        }
+        
+        internal static string Error_Api_Json_Message {
+            get {
+                return ResourceManager.GetString("Error_Api_Json_Message", resourceCulture);
+            }
+        }
+        
+        internal static string Error_Api_Json_Path_Message {
+            get {
+                return ResourceManager.GetString("Error_Api_Json_Path_Message", resourceCulture);
+            }
+        }
+        
+        internal static string Error_Api_Http_Request {
+            get {
+                return ResourceManager.GetString("Error_Api_Http_Request", resourceCulture);
+            }
+        }
+        
+        internal static string Error_Api_Http_Status {
+            get {
+                return ResourceManager.GetString("Error_Api_Http_Status", resourceCulture);
+            }
+        }
     }
 }
