@@ -65,12 +65,12 @@
             ? exception.Response.Message
             : exception.InnerException switch
             {
-                HttpRequestException { StatusCode: not null } e => Loc["API request failed: status code {0}", e.StatusCode],
-                HttpRequestException e                          => Loc["API request failed: {0}", e.HttpRequestError.ToString()],
-                JsonException { Path: not null } e              => Loc["API responded with unexpected data: {0} {1}", e.Path, e.Message],
-                JsonException e                                 => Loc["API responded with unexpected data: {0}", e.Message],
-                OperationCanceledException                      => Loc["API request timed out"],
-                _                                               => Loc["An unknown error occurred"],
+                HttpRequestException { StatusCode: not null } e => Loc[L.Error_Api_Http_Status, e.StatusCode],
+                HttpRequestException e                          => Loc[L.Error_Api_Http_Request, e.HttpRequestError.ToString()],
+                JsonException { Path: not null } e              => Loc[L.Error_Api_Json_Path_Message, e.Path, e.Message],
+                JsonException e                                 => Loc[L.Error_Api_Json_Message, e.Message],
+                OperationCanceledException                      => Loc[L.Error_Api_Timeout],
+                _                                               => Loc[L.Error_Api_Unknown],
             };
 
         await Display(message, NoticeType.Error);
