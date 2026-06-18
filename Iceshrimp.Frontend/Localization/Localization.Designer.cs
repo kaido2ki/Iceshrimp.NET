@@ -105,9 +105,9 @@ namespace Iceshrimp.Frontend.Localization {
             }
         }
         
-        internal static string Common_Notifications {
+        internal static string Notifications {
             get {
-                return ResourceManager.GetString("Common_Notifications", resourceCulture);
+                return ResourceManager.GetString("Notifications", resourceCulture);
             }
         }
         
@@ -942,6 +942,138 @@ namespace Iceshrimp.Frontend.Localization {
         internal static string Update_StateButton_Error {
             get {
                 return ResourceManager.GetString("Update_StateButton_Error", resourceCulture);
+            }
+        }
+        
+        internal static string Notifications_MarkAllRead {
+            get {
+                return ResourceManager.GetString("Notifications_MarkAllRead", resourceCulture);
+            }
+        }
+        
+        internal static string Notification_Body_like {
+            get {
+                return ResourceManager.GetString("Notification_Body_like", resourceCulture);
+            }
+        }
+        
+        internal static string Notification_Body_reaction {
+            get {
+                return ResourceManager.GetString("Notification_Body_reaction", resourceCulture);
+            }
+        }
+        
+        internal static string Notification_Body_follow {
+            get {
+                return ResourceManager.GetString("Notification_Body_follow", resourceCulture);
+            }
+        }
+        
+        internal static string Notification_Body_follow_request_received {
+            get {
+                return ResourceManager.GetString("Notification_Body_follow_request_received", resourceCulture);
+            }
+        }
+        
+        internal static string Notification_Body_follow_request_accepted {
+            get {
+                return ResourceManager.GetString("Notification_Body_follow_request_accepted", resourceCulture);
+            }
+        }
+        
+        internal static string Notification_Body_renote {
+            get {
+                return ResourceManager.GetString("Notification_Body_renote", resourceCulture);
+            }
+        }
+        
+        internal static string Notification_Body_quote {
+            get {
+                return ResourceManager.GetString("Notification_Body_quote", resourceCulture);
+            }
+        }
+        
+        internal static string Notification_Body_bite {
+            get {
+                return ResourceManager.GetString("Notification_Body_bite", resourceCulture);
+            }
+        }
+        
+        internal static string Notification_Body_bite_Back {
+            get {
+                return ResourceManager.GetString("Notification_Body_bite_Back", resourceCulture);
+            }
+        }
+        
+        internal static string Notification_Body_bite_Note {
+            get {
+                return ResourceManager.GetString("Notification_Body_bite_Note", resourceCulture);
+            }
+        }
+        
+        internal static string Notification_Body_edit {
+            get {
+                return ResourceManager.GetString("Notification_Body_edit", resourceCulture);
+            }
+        }
+        
+        internal static string Notification_Body_poll_vote {
+            get {
+                return ResourceManager.GetString("Notification_Body_poll_vote", resourceCulture);
+            }
+        }
+        
+        internal static string Notification_Body_poll_ended {
+            get {
+                return ResourceManager.GetString("Notification_Body_poll_ended", resourceCulture);
+            }
+        }
+        
+        internal static string Notification_Body_report {
+            get {
+                return ResourceManager.GetString("Notification_Body_report", resourceCulture);
+            }
+        }
+        
+        internal static string Notification_Unsupported {
+            get {
+                return ResourceManager.GetString("Notification_Unsupported", resourceCulture);
+            }
+        }
+        
+        internal static string Notification_Unsupported_ToggleDetails {
+            get {
+                return ResourceManager.GetString("Notification_Unsupported_ToggleDetails", resourceCulture);
+            }
+        }
+        
+        internal static string Notification_Unsupported_Details_Id {
+            get {
+                return ResourceManager.GetString("Notification_Unsupported_Details_Id", resourceCulture);
+            }
+        }
+        
+        internal static string Notification_Unsupported_Details_Type {
+            get {
+                return ResourceManager.GetString("Notification_Unsupported_Details_Type", resourceCulture);
+            }
+        }
+        
+        internal static string Notification_MarkRead {
+            get {
+                return ResourceManager.GetString("Notification_MarkRead", resourceCulture);
+            }
+        }
+        
+        internal static string Notification_Action_Bite_BiteBack {
+            get {
+                return ResourceManager.GetString("Notification_Action_Bite_BiteBack", resourceCulture);
+            }
+        }
+        
+        internal static string Notification_Action_Bite_BiteBack_Notice {
+            get {
+                return ResourceManager.GetString("Notification_Action_Bite_BiteBack_Notice", resourceCulture);
             }
         }
     }

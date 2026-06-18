@@ -1,16 +1,14 @@
 @using Iceshrimp.Assets.PhosphorIcons
 @using Iceshrimp.Frontend.Components
-@using Iceshrimp.Frontend.Localization
-@using Microsoft.Extensions.Localization
 @inject IStringLocalizer<Localization> Loc;
 
 <section class="widget-panel-header">
     <span>
         <Icon Name="Icons.Bell"></Icon>
-        @Loc["Notifications"]
+        @Loc[L.Notifications]
     </span>
 
-    <button class="button" @onclick="MarkAllAsRead" title="@Loc["Mark all as read"]">
+    <button class="button" @onclick="MarkAllAsRead" title="@Loc[L.Notifications_MarkAllRead]">
         <Icon Name="Icons.Checks"/>
     </button>
 </section>

@@ -30,71 +30,71 @@
                 {
                     case { Note: not null, Type: "like", User: not null }: 
                         <span class="notification-icon"><Icon Name="Icons.Heart" Pack="IconStyle.Fill" Size="0.8em"/></span>
-                        <span class="notification-text">@Loc["liked note"]</span> 
+                        <span class="notification-text">@Loc[L.Notification_Body_like]</span> 
                         break; 
                     case { Note: not null, Reaction: not null, Type: "reaction" }:
                         <span class="notification-reaction" title="@NotificationResponse.Reaction.Name">
                             <InlineEmoji Name="@NotificationResponse.Reaction.Name" Url="@NotificationResponse.Reaction.Url" Hover="true" Size="1.25em"/>
                         </span>
-                        <span class="notification-text">@Loc["reacted to your note"]</span>
+                        <span class="notification-text">@Loc[L.Notification_Body_reaction]</span>
                         break;
                     case { Type: "follow", User: not null }:
                         <span class="notification-icon"><Icon Name="Icons.HandWaving" Size="0.9em"/></span>
-                        <span class="notification-text">@Loc["followed you"]</span>
+                        <span class="notification-text">@Loc[L.Notification_Body_follow]</span>
                         break;
                     case { Type: "followRequestReceived" }:
                         <span class="notification-icon"><Icon Name="Icons.Clock" Size="0.9em"/></span>
-                        <span class="notification-text">@Loc["requested to follow you"]</span>
+                        <span class="notification-text">@Loc[L.Notification_Body_follow_request_received]</span>
                         break;
                     case { Type: "followRequestAccepted" }:
                         <span class="notification-icon"><Icon Name="Icons.Check" Size="0.9em"/></span>
-                        <span class="notification-text">@Loc["accepted your follow request"]</span>
+                        <span class="notification-text">@Loc[L.Notification_Body_follow_request_accepted]</span>
                         break;
                     case { Type: "renote" }:
                         <span class="notification-icon"><Icon Name="Icons.Repeat" Size="0.9em"/></span>
-                        <span class="notification-text">@Loc["renoted your note"]</span>
+                        <span class="notification-text">@Loc[L.Notification_Body_renote]</span>
                         break;
                     case { Type: "quote" }:
                         <span class="notification-icon"><Icon Name="Icons.Quotes" Size="0.9em"/></span>
-                        <span class="notification-text">@Loc["quoted your note"]</span>
+                        <span class="notification-text">@Loc[L.Notification_Body_quote]</span>
                         break;
                     case { Bite: { BiteBack: true }, Type: "bite" }:
                         <span class="notification-icon"><Icon Name="Icons.Tooth" Size="0.9em"/></span>
-                        <span class="notification-text">@Loc["bit you back"]</span>
+                        <span class="notification-text">@Loc[L.Notification_Body_bite_Back]</span>
                         break;
                     case { Note: not null, Type: "bite" }:
                         <span class="notification-icon"><Icon Name="Icons.Tooth" Size="0.9em"/></span>
-                        <span class="notification-text">@Loc["bit your note"]</span>
+                        <span class="notification-text">@Loc[L.Notification_Body_bite_Note]</span>
                         break;
                     case { Type: "bite" }:
                         <span class="notification-icon"><Icon Name="Icons.Tooth" Size="0.9em"/></span>
-                        <span class="notification-text">@Loc["bit you"]</span>
+                        <span class="notification-text">@Loc[L.Notification_Body_bite]</span>
                         break;
                     case { Type: "edit" }:
                         <span class="notification-icon"><Icon Name="Icons.PencilLine" Size="0.9em"/></span>
-                        <span class="notification-text">@Loc["edited a note"]</span>
+                        <span class="notification-text">@Loc[L.Notification_Body_edit]</span>
                         break;
                     case { Type: "pollVote" }:
                         <span class="notification-icon"><Icon Name="Icons.MicrophoneStage" Size="0.9em"/></span>
-                        <span class="notification-text">@Loc["voted on your poll"]</span>
+                        <span class="notification-text">@Loc[L.Notification_Body_poll_vote]</span>
                         break;
                     case { Type: "pollEnded" }:
                         <span class="notification-icon"><Icon Name="Icons.Timer" Size="0.9em"/></span>
-                        <span class="notification-text">@Loc["poll has ended"]</span>
+                        <span class="notification-text">@Loc[L.Notification_Body_poll_ended]</span>
                         break;
                     case { Type: "report", User: not null }:
                         <span class="notification-icon"><Icon Name="Icons.WarningCircle" Size="0.9em"/></span>
-                        <span class="notification-text">@Loc["reported a user"]</span>
+                        <span class="notification-text">@Loc[L.Notification_Body_report]</span>
                         break;
                     default:
                         <span class="notification-icon"><Icon Name="Icons.Question" Size="0.9em"/></span>
                         <span class="notification-text">
-                            <i>@Loc["unsupported notification type"]</i>
+                            <i>@Loc[L.Notification_Unsupported]</i>
                         </span>
                         <details>
-                            <summary>view details</summary>
-                            <p>ID: @NotificationResponse.Id</p>
-                            <p>Type: @NotificationResponse.Type</p>
+                            <summary>@Loc[L.Notification_Unsupported_ToggleDetails]</summary>
+                            <p>@Loc[L.Notification_Unsupported_Details_Id, NotificationResponse.Id]</p>
+                            <p>@Loc[L.Notification_Unsupported_Details_Type, NotificationResponse.Type]</p>
                         </details>
                         break;
                 }
@@ -104,7 +104,7 @@
                 <Timestamp Date="@DateTime.Parse(NotificationResponse.CreatedAt)"/>
                 @if (!NotificationResponse.Read)
                 {
-                    <button class="mark-as-read" @onclick="MarkAsRead" title="@Loc["Mark as read"]">
+                    <button class="mark-as-read" @onclick="MarkAsRead" title="@Loc[L.Notification_MarkRead]">
                         <Icon Name="Icons.Check"/>
                     </button>
                 }
@@ -125,7 +125,7 @@
             <div class="notification-actions">
                 <button class="button" @onclick="BiteBack">
                     <Icon Name="Icons.Tooth"/>
-                    @Loc["Bite back"]
+                    @Loc[L.Notification_Action_Bite_BiteBack]
                 </button>
             </div>
             break;
@@ -166,7 +166,7 @@
         try
         {
             await Api.Misc.BiteBackAsync(bite.Id);
-            await Global.NoticeDialog?.Display(Loc["Bit {0} back", user.DisplayName ?? user.Username])!;
+            await Global.NoticeDialog?.Display(Loc[L.Notification_Action_Bite_BiteBack_Notice, user.DisplayName ?? user.Username])!;
         }
         catch (ApiException e)
         {

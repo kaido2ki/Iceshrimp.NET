@@ -7,15 +7,15 @@
 
 @inject IStringLocalizer<Localization> Loc;
 
-<HeadTitle Text="@Loc[L.Common_Notifications]"/>
+<HeadTitle Text="@Loc[L.Notifications]"/>
 
 <SectionContent SectionName="top-bar">
     <Icon Name="Icons.Bell"></Icon>
-    @Loc[L.Common_Notifications]
+    @Loc[L.Notifications]
 
-    <span class="action btn" @onclick="MarkAllAsRead" title="@Loc["Mark all as read"]">
+    <span class="action btn" @onclick="MarkAllAsRead" title="@Loc[L.Notifications_MarkAllRead]">
         <Icon Name="Icons.Checks"/>
-        <span>@Loc["Mark all as read"]</span>
+        <span>@Loc[L.Notifications_MarkAllRead]</span>
     </span>
 </SectionContent>
 

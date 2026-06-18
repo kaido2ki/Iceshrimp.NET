@@ -49,7 +49,7 @@
     <data name="Common_Timeline" xml:space="preserve">
         <value>Timeline</value>
     </data>
-    <data name="Common_Notifications" xml:space="preserve">
+    <data name="Notifications" xml:space="preserve">
         <value>Notifications</value>
     </data>
     <data name="Common_Note" xml:space="preserve">
@@ -468,5 +468,71 @@
     </data>
     <data name="Update_StateButton_Error" xml:space="preserve">
         <value>Failed to install update</value>
+    </data>
+    <data name="Notifications_MarkAllRead" xml:space="preserve">
+        <value>Mark all as read</value>
+    </data>
+    <data name="Notification_Body_like" xml:space="preserve">
+        <value>liked your note</value>
+    </data>
+    <data name="Notification_Body_reaction" xml:space="preserve">
+        <value>reacted to your note</value>
+    </data>
+    <data name="Notification_Body_follow" xml:space="preserve">
+        <value>followed you</value>
+    </data>
+    <data name="Notification_Body_follow_request_received" xml:space="preserve">
+        <value>requested to follow you</value>
+    </data>
+    <data name="Notification_Body_follow_request_accepted" xml:space="preserve">
+        <value>accepted your follow request</value>
+    </data>
+    <data name="Notification_Body_renote" xml:space="preserve">
+        <value>renoted your note</value>
+    </data>
+    <data name="Notification_Body_quote" xml:space="preserve">
+        <value>quoted your note</value>
+    </data>
+    <data name="Notification_Body_bite" xml:space="preserve">
+        <value>bit you</value>
+    </data>
+    <data name="Notification_Body_bite_Back" xml:space="preserve">
+        <value>bit you back</value>
+    </data>
+    <data name="Notification_Body_bite_Note" xml:space="preserve">
+        <value>bit your note</value>
+    </data>
+    <data name="Notification_Body_edit" xml:space="preserve">
+        <value>edited their note</value>
+    </data>
+    <data name="Notification_Body_poll_vote" xml:space="preserve">
+        <value>voted on your poll</value>
+    </data>
+    <data name="Notification_Body_poll_ended" xml:space="preserve">
+        <value>poll has ended</value>
+    </data>
+    <data name="Notification_Body_report" xml:space="preserve">
+        <value>reported a user</value>
+    </data>
+    <data name="Notification_Unsupported" xml:space="preserve">
+        <value>unsupported notification type</value>
+    </data>
+    <data name="Notification_Unsupported_ToggleDetails" xml:space="preserve">
+        <value>Notification data</value>
+    </data>
+    <data name="Notification_Unsupported_Details_Id" xml:space="preserve">
+        <value>ID: {0}</value>
+    </data>
+    <data name="Notification_Unsupported_Details_Type" xml:space="preserve">
+        <value>Type: {0}</value>
+    </data>
+    <data name="Notification_MarkRead" xml:space="preserve">
+        <value>Mark as read</value>
+    </data>
+    <data name="Notification_Action_Bite_BiteBack" xml:space="preserve">
+        <value>Bite back</value>
+    </data>
+    <data name="Notification_Action_Bite_BiteBack_Notice" xml:space="preserve">
+        <value>Bit {0} back</value>
     </data>
 </root>
