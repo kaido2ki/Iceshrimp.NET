@@ -15,113 +15,113 @@
 @inject IStringLocalizer<Localization> Loc;
 @inject JsService                      Js;
 
-<HeadTitle Text="@Loc["Account settings"]"/>
+<HeadTitle Text="@Loc[L.Settings_Account]"/>
 
 <SectionContent SectionName="top-bar">
     <Icon Name="Icons.UserCircleGear"></Icon>
-    @Loc["Account"]
+    @Loc[L.Settings_Account]
 </SectionContent>
 
 @if (State is State.Loaded)
 {
     <div class="body">
         <div class="section">
-            <h1>@Loc["Settings"]</h1>
+            <h1>@Loc[L.Settings]</h1>
             <EditForm OnSubmit="Submit" Model="SettingsForm">
                 <label>
-                    @Loc["Default note visibility"]
+                    @Loc[L.Settings_Account_DefaultNoteVisibility]
                     <InputSelect @bind-Value="SettingsForm.DefaultNoteVisibility">
-                        <option value="@NoteVisibility.Public">@Loc["Public"]</option>
-                        <option value="@NoteVisibility.Home">@Loc["Home"]</option>
-                        <option value="@NoteVisibility.Followers">@Loc["Followers"]</option>
-                        <option value="@NoteVisibility.Specified">@Loc["Direct"]</option>
+                        <option value="@NoteVisibility.Public">@Loc[L.Note_Visibility_Public]</option>
+                        <option value="@NoteVisibility.Home">@Loc[L.Note_Visibility_Unlisted]</option>
+                        <option value="@NoteVisibility.Followers">@Loc[L.Note_Visibility_Followers]</option>
+                        <option value="@NoteVisibility.Specified">@Loc[L.Note_Visibility_Specified]</option>
                     </InputSelect>
                 </label>
                 <label>
-                    @Loc["Default renote visibility"]
+                    @Loc[L.Settings_Account_DefaultRenoteVisibility]
                     <InputSelect @bind-Value="SettingsForm.DefaultRenoteVisibility">
-                        <option value="@NoteVisibility.Public">@Loc["Public"]</option>
-                        <option value="@NoteVisibility.Home">@Loc["Home"]</option>
-                        <option value="@NoteVisibility.Followers">@Loc["Followers"]</option>
+                        <option value="@NoteVisibility.Public">@Loc[L.Note_Visibility_Public]</option>
+                        <option value="@NoteVisibility.Home">@Loc[L.Note_Visibility_Unlisted]</option>
+                        <option value="@NoteVisibility.Followers">@Loc[L.Note_Visibility_Followers]</option>
                     </InputSelect>
                 </label>
                 <label>
                     @Loc["Allow bites from"]
                     <InputSelect @bind-Value="SettingsForm.CanBite">
-                        <option value="@BiteControl.Public">@Loc["Anyone"]</option>
-                        <option value="@BiteControl.Followers">@Loc["Followers"]</option>
-                        <option value="@BiteControl.None">@Loc["Nobody"]</option>
+                        <option value="@BiteControl.Public">@Loc[L.Settings_Account_AllowBites_Public]</option>
+                        <option value="@BiteControl.Followers">@Loc[L.Settings_Account_AllowBites_Followers]</option>
+                        <option value="@BiteControl.None">@Loc[L.Settings_Account_AllowBites_None]</option>
                     </InputSelect>
                 </label>
                 <label>
                     <InputCheckbox @bind-Value="SettingsForm.PrivateMode"/>
-                    @Loc["Private Mode (Forces all posts from all clients to be followers only)"]
+                    @Loc[L.Settings_Account_PrivateMode]
                 </label>
                 <label>
                     <InputCheckbox @bind-Value="SettingsForm.FilterInaccessible"/>
-                    @Loc["Filter replies to inaccessible notes"]
+                    @Loc[L.Settings_Account_FilterInaccessible]
                 </label>
                 <label>
                     <InputCheckbox @bind-Value="SettingsForm.HideRepliesNotFollowing"/>
-                    @Loc["Filter replies to people you do not follow"]
+                    @Loc[L.Settings_Account_FilterNotFollowing]
                 </label>
                 <label>
                     <InputCheckbox @bind-Value="SettingsForm.ManuallyAcceptFollows" disabled="@SettingsForm.PrivateMode"/>
-                    @Loc["Manually accept follow requests"]
+                    @Loc[L.Settings_Account_ManuallyAcceptFollows]
                 </label>
                 <label>
                     <InputCheckbox @bind-Value="SettingsForm.AutoAcceptFollowed"/>
-                    @Loc["Auto accept follow requests from users you are following"]
+                    @Loc[L.Settings_Account_AutoAcceptFollowed]
                 </label>
                 <label>
                     <InputCheckbox @bind-Value="SettingsForm.AlwaysMarkSensitive"/>
-                    @Loc["Mark all posts as sensitive"]
+                    @Loc[L.Settings_Account_AlwaysMarkSensitive]
                 </label>
                 <label>
                     <InputCheckbox @bind-Value="SettingsForm.IsExplorable"/>
-                    @Loc["Mark account as Explorable/Discoverable"]
+                    @Loc[L.Settings_Account_MarkExplorable]
                 </label>
                 <label>
-                    @Loc["Domains hosting content that can be attributed to you"]
+                    @Loc[L.Settings_Account_AttributionDomains]
                     <a href="https://blog.joinmastodon.org/2024/07/highlighting-journalism-on-mastodon/"
-                       target="_blank">(@Loc["more info"])</a>
+                       target="_blank">(@Loc[L.Common_MoreInfo])</a>
                     <InputTextArea @bind-Value="AttributionDomains" placeholder="example.org"/>
                 </label>
                 <StateButton ExtraClasses="button" @ref="@SaveButton" OnClick="Submit">
-                    <Initial>@Loc["Save changes"]</Initial>
-                    <Success>@Loc["Saved"]</Success>
-                    <Loading>@Loc["Loading"]<LoadingSpinner />
+                    <Initial>@Loc[L.StateButton_SaveChanges]</Initial>
+                    <Success>@Loc[L.StateButton_Saved]</Success>
+                    <Loading>@Loc[L.StateButton_Loading]<LoadingSpinner />
                     </Loading>
-                    <Failed>@Loc["Error"]</Failed>
+                    <Failed>@Loc[L.StateButton_Error]</Failed>
                 </StateButton>
             </EditForm>
         </div>
         
-        <h1>@Loc["Change password"]</h1>
+        <h1>@Loc[L.Settings_Account_Password]</h1>
         <EditForm OnSubmit="ChangePassword" Model="PasswordForm">
-            <label for="old-password">@Loc["Old password"]</label>
+            <label for="old-password">@Loc[L.Settings_Account_Password_Old]</label>
             <InputText @bind-Value="PasswordForm.OldPassword" type="password" class="input" id="old-password" required/>
-            <label for="new-password">@Loc["New password"]</label>
+            <label for="new-password">@Loc[L.Settings_Account_Password_New]</label>
             <InputText @bind-Value="PasswordForm.NewPassword" type="password" class="input" id="new-password" minlength="8" required/>
-            <label for="confirm-password">@Loc["Confirm password"]</label>
+            <label for="confirm-password">@Loc[L.Settings_Account_Password_NewConfirm]</label>
             <InputText @bind-Value="ConfirmPassword" type="password" class="input" id="confirm-password" minlength="8" required/>
             <StateButton ExtraClasses="button" @ref="@PasswordButton" OnClick="ChangePassword">
-                <Initial>@Loc["Update password"]</Initial>
-                <Success>@Loc["Updated"]</Success>
-                <Loading>@Loc["Loading"]<LoadingSpinner/>
+                <Initial>@Loc[L.Settings_Account_Password_StateButton_Initial]</Initial>
+                <Success>@Loc[L.Settings_Account_Password_StateButton_Success]</Success>
+                <Loading>@Loc[L.StateButton_Loading]<LoadingSpinner/>
                 </Loading>
-                <Failed>@Loc["Error"]</Failed>
+                <Failed>@Loc[L.StateButton_Error]</Failed>
             </StateButton>
         </EditForm>
 
-        <h1>@Loc["Two-Factor Authentication"]</h1>
+        <h1>@Loc[L.Settings_Account_2fa]</h1>
         @if (SettingsForm.TwoFactorEnrolled == false)
         {
-            <button class="button" @onclick="Enroll2FA">@Loc["Enable 2FA"]</button>
+            <button class="button" @onclick="Enroll2FA">@Loc[L.Settings_Account_2fa_Enable]</button>
         }
         @if (SettingsForm.TwoFactorEnrolled)
         {
-            <button class="button" @onclick="Disable2FAMenu">@Loc["Disable 2FA"]</button>
+            <button class="button" @onclick="Disable2FAMenu">@Loc[L.Settings_Account_2fa_Disable]</button>
         }
 
         <dialog class="dialog" @ref="EnrollDialog">
@@ -129,28 +129,29 @@
             {
                 <div class="dialog-content">
                     <div class="header">
-                        <h2 class="title">@Loc["Two-Factor Authentication"]</h2>
+                        <h2 class="title">@Loc[L.Settings_Account_2fa]</h2>
                         <button class="button close" @onclick="() => CloseDialog(EnrollDialog)">
                             <Icon Name="Icons.X"></Icon>
                         </button>
                     </div>
+                    <p>@Loc[L.Settings_Account_2fa_EnrolInfo]</p>
                     <img class="qr" src="@TwoFactorResponse.QrPng"/>
                     <div class="container">
-                        <div class="name">@Loc["Two-Factor secret"]</div>
+                        <div class="name">@Loc[L.Settings_Account_2fa_Secret]</div>
                         <div class="item">
                             <pre><code>@TwoFactorResponse.Secret</code></pre>
                         </div>
-                        <div class="name">@Loc["Two-Factor URL"]</div>
+                        <div class="name">@Loc[L.Common_Url]</div>
                         <div class="item">
                             <pre><code>@TwoFactorResponse.Url</code></pre>
                         </div>
                     </div>
-                    <input class="otp-input" @bind="OtpEnable" autocomplete="one-time-code"/>
+                    <input class="otp-input" @bind="OtpEnable" autocomplete="one-time-code" placeholder="@Loc[L.Settings_Account_2fa_CodePlaceholder]"/>
                     <StateButton ExtraClasses="button" @ref="TwoFactorButton" OnClick="Confirm2FA">
-                        <Loading>@Loc["Processing"]</Loading>
-                        <Failed>@Loc["Failed to enroll"]</Failed>
-                        <Success>@Loc["Two-Factor Authentication enabled!"]</Success>
-                        <Initial>@Loc["Confirm 2FA Code"]</Initial>
+                        <Loading>@Loc[L.StateButton_Loading]</Loading>
+                        <Failed>@Loc[L.Settings_Account_2fa_StateButton_EnableError]</Failed>
+                        <Success>@Loc[L.Settings_Account_2fa_StateButton_EnableSuccess]</Success>
+                        <Initial>@Loc[L.Common_Enable]</Initial>
                     </StateButton>
                 </div>
             }
@@ -160,18 +161,18 @@
         <dialog class="dialog" @ref="DisableDialog">
             <div class="dialog-content">
                 <div class="header">
-                    <h2 class="title">@Loc["Two-Factor Authentication"]</h2>
+                    <h2 class="title">@Loc[L.Settings_Account_2fa]</h2>
                     <button class="button close" @onclick="() => CloseDialog(DisableDialog)">
                         <Icon Name="Icons.X"></Icon>
                     </button>
                 </div>
                 <input class="otp-input" @bind="OtpDisable" autocomplete="one-time-code"/>
                 <StateButton ExtraClasses="button" @ref="DisableButton" OnClick="Disable2FA">
-                    <Loading>@Loc["Processing"]</Loading>
-                    <Failed>@Loc["Failed to disable Two-Factor Authentication"]</Failed>
-                    <Success>@Loc["Two-Factor Authentication disabled!"]</Success>
+                    <Loading>@Loc[L.StateButton_Loading]</Loading>
+                    <Failed>@Loc[L.Settings_Account_2fa_StateButton_DisableError]</Failed>
+                    <Success>@Loc[L.Settings_Account_2fa_StateButton_DisableSuccess]</Success>
                     <Initial>
-                        <Icon Name="Icons.Warning"></Icon>@Loc["Disable Two-Factor Authentication"]</Initial>
+                        <Icon Name="Icons.Warning"></Icon>@Loc[L.Common_Disable]</Initial>
                 </StateButton>
             </div>
             <div class="backdrop"></div>

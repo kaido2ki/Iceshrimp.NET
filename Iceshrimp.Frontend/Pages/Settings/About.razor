@@ -15,18 +15,18 @@
 @inject IJSRuntime                     Js;
 @inject InMemoryLogService             LogSvc;
 
-<HeadTitle Text="@Loc["About"]"/>
+<HeadTitle Text="@Loc[L.Settings_About]"/>
 
 <SectionContent SectionName="top-bar">
     <Icon Name="Icons.Info"></Icon>
-    @Loc["About"]
+    @Loc[L.Settings_About]
 </SectionContent>
 
 <div class="body">
     @if (Instance != null)
     {
         <div class="instance">
-            <h1>@Loc["Instance Information"]</h1>
+            <h1>@Loc[L.Settings_About_CurrentInstance]</h1>
             @if (Instance.BannerUrl != null)
             {
                 <img class="banner" src="@Instance.BannerUrl" alt="Instance banner"/>
@@ -46,7 +46,7 @@
                     <code>@Instance.AccountDomain</code>
                 </span>
             }
-            <span class="name">@Loc["Admin Email"]</span>
+            <span class="name">@Loc[L.Instance_AdminEmail]</span>
             <span class="value">
                 @if (Instance.ContactEmail != null)
                 {
@@ -54,10 +54,10 @@
                 }
                 else
                 {
-                    <i>@Loc["No contact email provided"]</i>
+                    <i>@Loc[L.Instance_NoInfoProvided]</i>
                 }
             </span>
-            <span class="name">@Loc["Description"]</span>
+            <span class="name">@Loc[L.Common_Description]</span>
             <span class="value">
                 @if (!string.IsNullOrWhiteSpace(Instance.Description))
                 {
@@ -65,7 +65,7 @@
                 }
                 else
                 {
-                    <i>@Loc["No description provided"]</i>
+                    <i>@Loc[L.Instance_NoInfoProvided]</i>
                 }
             </span>
             <span class="name">@Loc["Rules"]</span>
@@ -88,12 +88,12 @@
                 }
                 else
                 {
-                    <i>@Loc["No rules provided"]</i>
+                    <i>@Loc[L.Instance_NoInfoProvided]</i>
                 }
             </span>
             @if (Staff is { Admins.Count: > 0 })
             {
-                <span class="name">@Loc["Admins"]</span>
+                <span class="name">@Loc[L.Instance_Admins]</span>
                 <span class="value">
                     @foreach (var admin in Staff.Admins)
                     {
@@ -103,7 +103,7 @@
             }
             @if (Staff is { Moderators.Count: > 0 })
             {
-                <span class="name">@Loc["Moderators"]</span>
+                <span class="name">@Loc[L.Instance_Moderators]</span>
                 <span class="value">
                     @foreach (var moderator in Staff.Moderators)
                     {
@@ -111,44 +111,44 @@
                     }
                 </span>
             }
-            <span class="name">@Loc["Limitations"]</span>
+            <span class="name">@Loc[L.Instance_Limits]</span>
             <span class="value">
                 <table>
                     <tbody>
                     <tr>
-                        <th>@Loc["User registrations"]</th>
+                        <th>@Loc[L.Instance_Limits_Regs]</th>
                         <td>@switch (Instance.Registration)
                             {
                                 case Registrations.Closed:
-                                    @Loc["Closed"]
+                                    @Loc[L.Instance_Limits_Regs_Closed]
                                     break;
                                 case Registrations.Invite:
-                                    @Loc["Invite only"]
+                                    @Loc[L.Instance_Limits_Regs_Invite]
                                     break;
                                 case Registrations.Open:
-                                    @Loc["Open"]
+                                    @Loc[L.Instance_Limits_Regs_Open]
                                     break;
                             }
                         </td>
                     </tr>
                     <tr>
-                        <th>@Loc["Note length"]</th>
+                        <th>@Loc[L.Instance_Limits_NoteCharacterCount]</th>
                         <td>@Instance.Limits.NoteLength</td>
                     </tr>
                     <tr>
-                        <th>@Loc["Profile description length"]</th>
+                        <th>@Loc[L.Instance_Limits_BioCharacterCount]</th>
                         <td>@Instance.Limits.ProfileDescriptionLength</td>
                     </tr>
                     <tr>
-                        <th>@Loc["Profile fields"]</th>
+                        <th>@Loc[L.Instance_Limits_FieldCount]</th>
                         <td>@Instance.Limits.ProfileFieldsCount</td>
                     </tr>
                     <tr>
-                        <th>@Loc["Profile field name length"]</th>
+                        <th>@Loc[L.Instance_Limits_FieldNameCharacterCount]</th>
                         <td>@Instance.Limits.ProfileFieldsNameLength</td>
                     </tr>
                     <tr>
-                        <th>@Loc["Profile field value length"]</th>
+                        <th>@Loc[L.Instance_Limits_FieldValueCharacterCount]</th>
                         <td>@Instance.Limits.ProfileFieldsValueLength</td>
                     </tr>
                     </tbody>
@@ -157,18 +157,18 @@
         </div>
     }
     <div class="version">
-        <h1>@Loc["Version Information"]</h1>
+        <h1>@Loc[L.Settings_About_CurrentVersion]</h1>
         <span class="name">Iceshrimp.NET</span>
         <span class="value">
             <code>@Version.Version</code>
         </span>
-        <span class="name">Codename</span>
+        <span class="name">@Loc[L.Update_Codename]</span>
         <span class="value">
             <code>@Version.Codename</code>
         </span>
         @if (Version.CommitHash != null)
         {
-            <span class="name">Commit</span>
+            <span class="name">@Loc[L.Update_Commit]</span>
             <span class="value">
                 <code>@Version.CommitHash</code>
             </span>
@@ -179,11 +179,11 @@
         </span>
     </div>
     <div class="logs">
-        <h1>@Loc["Logs"]</h1>
-        @Loc["These logs may contain sensitive information, please do not post them publicly.\n" + "Providing them to developers upon request may help with debugging."]
+        <h1>@Loc[L.Settings_About_Logs]</h1>
+        @Loc[L.Settings_About_LogsWarning]
         <button class="button" @onclick="DownloadLogs">
             <Icon Name="Icons.DownloadSimple"/>
-            <span>@Loc["Download Logs"]</span></button>
+            <span>@Loc[L.Common_Download]</span></button>
     </div>
 
 </div>

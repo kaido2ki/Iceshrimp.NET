@@ -555,15 +555,15 @@ namespace Iceshrimp.Frontend.Localization {
             }
         }
         
-        internal static string Drive_Entry_Avatar {
+        internal static string User_Avatar {
             get {
-                return ResourceManager.GetString("Drive_Entry_Avatar", resourceCulture);
+                return ResourceManager.GetString("User_Avatar", resourceCulture);
             }
         }
         
-        internal static string Drive_Entry_Banner {
+        internal static string User_Banner {
             get {
-                return ResourceManager.GetString("Drive_Entry_Banner", resourceCulture);
+                return ResourceManager.GetString("User_Banner", resourceCulture);
             }
         }
         
@@ -1074,6 +1074,738 @@ namespace Iceshrimp.Frontend.Localization {
         internal static string Notification_Action_Bite_BiteBack_Notice {
             get {
                 return ResourceManager.GetString("Notification_Action_Bite_BiteBack_Notice", resourceCulture);
+            }
+        }
+        
+        internal static string Settings_About {
+            get {
+                return ResourceManager.GetString("Settings_About", resourceCulture);
+            }
+        }
+        
+        internal static string Settings_About_CurrentInstance {
+            get {
+                return ResourceManager.GetString("Settings_About_CurrentInstance", resourceCulture);
+            }
+        }
+        
+        internal static string Instance_AdminEmail {
+            get {
+                return ResourceManager.GetString("Instance_AdminEmail", resourceCulture);
+            }
+        }
+        
+        internal static string Instance_NoInfoProvided {
+            get {
+                return ResourceManager.GetString("Instance_NoInfoProvided", resourceCulture);
+            }
+        }
+        
+        internal static string Common_Description {
+            get {
+                return ResourceManager.GetString("Common_Description", resourceCulture);
+            }
+        }
+        
+        internal static string Instance_Admins {
+            get {
+                return ResourceManager.GetString("Instance_Admins", resourceCulture);
+            }
+        }
+        
+        internal static string Instance_Moderators {
+            get {
+                return ResourceManager.GetString("Instance_Moderators", resourceCulture);
+            }
+        }
+        
+        internal static string Instance_Limits {
+            get {
+                return ResourceManager.GetString("Instance_Limits", resourceCulture);
+            }
+        }
+        
+        internal static string Instance_Limits_Regs {
+            get {
+                return ResourceManager.GetString("Instance_Limits_Regs", resourceCulture);
+            }
+        }
+        
+        internal static string Instance_Limits_Regs_Closed {
+            get {
+                return ResourceManager.GetString("Instance_Limits_Regs_Closed", resourceCulture);
+            }
+        }
+        
+        internal static string Instance_Limits_Regs_Invite {
+            get {
+                return ResourceManager.GetString("Instance_Limits_Regs_Invite", resourceCulture);
+            }
+        }
+        
+        internal static string Instance_Limits_Regs_Open {
+            get {
+                return ResourceManager.GetString("Instance_Limits_Regs_Open", resourceCulture);
+            }
+        }
+        
+        internal static string Instance_Limits_NoteCharacterCount {
+            get {
+                return ResourceManager.GetString("Instance_Limits_NoteCharacterCount", resourceCulture);
+            }
+        }
+        
+        internal static string Instance_Limits_BioCharacterCount {
+            get {
+                return ResourceManager.GetString("Instance_Limits_BioCharacterCount", resourceCulture);
+            }
+        }
+        
+        internal static string Instance_Limits_FieldCount {
+            get {
+                return ResourceManager.GetString("Instance_Limits_FieldCount", resourceCulture);
+            }
+        }
+        
+        internal static string Instance_Limits_FieldNameCharacterCount {
+            get {
+                return ResourceManager.GetString("Instance_Limits_FieldNameCharacterCount", resourceCulture);
+            }
+        }
+        
+        internal static string Instance_Limits_FieldValueCharacterCount {
+            get {
+                return ResourceManager.GetString("Instance_Limits_FieldValueCharacterCount", resourceCulture);
+            }
+        }
+        
+        internal static string Settings_About_CurrentVersion {
+            get {
+                return ResourceManager.GetString("Settings_About_CurrentVersion", resourceCulture);
+            }
+        }
+        
+        internal static string Settings_About_Logs {
+            get {
+                return ResourceManager.GetString("Settings_About_Logs", resourceCulture);
+            }
+        }
+        
+        internal static string Settings_About_LogsWarning {
+            get {
+                return ResourceManager.GetString("Settings_About_LogsWarning", resourceCulture);
+            }
+        }
+        
+        internal static string Common_Download {
+            get {
+                return ResourceManager.GetString("Common_Download", resourceCulture);
+            }
+        }
+        
+        internal static string Settings_Account {
+            get {
+                return ResourceManager.GetString("Settings_Account", resourceCulture);
+            }
+        }
+        
+        internal static string Settings {
+            get {
+                return ResourceManager.GetString("Settings", resourceCulture);
+            }
+        }
+        
+        internal static string Settings_Account_DefaultNoteVisibility {
+            get {
+                return ResourceManager.GetString("Settings_Account_DefaultNoteVisibility", resourceCulture);
+            }
+        }
+        
+        internal static string Settings_Account_DefaultRenoteVisibility {
+            get {
+                return ResourceManager.GetString("Settings_Account_DefaultRenoteVisibility", resourceCulture);
+            }
+        }
+        
+        internal static string Settings_Account_AllowBites {
+            get {
+                return ResourceManager.GetString("Settings_Account_AllowBites", resourceCulture);
+            }
+        }
+        
+        internal static string Settings_Account_AllowBites_Public {
+            get {
+                return ResourceManager.GetString("Settings_Account_AllowBites_Public", resourceCulture);
+            }
+        }
+        
+        internal static string Settings_Account_AllowBites_Followers {
+            get {
+                return ResourceManager.GetString("Settings_Account_AllowBites_Followers", resourceCulture);
+            }
+        }
+        
+        internal static string Settings_Account_AllowBites_None {
+            get {
+                return ResourceManager.GetString("Settings_Account_AllowBites_None", resourceCulture);
+            }
+        }
+        
+        internal static string Settings_Account_PrivateMode {
+            get {
+                return ResourceManager.GetString("Settings_Account_PrivateMode", resourceCulture);
+            }
+        }
+        
+        internal static string Settings_Account_FilterInaccessible {
+            get {
+                return ResourceManager.GetString("Settings_Account_FilterInaccessible", resourceCulture);
+            }
+        }
+        
+        internal static string Settings_Account_FilterNotFollowing {
+            get {
+                return ResourceManager.GetString("Settings_Account_FilterNotFollowing", resourceCulture);
+            }
+        }
+        
+        internal static string Settings_Account_ManuallyAcceptFollows {
+            get {
+                return ResourceManager.GetString("Settings_Account_ManuallyAcceptFollows", resourceCulture);
+            }
+        }
+        
+        internal static string Settings_Account_AutoAcceptFollowed {
+            get {
+                return ResourceManager.GetString("Settings_Account_AutoAcceptFollowed", resourceCulture);
+            }
+        }
+        
+        internal static string Settings_Account_AlwaysMarkSensitive {
+            get {
+                return ResourceManager.GetString("Settings_Account_AlwaysMarkSensitive", resourceCulture);
+            }
+        }
+        
+        internal static string Settings_Account_MarkExplorable {
+            get {
+                return ResourceManager.GetString("Settings_Account_MarkExplorable", resourceCulture);
+            }
+        }
+        
+        internal static string Settings_Account_AttributionDomains {
+            get {
+                return ResourceManager.GetString("Settings_Account_AttributionDomains", resourceCulture);
+            }
+        }
+        
+        internal static string Common_MoreInfo {
+            get {
+                return ResourceManager.GetString("Common_MoreInfo", resourceCulture);
+            }
+        }
+        
+        internal static string Settings_Account_Password {
+            get {
+                return ResourceManager.GetString("Settings_Account_Password", resourceCulture);
+            }
+        }
+        
+        internal static string Settings_Account_Password_Old {
+            get {
+                return ResourceManager.GetString("Settings_Account_Password_Old", resourceCulture);
+            }
+        }
+        
+        internal static string Settings_Account_Password_New {
+            get {
+                return ResourceManager.GetString("Settings_Account_Password_New", resourceCulture);
+            }
+        }
+        
+        internal static string Settings_Account_Password_NewConfirm {
+            get {
+                return ResourceManager.GetString("Settings_Account_Password_NewConfirm", resourceCulture);
+            }
+        }
+        
+        internal static string Settings_Account_Password_StateButton_Initial {
+            get {
+                return ResourceManager.GetString("Settings_Account_Password_StateButton_Initial", resourceCulture);
+            }
+        }
+        
+        internal static string Settings_Account_Password_StateButton_Success {
+            get {
+                return ResourceManager.GetString("Settings_Account_Password_StateButton_Success", resourceCulture);
+            }
+        }
+        
+        internal static string Settings_Account_2fa {
+            get {
+                return ResourceManager.GetString("Settings_Account_2fa", resourceCulture);
+            }
+        }
+        
+        internal static string Settings_Account_2fa_Enable {
+            get {
+                return ResourceManager.GetString("Settings_Account_2fa_Enable", resourceCulture);
+            }
+        }
+        
+        internal static string Settings_Account_2fa_Disable {
+            get {
+                return ResourceManager.GetString("Settings_Account_2fa_Disable", resourceCulture);
+            }
+        }
+        
+        internal static string Settings_Account_2fa_Secret {
+            get {
+                return ResourceManager.GetString("Settings_Account_2fa_Secret", resourceCulture);
+            }
+        }
+        
+        internal static string Common_Url {
+            get {
+                return ResourceManager.GetString("Common_Url", resourceCulture);
+            }
+        }
+        
+        internal static string Settings_Account_2fa_StateButton_EnableError {
+            get {
+                return ResourceManager.GetString("Settings_Account_2fa_StateButton_EnableError", resourceCulture);
+            }
+        }
+        
+        internal static string Settings_Account_2fa_StateButton_EnableSuccess {
+            get {
+                return ResourceManager.GetString("Settings_Account_2fa_StateButton_EnableSuccess", resourceCulture);
+            }
+        }
+        
+        internal static string Settings_Account_2fa_StateButton_DisableSuccess {
+            get {
+                return ResourceManager.GetString("Settings_Account_2fa_StateButton_DisableSuccess", resourceCulture);
+            }
+        }
+        
+        internal static string Settings_Account_2fa_StateButton_DisableError {
+            get {
+                return ResourceManager.GetString("Settings_Account_2fa_StateButton_DisableError", resourceCulture);
+            }
+        }
+        
+        internal static string Common_Enable {
+            get {
+                return ResourceManager.GetString("Common_Enable", resourceCulture);
+            }
+        }
+        
+        internal static string Common_Disable {
+            get {
+                return ResourceManager.GetString("Common_Disable", resourceCulture);
+            }
+        }
+        
+        internal static string Common_Disabled {
+            get {
+                return ResourceManager.GetString("Common_Disabled", resourceCulture);
+            }
+        }
+        
+        internal static string Common_Enabled {
+            get {
+                return ResourceManager.GetString("Common_Enabled", resourceCulture);
+            }
+        }
+        
+        internal static string Settings_Account_2fa_CodePlaceholder {
+            get {
+                return ResourceManager.GetString("Settings_Account_2fa_CodePlaceholder", resourceCulture);
+            }
+        }
+        
+        internal static string Settings_Account_2fa_EnrolInfo {
+            get {
+                return ResourceManager.GetString("Settings_Account_2fa_EnrolInfo", resourceCulture);
+            }
+        }
+        
+        internal static string Settings_Debug {
+            get {
+                return ResourceManager.GetString("Settings_Debug", resourceCulture);
+            }
+        }
+        
+        internal static string Settings_Debug_Crash {
+            get {
+                return ResourceManager.GetString("Settings_Debug_Crash", resourceCulture);
+            }
+        }
+        
+        internal static string Settings_Filters {
+            get {
+                return ResourceManager.GetString("Settings_Filters", resourceCulture);
+            }
+        }
+        
+        internal static string Common_Name {
+            get {
+                return ResourceManager.GetString("Common_Name", resourceCulture);
+            }
+        }
+        
+        internal static string Settings_Filters_ExpiresAt {
+            get {
+                return ResourceManager.GetString("Settings_Filters_ExpiresAt", resourceCulture);
+            }
+        }
+        
+        internal static string Settings_Filters_Keywords {
+            get {
+                return ResourceManager.GetString("Settings_Filters_Keywords", resourceCulture);
+            }
+        }
+        
+        internal static string Settings_Filters_Action {
+            get {
+                return ResourceManager.GetString("Settings_Filters_Action", resourceCulture);
+            }
+        }
+        
+        internal static string Settings_Filters_Contexts {
+            get {
+                return ResourceManager.GetString("Settings_Filters_Contexts", resourceCulture);
+            }
+        }
+        
+        internal static string Settings_Filters_Error_NameRequired {
+            get {
+                return ResourceManager.GetString("Settings_Filters_Error_NameRequired", resourceCulture);
+            }
+        }
+        
+        internal static string Settings_Filters_Error_KeywordsRequired {
+            get {
+                return ResourceManager.GetString("Settings_Filters_Error_KeywordsRequired", resourceCulture);
+            }
+        }
+        
+        internal static string Settings_Filters_KeywordInfo {
+            get {
+                return ResourceManager.GetString("Settings_Filters_KeywordInfo", resourceCulture);
+            }
+        }
+        
+        internal static string Settings_Filters_RegexInfo {
+            get {
+                return ResourceManager.GetString("Settings_Filters_RegexInfo", resourceCulture);
+            }
+        }
+        
+        internal static string Settings_Filters_Action_Warn {
+            get {
+                return ResourceManager.GetString("Settings_Filters_Action_Warn", resourceCulture);
+            }
+        }
+        
+        internal static string Settings_Filters_Error_ContextRequired {
+            get {
+                return ResourceManager.GetString("Settings_Filters_Error_ContextRequired", resourceCulture);
+            }
+        }
+        
+        internal static string Settings_Filters_Context_Profiles {
+            get {
+                return ResourceManager.GetString("Settings_Filters_Context_Profiles", resourceCulture);
+            }
+        }
+        
+        internal static string Settings_Filters_Context_Threads {
+            get {
+                return ResourceManager.GetString("Settings_Filters_Context_Threads", resourceCulture);
+            }
+        }
+        
+        internal static string Settings_Filters_Context_Lists {
+            get {
+                return ResourceManager.GetString("Settings_Filters_Context_Lists", resourceCulture);
+            }
+        }
+        
+        internal static string Timeline_Home {
+            get {
+                return ResourceManager.GetString("Timeline_Home", resourceCulture);
+            }
+        }
+        
+        internal static string Timeline_Local {
+            get {
+                return ResourceManager.GetString("Timeline_Local", resourceCulture);
+            }
+        }
+        
+        internal static string Timeline_Social {
+            get {
+                return ResourceManager.GetString("Timeline_Social", resourceCulture);
+            }
+        }
+        
+        internal static string Timeline_Bubble {
+            get {
+                return ResourceManager.GetString("Timeline_Bubble", resourceCulture);
+            }
+        }
+        
+        internal static string Timeline_Global {
+            get {
+                return ResourceManager.GetString("Timeline_Global", resourceCulture);
+            }
+        }
+        
+        internal static string Timeline_Remote {
+            get {
+                return ResourceManager.GetString("Timeline_Remote", resourceCulture);
+            }
+        }
+        
+        internal static string Timeline_Tag {
+            get {
+                return ResourceManager.GetString("Timeline_Tag", resourceCulture);
+            }
+        }
+        
+        internal static string Settings_Filters_ExpiresAt_Enable {
+            get {
+                return ResourceManager.GetString("Settings_Filters_ExpiresAt_Enable", resourceCulture);
+            }
+        }
+        
+        internal static string Settings_Data {
+            get {
+                return ResourceManager.GetString("Settings_Data", resourceCulture);
+            }
+        }
+        
+        internal static string Settings_Data_Blocking {
+            get {
+                return ResourceManager.GetString("Settings_Data_Blocking", resourceCulture);
+            }
+        }
+        
+        internal static string Settings_Data_Import {
+            get {
+                return ResourceManager.GetString("Settings_Data_Import", resourceCulture);
+            }
+        }
+        
+        internal static string Settings_Data_Export {
+            get {
+                return ResourceManager.GetString("Settings_Data_Export", resourceCulture);
+            }
+        }
+        
+        internal static string Settings_Data_Muting {
+            get {
+                return ResourceManager.GetString("Settings_Data_Muting", resourceCulture);
+            }
+        }
+        
+        internal static string Settings_Data_Following {
+            get {
+                return ResourceManager.GetString("Settings_Data_Following", resourceCulture);
+            }
+        }
+        
+        internal static string Settings_Migration {
+            get {
+                return ResourceManager.GetString("Settings_Migration", resourceCulture);
+            }
+        }
+        
+        internal static string Settings_Migration_MigratedNotice {
+            get {
+                return ResourceManager.GetString("Settings_Migration_MigratedNotice", resourceCulture);
+            }
+        }
+        
+        internal static string Settings_Migration_GotoMigrated {
+            get {
+                return ResourceManager.GetString("Settings_Migration_GotoMigrated", resourceCulture);
+            }
+        }
+        
+        internal static string Settings_Migration_UndoWarning {
+            get {
+                return ResourceManager.GetString("Settings_Migration_UndoWarning", resourceCulture);
+            }
+        }
+        
+        internal static string Settings_Migration_Undo {
+            get {
+                return ResourceManager.GetString("Settings_Migration_Undo", resourceCulture);
+            }
+        }
+        
+        internal static string Settings_Migration_Warning {
+            get {
+                return ResourceManager.GetString("Settings_Migration_Warning", resourceCulture);
+            }
+        }
+        
+        internal static string Settings_Migration_MigrateToHeader {
+            get {
+                return ResourceManager.GetString("Settings_Migration_MigrateToHeader", resourceCulture);
+            }
+        }
+        
+        internal static string Settings_Migration_MigrateToWarning {
+            get {
+                return ResourceManager.GetString("Settings_Migration_MigrateToWarning", resourceCulture);
+            }
+        }
+        
+        internal static string Settings_Migration_StateButton_Initial {
+            get {
+                return ResourceManager.GetString("Settings_Migration_StateButton_Initial", resourceCulture);
+            }
+        }
+        
+        internal static string Settings_Migration_AliasHeader {
+            get {
+                return ResourceManager.GetString("Settings_Migration_AliasHeader", resourceCulture);
+            }
+        }
+        
+        internal static string Settings_Migration_AliasWarning {
+            get {
+                return ResourceManager.GetString("Settings_Migration_AliasWarning", resourceCulture);
+            }
+        }
+        
+        internal static string Common_Remove {
+            get {
+                return ResourceManager.GetString("Common_Remove", resourceCulture);
+            }
+        }
+        
+        internal static string Settings_Profile {
+            get {
+                return ResourceManager.GetString("Settings_Profile", resourceCulture);
+            }
+        }
+        
+        internal static string Settings_Profile_BannerAlt {
+            get {
+                return ResourceManager.GetString("Settings_Profile_BannerAlt", resourceCulture);
+            }
+        }
+        
+        internal static string Settings_Profile_NewBannerAlt {
+            get {
+                return ResourceManager.GetString("Settings_Profile_NewBannerAlt", resourceCulture);
+            }
+        }
+        
+        internal static string Common_AltText {
+            get {
+                return ResourceManager.GetString("Common_AltText", resourceCulture);
+            }
+        }
+        
+        internal static string Settings_Profile_NewAvatarAlt {
+            get {
+                return ResourceManager.GetString("Settings_Profile_NewAvatarAlt", resourceCulture);
+            }
+        }
+        
+        internal static string Settings_Profile_AvatarAlt {
+            get {
+                return ResourceManager.GetString("Settings_Profile_AvatarAlt", resourceCulture);
+            }
+        }
+        
+        internal static string User_DisplayName {
+            get {
+                return ResourceManager.GetString("User_DisplayName", resourceCulture);
+            }
+        }
+        
+        internal static string User_Birthday {
+            get {
+                return ResourceManager.GetString("User_Birthday", resourceCulture);
+            }
+        }
+        
+        internal static string User_Location {
+            get {
+                return ResourceManager.GetString("User_Location", resourceCulture);
+            }
+        }
+        
+        internal static string User_Pronouns {
+            get {
+                return ResourceManager.GetString("User_Pronouns", resourceCulture);
+            }
+        }
+        
+        internal static string Settings_Profile_Fields {
+            get {
+                return ResourceManager.GetString("Settings_Profile_Fields", resourceCulture);
+            }
+        }
+        
+        internal static string Common_Value {
+            get {
+                return ResourceManager.GetString("Common_Value", resourceCulture);
+            }
+        }
+        
+        internal static string Common_Other {
+            get {
+                return ResourceManager.GetString("Common_Other", resourceCulture);
+            }
+        }
+        
+        internal static string Settings_Profile_IsBot {
+            get {
+                return ResourceManager.GetString("Settings_Profile_IsBot", resourceCulture);
+            }
+        }
+        
+        internal static string Settings_Profile_IsCat {
+            get {
+                return ResourceManager.GetString("Settings_Profile_IsCat", resourceCulture);
+            }
+        }
+        
+        internal static string Settings_Profile_SpeakAsCat {
+            get {
+                return ResourceManager.GetString("Settings_Profile_SpeakAsCat", resourceCulture);
+            }
+        }
+        
+        internal static string User_Bio {
+            get {
+                return ResourceManager.GetString("User_Bio", resourceCulture);
+            }
+        }
+        
+        internal static string Settings_Profile_IsBotWarning {
+            get {
+                return ResourceManager.GetString("Settings_Profile_IsBotWarning", resourceCulture);
+            }
+        }
+        
+        internal static string User {
+            get {
+                return ResourceManager.GetString("User", resourceCulture);
+            }
+        }
+        
+        internal static string Settings_External_ApiReference {
+            get {
+                return ResourceManager.GetString("Settings_External_ApiReference", resourceCulture);
             }
         }
     }

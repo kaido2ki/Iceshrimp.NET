@@ -71,7 +71,7 @@
         <value>Interface language (require restart)</value>
     </data>
     <data name="StateButton_SaveChanges" xml:space="preserve">
-        <value>Save Changes</value>
+        <value>Save changes</value>
     </data>
     <data name="Preferences_FollowBrowserPref" xml:space="preserve">
         <value>Follow browser preferences</value>
@@ -274,10 +274,10 @@
     <data name="Drive_CreateFolderDialog_Submit" xml:space="preserve">
         <value>Create</value>
     </data>
-    <data name="Drive_Entry_Avatar" xml:space="preserve">
+    <data name="User_Avatar" xml:space="preserve">
         <value>Avatar</value>
     </data>
-    <data name="Drive_Entry_Banner" xml:space="preserve">
+    <data name="User_Banner" xml:space="preserve">
         <value>Banner</value>
     </data>
     <data name="Common_Open" xml:space="preserve">
@@ -534,5 +534,371 @@
     </data>
     <data name="Notification_Action_Bite_BiteBack_Notice" xml:space="preserve">
         <value>Bit {0} back</value>
+    </data>
+    <data name="Settings_About" xml:space="preserve">
+        <value>About</value>
+    </data>
+    <data name="Settings_About_CurrentInstance" xml:space="preserve">
+        <value>Current Instance</value>
+    </data>
+    <data name="Instance_AdminEmail" xml:space="preserve">
+        <value>Admin email address</value>
+    </data>
+    <data name="Instance_NoInfoProvided" xml:space="preserve">
+        <value>No information is provided.</value>
+    </data>
+    <data name="Common_Description" xml:space="preserve">
+        <value>Description</value>
+    </data>
+    <data name="Instance_Admins" xml:space="preserve">
+        <value>Admins</value>
+    </data>
+    <data name="Instance_Moderators" xml:space="preserve">
+        <value>Moderators</value>
+    </data>
+    <data name="Instance_Limits" xml:space="preserve">
+        <value>Limitations</value>
+    </data>
+    <data name="Instance_Limits_Regs" xml:space="preserve">
+        <value>User registrations</value>
+    </data>
+    <data name="Instance_Limits_Regs_Closed" xml:space="preserve">
+        <value>Closed</value>
+    </data>
+    <data name="Instance_Limits_Regs_Invite" xml:space="preserve">
+        <value>Invite-only</value>
+    </data>
+    <data name="Instance_Limits_Regs_Open" xml:space="preserve">
+        <value>Open</value>
+    </data>
+    <data name="Instance_Limits_NoteCharacterCount" xml:space="preserve">
+        <value>Note character count</value>
+    </data>
+    <data name="Instance_Limits_BioCharacterCount" xml:space="preserve">
+        <value>Profile bio character count</value>
+    </data>
+    <data name="Instance_Limits_FieldCount" xml:space="preserve">
+        <value>Profile field count</value>
+    </data>
+    <data name="Instance_Limits_FieldNameCharacterCount" xml:space="preserve">
+        <value>Profile field name character count</value>
+    </data>
+    <data name="Instance_Limits_FieldValueCharacterCount" xml:space="preserve">
+        <value>Profile field value character count</value>
+    </data>
+    <data name="Settings_About_CurrentVersion" xml:space="preserve">
+        <value>Current Version</value>
+    </data>
+    <data name="Settings_About_Logs" xml:space="preserve">
+        <value>Client Logs</value>
+    </data>
+    <data name="Settings_About_LogsWarning" xml:space="preserve">
+        <value>These logs may contain sensitive information, please do not post them publicly.\nProviding them to developers upon request may help with debugging.</value>
+    </data>
+    <data name="Common_Download" xml:space="preserve">
+        <value>Download</value>
+    </data>
+    <data name="Settings_Account" xml:space="preserve">
+        <value>Account</value>
+    </data>
+    <data name="Settings" xml:space="preserve">
+        <value>Settings</value>
+    </data>
+    <data name="Settings_Account_DefaultNoteVisibility" xml:space="preserve">
+        <value>Default note visibility</value>
+    </data>
+    <data name="Settings_Account_DefaultRenoteVisibility" xml:space="preserve">
+        <value>Default renote visibility</value>
+    </data>
+    <data name="Settings_Account_AllowBites" xml:space="preserve">
+        <value>Allow bites from</value>
+    </data>
+    <data name="Settings_Account_AllowBites_Public" xml:space="preserve">
+        <value>Anybody</value>
+    </data>
+    <data name="Settings_Account_AllowBites_Followers" xml:space="preserve">
+        <value>Followers</value>
+    </data>
+    <data name="Settings_Account_AllowBites_None" xml:space="preserve">
+        <value>Nobody</value>
+    </data>
+    <data name="Settings_Account_PrivateMode" xml:space="preserve">
+        <value>Private Mode (Forces all notes from all clients to be followers-only)</value>
+    </data>
+    <data name="Settings_Account_FilterInaccessible" xml:space="preserve">
+        <value>Filter replies to inaccessible notes</value>
+    </data>
+    <data name="Settings_Account_FilterNotFollowing" xml:space="preserve">
+        <value>Filter replies to users you do not follow</value>
+    </data>
+    <data name="Settings_Account_ManuallyAcceptFollows" xml:space="preserve">
+        <value>Manually accept follow requests</value>
+    </data>
+    <data name="Settings_Account_AutoAcceptFollowed" xml:space="preserve">
+        <value>Automatically accept follow requests from users you are following</value>
+    </data>
+    <data name="Settings_Account_AlwaysMarkSensitive" xml:space="preserve">
+        <value>Mark all notes as sensitive</value>
+    </data>
+    <data name="Settings_Account_MarkExplorable" xml:space="preserve">
+        <value>Mark account as Explorable/Discoverable</value>
+    </data>
+    <data name="Settings_Account_AttributionDomains" xml:space="preserve">
+        <value>Domains hosting content that can be attributed to you</value>
+    </data>
+    <data name="Common_MoreInfo" xml:space="preserve">
+        <value>More info</value>
+    </data>
+    <data name="Settings_Account_Password" xml:space="preserve">
+        <value>Update password</value>
+    </data>
+    <data name="Settings_Account_Password_Old" xml:space="preserve">
+        <value>Old password</value>
+    </data>
+    <data name="Settings_Account_Password_New" xml:space="preserve">
+        <value>New password</value>
+    </data>
+    <data name="Settings_Account_Password_NewConfirm" xml:space="preserve">
+        <value>Confirm new password</value>
+    </data>
+    <data name="Settings_Account_Password_StateButton_Initial" xml:space="preserve">
+        <value>Update password</value>
+    </data>
+    <data name="Settings_Account_Password_StateButton_Success" xml:space="preserve">
+        <value>Updated</value>
+    </data>
+    <data name="Settings_Account_2fa" xml:space="preserve">
+        <value>Two-factor Authentication</value>
+    </data>
+    <data name="Settings_Account_2fa_Enable" xml:space="preserve">
+        <value>Enable two-factor authentication</value>
+    </data>
+    <data name="Settings_Account_2fa_Disable" xml:space="preserve">
+        <value>Disable two-factor authentication</value>
+    </data>
+    <data name="Settings_Account_2fa_Secret" xml:space="preserve">
+        <value>Secret</value>
+    </data>
+    <data name="Common_Url" xml:space="preserve">
+        <value>URL</value>
+    </data>
+    <data name="Settings_Account_2fa_StateButton_EnableError" xml:space="preserve">
+        <value>Failed to enroll</value>
+    </data>
+    <data name="Settings_Account_2fa_StateButton_EnableSuccess" xml:space="preserve">
+        <value>Two-factor authentication enabled!</value>
+    </data>
+    <data name="Settings_Account_2fa_StateButton_DisableSuccess" xml:space="preserve">
+        <value>Two-factor authentication disabled!</value>
+    </data>
+    <data name="Settings_Account_2fa_StateButton_DisableError" xml:space="preserve">
+        <value>Failed to disable two-factor authentication</value>
+    </data>
+    <data name="Common_Enable" xml:space="preserve">
+        <value>Enable</value>
+    </data>
+    <data name="Common_Disable" xml:space="preserve">
+        <value>Disable</value>
+    </data>
+    <data name="Common_Disabled" xml:space="preserve">
+        <value>Disabled</value>
+    </data>
+    <data name="Common_Enabled" xml:space="preserve">
+        <value>Enabled</value>
+    </data>
+    <data name="Settings_Account_2fa_CodePlaceholder" xml:space="preserve">
+        <value>Code from authenticator</value>
+    </data>
+    <data name="Settings_Account_2fa_EnrolInfo" xml:space="preserve">
+        <value>Use the following QR code, secret or URL to add your account to your authenticator app. Afterwards enter the code provided by your authenticator app to finish the enrolment.</value>
+    </data>
+    <data name="Settings_Debug" xml:space="preserve">
+        <value>Debug</value>
+    </data>
+    <data name="Settings_Debug_Crash" xml:space="preserve">
+        <value>Force client to crash</value>
+    </data>
+    <data name="Settings_Filters" xml:space="preserve">
+        <value>Filters</value>
+    </data>
+    <data name="Common_Name" xml:space="preserve">
+        <value>Name</value>
+    </data>
+    <data name="Settings_Filters_ExpiresAt" xml:space="preserve">
+        <value>Expires at</value>
+    </data>
+    <data name="Settings_Filters_Keywords" xml:space="preserve">
+        <value>Keywords</value>
+    </data>
+    <data name="Settings_Filters_Action" xml:space="preserve">
+        <value>Action</value>
+    </data>
+    <data name="Settings_Filters_Contexts" xml:space="preserve">
+        <value>Contexts</value>
+    </data>
+    <data name="Settings_Filters_Error_NameRequired" xml:space="preserve">
+        <value>Filter name is required.</value>
+    </data>
+    <data name="Settings_Filters_Error_KeywordsRequired" xml:space="preserve">
+        <value>At least 1 keyword is required.</value>
+    </data>
+    <data name="Settings_Filters_KeywordInfo" xml:space="preserve">
+        <value>Surround keyword with " for whole word matching. Surround keyword with / for regex matching.</value>
+    </data>
+    <data name="Settings_Filters_RegexInfo" xml:space="preserve">
+        <value>Complex regex keywords will slow down your timeline. Your filter won't apply if it takes more than 1.5ms to match.</value>
+    </data>
+    <data name="Settings_Filters_Action_Warn" xml:space="preserve">
+        <value>Warn</value>
+    </data>
+    <data name="Settings_Filters_Error_ContextRequired" xml:space="preserve">
+        <value>At least 1 context required.</value>
+    </data>
+    <data name="Settings_Filters_Context_Profiles" xml:space="preserve">
+        <value>User profiles</value>
+    </data>
+    <data name="Settings_Filters_Context_Threads" xml:space="preserve">
+        <value>Note threads</value>
+    </data>
+    <data name="Settings_Filters_Context_Lists" xml:space="preserve">
+        <value>Lists</value>
+    </data>
+    <data name="Timeline_Home" xml:space="preserve">
+        <value>Home</value>
+    </data>
+    <data name="Timeline_Local" xml:space="preserve">
+        <value>Local</value>
+    </data>
+    <data name="Timeline_Social" xml:space="preserve">
+        <value>Social</value>
+    </data>
+    <data name="Timeline_Bubble" xml:space="preserve">
+        <value>Bubble</value>
+    </data>
+    <data name="Timeline_Global" xml:space="preserve">
+        <value>Global</value>
+    </data>
+    <data name="Timeline_Remote" xml:space="preserve">
+        <value>Remote instance</value>
+    </data>
+    <data name="Timeline_Tag" xml:space="preserve">
+        <value>Tag</value>
+    </data>
+    <data name="Settings_Filters_ExpiresAt_Enable" xml:space="preserve">
+        <value>Enable filter expiration</value>
+    </data>
+    <data name="Settings_Data" xml:space="preserve">
+        <value>Import/Export Data</value>
+    </data>
+    <data name="Settings_Data_Blocking" xml:space="preserve">
+        <value>Users you block</value>
+    </data>
+    <data name="Settings_Data_Import" xml:space="preserve">
+        <value>Import</value>
+    </data>
+    <data name="Settings_Data_Export" xml:space="preserve">
+        <value>Export</value>
+    </data>
+    <data name="Settings_Data_Muting" xml:space="preserve">
+        <value>Users you have muted</value>
+    </data>
+    <data name="Settings_Data_Following" xml:space="preserve">
+        <value>Users you follow</value>
+    </data>
+    <data name="Settings_Migration" xml:space="preserve">
+        <value>Migration</value>
+    </data>
+    <data name="Settings_Migration_MigratedNotice" xml:space="preserve">
+        <value>This account has been migrated to another account.</value>
+    </data>
+    <data name="Settings_Migration_GotoMigrated" xml:space="preserve">
+        <value>Go to account</value>
+    </data>
+    <data name="Settings_Migration_UndoWarning" xml:space="preserve">
+        <value>Undoing a migration does not move your followers back to this account. To move your followers back you will need to migrate back to this account manually.</value>
+    </data>
+    <data name="Settings_Migration_Undo" xml:space="preserve">
+        <value>Undo migration</value>
+    </data>
+    <data name="Settings_Migration_Warning" xml:space="preserve">
+        <value>Migrating your account will only move your followers from the old account to the new account. No other user data such as notes or bookmarks will be moved.</value>
+    </data>
+    <data name="Settings_Migration_MigrateToHeader" xml:space="preserve">
+        <value>Migrate current account to new account</value>
+    </data>
+    <data name="Settings_Migration_MigrateToWarning" xml:space="preserve">
+        <value>Make sure you've set up an alias for this account on your new account before migrating.</value>
+    </data>
+    <data name="Settings_Migration_StateButton_Initial" xml:space="preserve">
+        <value>Migrate</value>
+    </data>
+    <data name="Settings_Migration_AliasHeader" xml:space="preserve">
+        <value>Migrate to this account from an older account</value>
+    </data>
+    <data name="Settings_Migration_AliasWarning" xml:space="preserve">
+        <value>This will set an alias of your old account so that you can move from that account to this current one. Do this BEFORE migrating from your older account.</value>
+    </data>
+    <data name="Common_Remove" xml:space="preserve">
+        <value>Remove</value>
+    </data>
+    <data name="Settings_Profile" xml:space="preserve">
+        <value>Profile</value>
+    </data>
+    <data name="Settings_Profile_BannerAlt" xml:space="preserve">
+        <value>Set alt text for your banner</value>
+    </data>
+    <data name="Settings_Profile_NewBannerAlt" xml:space="preserve">
+        <value>Set alt text for your new banner</value>
+    </data>
+    <data name="Common_AltText" xml:space="preserve">
+        <value>Alt text</value>
+    </data>
+    <data name="Settings_Profile_NewAvatarAlt" xml:space="preserve">
+        <value>Set alt text for your new avatar</value>
+    </data>
+    <data name="Settings_Profile_AvatarAlt" xml:space="preserve">
+        <value>Set alt text for your avatar</value>
+    </data>
+    <data name="User_DisplayName" xml:space="preserve">
+        <value>Display Name</value>
+    </data>
+    <data name="User_Birthday" xml:space="preserve">
+        <value>Birthday</value>
+    </data>
+    <data name="User_Location" xml:space="preserve">
+        <value>Location</value>
+    </data>
+    <data name="User_Pronouns" xml:space="preserve">
+        <value>Pronouns</value>
+    </data>
+    <data name="Settings_Profile_Fields" xml:space="preserve">
+        <value>Profile fields</value>
+    </data>
+    <data name="Common_Value" xml:space="preserve">
+        <value>Value</value>
+    </data>
+    <data name="Common_Other" xml:space="preserve">
+        <value>Other</value>
+    </data>
+    <data name="Settings_Profile_IsBot" xml:space="preserve">
+        <value>Mark as an automated (bot) account</value>
+    </data>
+    <data name="Settings_Profile_IsCat" xml:space="preserve">
+        <value>Mark as a cat</value>
+    </data>
+    <data name="Settings_Profile_SpeakAsCat" xml:space="preserve">
+        <value>Speak as a cat</value>
+    </data>
+    <data name="User_Bio" xml:space="preserve">
+        <value>Bio</value>
+    </data>
+    <data name="Settings_Profile_IsBotWarning" xml:space="preserve">
+        <value>Marking your account as automated is an accessibility feature. Enabling this for accounts that are not automated may break your ability to interact with automated accounts or hide your notes for some users.</value>
+    </data>
+    <data name="User" xml:space="preserve">
+        <value>User</value>
+    </data>
+    <data name="Settings_External_ApiReference" xml:space="preserve">
+        <value>API Reference</value>
     </data>
 </root>

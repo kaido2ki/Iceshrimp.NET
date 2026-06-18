@@ -10,15 +10,15 @@
 @inject IStringLocalizer<Localization> Loc;
 @inject ILogger<Debug> Logger;
 
-<HeadTitle Text="@Loc["About"]"/>
+<HeadTitle Text="@Loc[L.Settings_Debug]"/>
 
 <SectionContent SectionName="top-bar">
     <Icon Name="Icons.Bug"></Icon>
-    @Loc["Debug"]
+    @Loc[L.Settings_Debug]
 </SectionContent>
 
 <div class="body">
-    <button class="button" @onclick="@Crash">@Loc["Crash Application"]</button>
+    <button class="button" @onclick="@Crash">@Loc[L.Settings_Debug_Crash]</button>
 
 </div>
 

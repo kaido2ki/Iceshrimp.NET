@@ -13,11 +13,11 @@
 @inject GlobalComponentSvc             Global;
 @inject IStringLocalizer<Localization> Loc;
 
-<HeadTitle Text="@Loc["Migration"]"/>
+<HeadTitle Text="@Loc[L.Settings_Migration]"/>
 
 <SectionContent SectionName="top-bar">
     <Icon Name="Icons.AirplaneTakeoff"></Icon>
-    @Loc["Migration"]
+    @Loc[L.Settings_Migration]
 </SectionContent>
 
 @if (State is State.Loaded)
@@ -26,15 +26,15 @@
         @if (Status.MovedTo != null)
         {
             <span>
-                @Loc["This account has been migrated to another account."]
-                <a href="@Status.MovedTo" target="_blank">@Loc["Go to account"]</a>
+                @Loc[L.Settings_Migration_MigratedNotice]
+                <a href="@Status.MovedTo" target="_blank">@Loc[L.Settings_Migration_GotoMigrated]</a>
             </span>
             <WarningBanner>
-                @Loc["Undoing a migration does not move your followers back to this account. To move your followers back you will need to migrate back to this account manually."]
+                @Loc[L.Settings_Migration_UndoWarning]
             </WarningBanner>
             <StateButton OnClick="UndoMigrate" ExtraClasses="button" @ref="UndoButton">
                 <Initial>
-                    @Loc["Undo migration"]
+                    @Loc[L.Settings_Migration_Undo]
                 </Initial>
                 <Loading>
                     <LoadingSpinner/>
@@ -49,19 +49,15 @@
         }
         else
         {
-            <WarningBanner>
-                @Loc["Migrating your account will only move your followers from the old account to the new account. No other user data such as notes or bookmarks will be moved."]
-            </WarningBanner>
+            <WarningBanner>@Loc[L.Settings_Migration_Warning]</WarningBanner>
             <div class="section">
-                <h3>@Loc["Migrate current account to new account"]</h3>
-                <WarningBanner>
-                    @Loc["Make sure you've set up an alias for this account on your new account before migrating."]
-                </WarningBanner>
+                <h3>@Loc[L.Settings_Migration_MigrateToHeader]</h3>
+                <WarningBanner>@Loc[L.Settings_Migration_MigrateToWarning]</WarningBanner>
                 <input class="input" placeholder="@("@new@example.com")" autocomplete="off" @bind="@MoveTo" @oninput="() => ResetButtonState(MoveButton)"/>
                 <StateButton OnClick="Migrate" ExtraClasses="button" @ref="MoveButton">
                     <Initial>
                         <Icon Name="Icons.AirplaneTakeoff"/>
-                        @Loc["Migrate"]
+                        @Loc[L.Settings_Migration_StateButton_Initial]
                     </Initial>
                     <Loading>
                         <LoadingSpinner/>
@@ -75,16 +71,14 @@
                 </StateButton>
             </div>
             <div class="section">
-                <h3>@Loc["Migrate to this account from an older account"]</h3>
-                <WarningBanner>
-                    @Loc["This will set an alias of your old account so that you can move from that account to this current one. Do this BEFORE migrating from your older account."]
-                </WarningBanner>
+                <h3>@Loc[L.Settings_Migration_AliasHeader]</h3>
+                <WarningBanner>@Loc[L.Settings_Migration_AliasWarning]</WarningBanner>
                 <div class="aliases">
                     @foreach (var alias in Status.Aliases)
                     {
                         <div class="alias">
                             <a href="@alias" target="_blank">@alias</a>
-                            <button class="button" title="@Loc["Remove alias"]" @onclick="() => DeleteAlias(alias)">
+                            <button class="button" title="@Loc[L.Common_Remove]" @onclick="() => DeleteAlias(alias)">
                                 <Icon Name="Icons.Trash"/>
                             </button>
                         </div>

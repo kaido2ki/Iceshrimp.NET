@@ -12,21 +12,21 @@
 @inject GlobalComponentSvc             Global;
 @inject IStringLocalizer<Localization> Loc;
 
-<HeadTitle Text="@Loc["Import/export"]"/>
+<HeadTitle Text="@Loc[L.Settings_Data]"/>
 
 <SectionContent SectionName="top-bar">
     <Icon Name="Icons.Package"/>
-    @Loc["Import/export"]
+    @Loc[L.Settings_Data]
 </SectionContent>
 
 <div class="body">
-    <h3>@Loc["Blocking"]</h3>
+    <h3>@Loc[L.Settings_Data_Blocking]</h3>
 
     <div class="export">
         <StateButton OnClick="ExportBlockingAsync" ExtraClasses="button" @ref="ExportBlockingButton">
             <Initial>
                 <Icon Name="Icons.Download"/>
-                @Loc["Export"]
+                @Loc[L.Settings_Data_Export]
             </Initial>
             <Loading>
                 <LoadingSpinner/>
@@ -53,7 +53,7 @@
                      Disabled="@(ImportBlockingFile == null)">
             <Initial>
                 <Icon Name="Icons.Upload"/>
-                @Loc["Import"]
+                @Loc[L.Settings_Data_Import]
             </Initial>
             <Loading>
                 <LoadingSpinner/>
@@ -68,13 +68,13 @@
         <InputFile OnChange="OnBlockingFileChange" accept="text/csv"/>
     </div>
 
-    <h3>@Loc["Muting"]</h3>
+    <h3>@Loc[L.Settings_Data_Muting]</h3>
     
     <div class="export">
         <StateButton OnClick="ExportMutingAsync" ExtraClasses="button" @ref="ExportMutingButton">
             <Initial>
                 <Icon Name="Icons.Download"/>
-                @Loc["Export"]
+                @Loc[L.Settings_Data_Export]
             </Initial>
             <Loading>
                 <LoadingSpinner/>
@@ -101,7 +101,7 @@
                      Disabled="@(ImportMutingFile == null)">
             <Initial>
                 <Icon Name="Icons.Upload"/>
-                @Loc["Import"]
+                @Loc[L.Settings_Data_Import]
             </Initial>
             <Loading>
                 <LoadingSpinner/>
@@ -116,13 +116,13 @@
         <InputFile OnChange="OnMutingFileChange" accept="text/csv"/>
     </div>
 
-    <h3>@Loc["Following"]</h3>
+    <h3>@Loc[L.Settings_Data_Following]</h3>
     
     <div class="export">
         <StateButton OnClick="ExportFollowingAsync" ExtraClasses="button" @ref="ExportFollowingButton">
             <Initial>
                 <Icon Name="Icons.Download"/>
-                @Loc["Export"]
+                @Loc[L.Settings_Data_Export]
             </Initial>
             <Loading>
                 <LoadingSpinner/>
@@ -149,7 +149,7 @@
                      Disabled="@(ImportFollowingFile == null)">
             <Initial>
                 <Icon Name="Icons.Upload"/>
-                @Loc["Import"]
+                @Loc[L.Settings_Data_Import]
             </Initial>
             <Loading>
                 <LoadingSpinner/>

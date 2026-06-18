@@ -11,11 +11,11 @@
 @inject ApiService                     Api;
 @inject IStringLocalizer<Localization> Loc;
 
-<HeadTitle Text="@Loc["Filter settings"]"/>
+<HeadTitle Text="@Loc[L.Settings_Filters]"/>
 
 <SectionContent SectionName="top-bar">
     <Icon Name="Icons.SpeakerX"></Icon>
-    @Loc["Filters"]
+    @Loc[L.Settings_Filters]
 </SectionContent>
 
 <div class='body'>
@@ -26,22 +26,22 @@
             {
                 <div class="filter">
                     <div>
-                        <h3>@Loc["Name"]</h3>
+                        <h3>@Loc[L.Common_Name]</h3>
                         @el.Name
                     </div>
                     <div>
-                        <h3>@Loc["Expiry"]</h3>
+                        <h3>@Loc[L.Settings_Filters_ExpiresAt]</h3>
                         @if (el.Expiry != null)
                         {
                             @el.Expiry.Value.ToLocalTime().ToString("G")
                         }
                         else
                         {
-                            @Loc["Never"]
+                            @Loc[L.Compose_Poll_ExpiresAt_Never]
                         }
                     </div>
                     <div>
-                        <h3>@Loc["Keywords"]</h3>
+                        <h3>@Loc[L.Settings_Filters_Keywords]</h3>
                         <ul>
                             @foreach (var keyword in el.Keywords)
                             {
@@ -50,11 +50,11 @@
                         </ul>
                     </div>
                     <div>
-                        <h3>@Loc["Action"]</h3>
+                        <h3>@Loc[L.Settings_Filters_Action]</h3>
                         @el.Action.ToString()
                     </div>
                     <div>
-                        <h3>@Loc["Contexts"]</h3>
+                        <h3>@Loc[L.Settings_Filters_Contexts]</h3>
                         <ul>
                             @foreach (var context in el.Contexts)
                             {
@@ -63,26 +63,26 @@
                         </ul>
                     </div>
                 </div>
-                <button class="button" @onclick="() => DeleteFilter(el.Id)">@Loc["Delete"]</button>
+                <button class="button" @onclick="() => DeleteFilter(el.Id)">@Loc[L.Common_Delete]</button>
             }
         </div>
 
         <div class="add-filter">
             <div class="name section">
-                <h3>@Loc["Filter Name"]</h3>
+                <h3>@Loc[L.Common_Name]</h3>
                 @if (_filterNameInvalid)
                 {
-                    <span>@Loc["Filter name is required"]</span>
+                    <span>@Loc[L.Settings_Filters_Error_NameRequired]</span>
                 }
                 <input class="name-input input" required="required" type="text" @bind="FilterName"/>
             </div>
             <div class="keywords section">
                 <h3>
-                    @Loc["Keywords"]
+                    @Loc[L.Settings_Filters_Keywords]
                 </h3>
                 @if (_filterKeywordsInvalid)
                 {
-                    <span>@Loc["At least 1 keyword is required"]</span>
+                    <span>@Loc[L.Settings_Filters_Error_KeywordsRequired]</span>
                 }
                 @foreach (var el in FilterKeywords)
                 {
@@ -94,45 +94,45 @@
                     </div>
                 }
                 <input class="input" type="text" @bind="Keyword" @bind:event="oninput"/>
-                <span>@Loc["Surround keyword with \" for whole word matching. Surround keyword with / for regex matching."]</span>
+                <span>@Loc[L.Settings_Filters_KeywordInfo]</span>
                 @if (Keyword.StartsWith('/') && Keyword.EndsWith('/'))
                 {
                     <br/>
-                    <span>@Loc["Complex regex keywords will slow down your timeline. Your filter won't apply if it takes more than 1.5ms to match."]</span>
+                    <span>@Loc[L.Settings_Filters_RegexInfo]</span>
                 }
                 <button class="button" @onclick="AddKeyword">
                     <Icon Name="Icons.Plus"/>
-                    <span>@Loc["Add"]</span>
+                    <span>@Loc[L.Common_Add]</span>
                 </button>
             </div>
             <div class="action section">
-                <h3>@Loc["Filter Action"]</h3>
+                <h3>@Loc[L.Settings_Filters_Action]</h3>
                 <button @ref="MenuButton" class="button" @onclick="ToggleMenu">
                     @if (FilterAction == FilterResponse.FilterAction.Hide)
                     {
                         <Icon Name="Icons.EyeClosed"/>
-                        <span>@Loc["Hide"]</span>
+                        <span>@Loc[L.Common_Hide]</span>
                     }
                     @if (FilterAction == FilterResponse.FilterAction.Warn)
                     {
                         <Icon Name="Icons.Warning"/>
-                        <span>@Loc["Warn"]</span>
+                        <span>@Loc[L.Settings_Filters_Action_Warn]</span>
                     }
                     <Menu @ref="MenuFilterAction">
                         <MenuElement Icon="Icons.EyeClosed" OnSelect="() => FilterAction = FilterResponse.FilterAction.Hide">
-                            <Text>@Loc["Hide"]</Text>
+                            <Text>@Loc[L.Common_Hide]</Text>
                         </MenuElement>
                         <MenuElement Icon="Icons.Warning" OnSelect="() => FilterAction = FilterResponse.FilterAction.Warn">
-                            <Text>@Loc["Warn"]</Text>
+                            <Text>@Loc[L.Settings_Filters_Action_Warn]</Text>
                         </MenuElement>
                     </Menu>
                 </button>
             </div>
             <div class="contexts section">
-                <h3>@Loc["Filter Contexts"]</h3>
+                <h3>@Loc[L.Settings_Filters_Contexts]</h3>
                 @if (_filterContextsInvalid)
                 {
-                    <span>@Loc["At least 1 context required"]</span>
+                    <span>@Loc[L.Settings_Filters_Error_ContextRequired]</span>
                 }
                 <div class="active-contexts">
                     @foreach (var el in FilterContexts)
@@ -147,46 +147,46 @@
                 </div>
                 <button @ref="ContextButton" class="button" @onclick="ToggleFilterContextMenu">
                     <Icon Name="Icons.Plus"/>
-                    <span>@Loc["Add Filter Context"]</span>
+                    <span>@Loc[L.Common_Add]</span>
                     <Menu @ref="MenuFilterContexts">
                         <MenuElement OnSelect="() => AddFilterContext(FilterResponse.FilterContext.Home)">
-                            <Text>@Loc["Home"]</Text>
+                            <Text>@Loc[L.Timeline_Home]</Text>
                         </MenuElement>
                         <MenuElement OnSelect="() => AddFilterContext(FilterResponse.FilterContext.Lists)">
-                            <Text>@Loc["Lists"]</Text>
+                            <Text>@Loc[L.Settings_Filters_Context_Lists]</Text>
                         </MenuElement>
                         <MenuElement OnSelect="() => AddFilterContext(FilterResponse.FilterContext.Threads)">
-                            <Text>@Loc["Threads"]</Text>
+                            <Text>@Loc[L.Settings_Filters_Context_Threads]</Text>
                         </MenuElement>
                         <MenuElement OnSelect="() => AddFilterContext(FilterResponse.FilterContext.Notifications)">
                             <Text>@Loc[L.Notifications]</Text>
                         </MenuElement>
                         <MenuElement OnSelect="() => AddFilterContext(FilterResponse.FilterContext.Accounts)">
-                            <Text>@Loc["Accounts"]</Text>
+                            <Text>@Loc[L.Settings_Filters_Context_Profiles]</Text>
                         </MenuElement>
                         <MenuElement OnSelect="() => AddFilterContext(FilterResponse.FilterContext.Public)">
-                            <Text>@Loc["Public"]</Text>
+                            <Text>@Loc[L.Note_Visibility_Public]</Text>
                         </MenuElement>
                         <ClosingBackdrop OnClose="MenuFilterContexts.Close"></ClosingBackdrop>
                     </Menu>
                 </button>
             </div>
             <div class="expiry-section">
-                <h3>@Loc["Filter Expiry"]</h3>
+                <h3>@Loc[L.Settings_Filters_ExpiresAt]</h3>
                 <label>
                     <input type="checkbox" @bind="TemporaryFilter">
-                    @Loc["Enable filter expiration"]
+                    @Loc[L.Settings_Filters_ExpiresAt_Enable]
                 </label>
                 <input class="input" @bind="FilterExpiry" type="datetime-local" disabled="@(!TemporaryFilter)"/>
             </div>
             <StateButton OnClick="TryAddFilter" ExtraClasses="button" @ref="ButtonAddFilter">
-                <Initial><Icon Name="Icons.Plus"/><span>@Loc["Add Filter"]</span></Initial>
-                <Success><Icon Name="Icons.Plus"/><span>@Loc["Add Filter"]</span></Success>
+                <Initial><Icon Name="Icons.Plus"/><span>@Loc[L.Common_Add]</span></Initial>
+                <Success><Icon Name="Icons.Check"/></Success>
                 <Loading>
                     <LoadingSpinner/> 
                 </Loading>
                 <Failed>
-                    <Icon Name="Icons.X"/>@Loc["Error"]
+                    <Icon Name="Icons.X"/>@Loc[L.StateButton_Error]
                 </Failed>
             </StateButton>
         </div>
