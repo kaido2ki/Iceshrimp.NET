@@ -254,5 +254,245 @@ namespace Iceshrimp.Frontend.Localization {
                 return ResourceManager.GetString("Error_Api_Http_Status", resourceCulture);
             }
         }
+        
+        internal static string Note_RenotedLabel {
+            get {
+                return ResourceManager.GetString("Note_RenotedLabel", resourceCulture);
+            }
+        }
+        
+        internal static string Note_HiddenByFilter {
+            get {
+                return ResourceManager.GetString("Note_HiddenByFilter", resourceCulture);
+            }
+        }
+        
+        internal static string Common_Show {
+            get {
+                return ResourceManager.GetString("Common_Show", resourceCulture);
+            }
+        }
+        
+        internal static string Common_Hide {
+            get {
+                return ResourceManager.GetString("Common_Hide", resourceCulture);
+            }
+        }
+        
+        internal static string Note_CwShow {
+            get {
+                return ResourceManager.GetString("Note_CwShow", resourceCulture);
+            }
+        }
+        
+        internal static string Note_CwHide {
+            get {
+                return ResourceManager.GetString("Note_CwHide", resourceCulture);
+            }
+        }
+        
+        internal static string Note_CwShow_Characters {
+            get {
+                return ResourceManager.GetString("Note_CwShow_Characters", resourceCulture);
+            }
+        }
+        
+        internal static string Note_Renote {
+            get {
+                return ResourceManager.GetString("Note_Renote", resourceCulture);
+            }
+        }
+        
+        internal static string Note_Renote_Unlisted {
+            get {
+                return ResourceManager.GetString("Note_Renote_Unlisted", resourceCulture);
+            }
+        }
+        
+        internal static string Note_Renote_Followers {
+            get {
+                return ResourceManager.GetString("Note_Renote_Followers", resourceCulture);
+            }
+        }
+        
+        internal static string Note_Unrenote {
+            get {
+                return ResourceManager.GetString("Note_Unrenote", resourceCulture);
+            }
+        }
+        
+        internal static string Common_Refetch {
+            get {
+                return ResourceManager.GetString("Common_Refetch", resourceCulture);
+            }
+        }
+        
+        internal static string Note_Menu_Bookmark_Add {
+            get {
+                return ResourceManager.GetString("Note_Menu_Bookmark_Add", resourceCulture);
+            }
+        }
+        
+        internal static string Note_Menu_Bookmark_Remove {
+            get {
+                return ResourceManager.GetString("Note_Menu_Bookmark_Remove", resourceCulture);
+            }
+        }
+        
+        internal static string Note_Menu_Pin {
+            get {
+                return ResourceManager.GetString("Note_Menu_Pin", resourceCulture);
+            }
+        }
+        
+        internal static string Note_Menu_Unpin {
+            get {
+                return ResourceManager.GetString("Note_Menu_Unpin", resourceCulture);
+            }
+        }
+        
+        internal static string Note_Menu_MuteThread {
+            get {
+                return ResourceManager.GetString("Note_Menu_MuteThread", resourceCulture);
+            }
+        }
+        
+        internal static string Common_AboutPage {
+            get {
+                return ResourceManager.GetString("Common_AboutPage", resourceCulture);
+            }
+        }
+        
+        internal static string Common_OpenOriginal {
+            get {
+                return ResourceManager.GetString("Common_OpenOriginal", resourceCulture);
+            }
+        }
+        
+        internal static string Common_Bite {
+            get {
+                return ResourceManager.GetString("Common_Bite", resourceCulture);
+            }
+        }
+        
+        internal static string Common_Share {
+            get {
+                return ResourceManager.GetString("Common_Share", resourceCulture);
+            }
+        }
+        
+        internal static string Common_CopyLink {
+            get {
+                return ResourceManager.GetString("Common_CopyLink", resourceCulture);
+            }
+        }
+        
+        internal static string Common_CopyLink_Remote {
+            get {
+                return ResourceManager.GetString("Common_CopyLink_Remote", resourceCulture);
+            }
+        }
+        
+        internal static string Note_Menu_CopyContents {
+            get {
+                return ResourceManager.GetString("Note_Menu_CopyContents", resourceCulture);
+            }
+        }
+        
+        internal static string Common_Edit {
+            get {
+                return ResourceManager.GetString("Common_Edit", resourceCulture);
+            }
+        }
+        
+        internal static string Common_Delete {
+            get {
+                return ResourceManager.GetString("Common_Delete", resourceCulture);
+            }
+        }
+        
+        internal static string Note_Menu_Redraft {
+            get {
+                return ResourceManager.GetString("Note_Menu_Redraft", resourceCulture);
+            }
+        }
+        
+        internal static string Note_Menu_Report {
+            get {
+                return ResourceManager.GetString("Note_Menu_Report", resourceCulture);
+            }
+        }
+        
+        internal static string Note_Visibility_Public {
+            get {
+                return ResourceManager.GetString("Note_Visibility_Public", resourceCulture);
+            }
+        }
+        
+        internal static string Note_Visibility_Unlisted {
+            get {
+                return ResourceManager.GetString("Note_Visibility_Unlisted", resourceCulture);
+            }
+        }
+        
+        internal static string Note_Visibility_Followers {
+            get {
+                return ResourceManager.GetString("Note_Visibility_Followers", resourceCulture);
+            }
+        }
+        
+        internal static string Note_Visibility_Specified {
+            get {
+                return ResourceManager.GetString("Note_Visibility_Specified", resourceCulture);
+            }
+        }
+        
+        internal static string Note_Poll_Vote {
+            get {
+                return ResourceManager.GetString("Note_Poll_Vote", resourceCulture);
+            }
+        }
+        
+        internal static string Note_Poll_VoteCount_Choice {
+            get {
+                return ResourceManager.GetString("Note_Poll_VoteCount_Choice", resourceCulture);
+            }
+        }
+        
+        internal static string Note_Poll_MultipleChoice {
+            get {
+                return ResourceManager.GetString("Note_Poll_MultipleChoice", resourceCulture);
+            }
+        }
+        
+        internal static string Note_Poll_VoteCount_Total {
+            get {
+                return ResourceManager.GetString("Note_Poll_VoteCount_Total", resourceCulture);
+            }
+        }
+        
+        internal static string Note_Poll_Expired {
+            get {
+                return ResourceManager.GetString("Note_Poll_Expired", resourceCulture);
+            }
+        }
+        
+        internal static string Note_Poll_ExpiresAt_DateTime {
+            get {
+                return ResourceManager.GetString("Note_Poll_ExpiresAt_DateTime", resourceCulture);
+            }
+        }
+        
+        internal static string Note_Attachment_SensitiveWarning {
+            get {
+                return ResourceManager.GetString("Note_Attachment_SensitiveWarning", resourceCulture);
+            }
+        }
+        
+        internal static string Note_Attachment_NoAltWarning {
+            get {
+                return ResourceManager.GetString("Note_Attachment_NoAltWarning", resourceCulture);
+            }
+        }
     }
 }

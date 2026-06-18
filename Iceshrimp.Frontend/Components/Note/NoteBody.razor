@@ -16,17 +16,16 @@
                 {
                     @if (NoteBase.Text != null)
                     {
-                        @Loc["Show Content ({0} Characters)", NoteBase.Text.Length]
+                        @Loc[L.Note_CwShow_Characters, NoteBase.Text.Length]
                     }
                     else
                     {
-                        @Loc["Show Content"]
-
+                        @Loc[L.Note_CwShow]
                     }
                 }
                 else
                 {
-                    @Loc["Hide Content"]
+                    @Loc[L.Note_CwHide]
                 }
             </button>
         </div>

@@ -41,20 +41,20 @@
                     @if (Note.Visibility == NoteVisibility.Public)
                     {
                         <MenuElement Icon="Icons.Repeat" OnSelect="() => Renote(NoteVisibility.Public)">
-                            <Text>@Loc["Renote"]</Text>
+                            <Text>@Loc[L.Note_Renote]</Text>
                         </MenuElement>
                     }
                     <MenuElement Icon="Icons.House" OnSelect="() => Renote(NoteVisibility.Home)">
-                        <Text>@Loc["Renote (Unlisted)"]</Text>
+                        <Text>@Loc[L.Note_Renote_Unlisted]</Text>
                     </MenuElement>
                     <MenuElement Icon="Icons.Lock" OnSelect="() => Renote(NoteVisibility.Followers)">
-                        <Text>@Loc["Renote (Followers)"]</Text>
+                        <Text>@Loc[L.Note_Renote_Followers]</Text>
                     </MenuElement>
                 }
                 else
                 {
                     <MenuElement Icon="Icons.Minus" OnSelect="Unrenote">
-                        <Text>@Loc["Unrenote"]</Text>
+                        <Text>@Loc[L.Note_Unrenote]</Text>
                     </MenuElement>
                 }
                 <ClosingBackdrop OnClose="RenoteMenu.Close"></ClosingBackdrop>
@@ -100,72 +100,72 @@
             @if (Note.CanBite)
             {
                 <MenuElement Icon="Icons.Tooth" OnSelect="Bite">
-                    <Text>@Loc["Bite"]</Text>
+                    <Text>@Loc[L.Common_Bite]</Text>
                 </MenuElement>
             }
             @if (Note.User.Host != null)
             {
                 <MenuElement Icon="Icons.ArrowsClockwise" OnSelect="RefetchNote">
-                    <Text>@Loc["Refetch"]</Text>
+                    <Text>@Loc[L.Common_Refetch]</Text>
                 </MenuElement>
             }
             <MenuElement Icon="Icons.BookmarkSimple" OnSelect="Bookmark">
-                <Text>@(Note.Bookmarked ? Loc["Remove bookmark"] : Loc["Add bookmark"])</Text>
+                <Text>@(Note.Bookmarked ? Loc[L.Note_Menu_Bookmark_Remove] : Loc[L.Note_Menu_Bookmark_Add])</Text>
             </MenuElement>
             @if (Note.User.Id == Session.Current?.Id)
             {
                 <MenuElement Icon="@(Note.Pinned ? Icons.PushPinSlash : Icons.PushPin)" OnSelect="Pin">
-                    <Text>@(Note.Pinned ? Loc["Unpin from profile"] : Loc["Pin to profile"])</Text>
+                    <Text>@(Note.Pinned ? Loc[L.Note_Menu_Unpin] : Loc[L.Note_Menu_Pin])</Text>
                 </MenuElement>
             }
             <MenuElement Icon="Icons.SpeakerX" OnSelect="Mute">
-                <Text>@Loc["Mute thread"]</Text>
+                <Text>@Loc[L.Note_Menu_MuteThread]</Text>
             </MenuElement>
             <hr class="rule"/>
             <MenuElement Icon="Icons.Info" OnSelect="OpenAbout">
-                <Text>@Loc["About"]</Text>
+                <Text>@Loc[L.Common_AboutPage]</Text>
             </MenuElement>
             <MenuElement Icon="Icons.ArrowSquareOut" OnSelect="OpenOriginal">
-                <Text>@Loc["Open original page"]</Text>
+                <Text>@Loc[L.Common_OpenOriginal]</Text>
             </MenuElement>
             @if (CanShare)
             {
                 <MenuElement Icon="Icons.Share" OnSelect="Share">
-                    <Text>@Loc["Share"]</Text>
+                    <Text>@Loc[L.Common_Share]</Text>
                 </MenuElement>
             }
             <MenuElement Icon="Icons.Share" OnSelect="CopyLink">
-                <Text>@Loc["Copy link"]</Text>
+                <Text>@Loc[L.Common_CopyLink]</Text>
             </MenuElement>
             @if (Note.User.Host != null)
             {
                 <MenuElement Icon="Icons.ShareNetwork" OnSelect="CopyLinkRemote">
-                    <Text>@Loc["Copy link (remote)"]</Text>
+                    <Text>@Loc[L.Common_CopyLink_Remote]</Text>
                 </MenuElement>
             }
             @if (!string.IsNullOrWhiteSpace(Note.Text))
             {
                 <MenuElement Icon="Icons.Copy" OnSelect="CopyContents">
-                    <Text>@Loc["Copy contents"]</Text>
+                    <Text>@Loc[L.Note_Menu_CopyContents]</Text>
                 </MenuElement>
             }
             <hr class="rule"/>
             @if (Note.User.Id == Session.Current?.Id)
             {
                 <MenuElement Icon="Icons.Pencil" OnSelect="Edit">
-                    <Text>@Loc["Edit"]</Text>
+                    <Text>@Loc[L.Common_Edit]</Text>
                 </MenuElement>
                 <MenuElement Icon="Icons.Eraser" OnSelect="Redraft" Danger>
-                    <Text>@Loc["Delete & redraft"]</Text>
+                    <Text>@Loc[L.Note_Menu_Redraft]</Text>
                 </MenuElement>
                 <MenuElement Icon="Icons.Trash" OnSelect="Delete" Danger>
-                    <Text>@Loc["Delete"]</Text>
+                    <Text>@Loc[L.Common_Delete]</Text>
                 </MenuElement>
             }
             else
             {
                 <MenuElement Icon="Icons.WarningCircle" OnSelect="Report" Danger>
-                    <Text>@Loc["Report note"]</Text>
+                    <Text>@Loc[L.Note_Menu_Report]</Text>
                 </MenuElement>
             }
             <ClosingBackdrop OnClose="ContextMenu.Close"></ClosingBackdrop>

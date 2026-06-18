@@ -10,7 +10,7 @@
                     {
                         <Icon Name="Icons.Robot" Size="1.3em" title="Automated"/>
                     }
-                    @Loc["Renoted by"]
+                    @Loc[L.Note_RenotedLabel]
                     <a href="@($"/{NoteResponse.User.Handle}")">
                         <UserDisplayName User="@NoteResponse.User"/>
                     </a>
@@ -27,18 +27,18 @@
         @if (NoteResponse.Filtered is not null && NoteResponse.Filtered.Hide == false)
         {
             <div>
-                @Loc["This note is hidden by your filter"]
+                @Loc[L.Note_HiddenByFilter]
                 <span class="filter-name">@NoteResponse.Filtered.Name</span>
                 <button
                     @onclick="@ShowNote"
                     @onclick:stopPropagation="true">
                     @if (_overrideHide)
                     {
-                        @Loc["Hide"]
+                        @Loc[L.Common_Hide]
                     }
                     else
                     {
-                        @Loc["Show"]
+                        @Loc[L.Common_Show]
                     }
                 </button>
             </div>

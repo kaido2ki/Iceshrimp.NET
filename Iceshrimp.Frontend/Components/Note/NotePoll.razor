@@ -42,7 +42,7 @@
                     </label>
                 </span>
             }
-            <button class="button" @onclick="Vote" disabled="@(Choices.Count == 0)">@Loc["Vote"]</button>
+            <button class="button" @onclick="Vote" disabled="@(Choices.Count == 0)">@Loc[L.Note_Poll_Vote]</button>
         </div>
     }
     else
@@ -57,7 +57,7 @@
                     <span class="poll-value">
                         <MfmText Text="@choice.Value" Emoji="@Emoji" Simple="true"/>
                     </span>
-                    <span class="poll-info"><span class="vote-count">@Loc["{0} votes", choice.Votes]</span><span class="vote-percentage">@percentage%</span></span>
+                    <span class="poll-info"><span class="vote-count">@Loc[L.Note_Poll_VoteCount_Choice, choice.Votes]</span><span class="vote-percentage">@percentage%</span></span>
                 </span>
             }
         </div>
@@ -65,11 +65,11 @@
     @{
         List<string> footerText = [];
         @if (Poll.Multiple)
-            footerText.Add(Loc["Multiple choice"]);
+            footerText.Add(Loc[L.Note_Poll_MultipleChoice]);
         @if (Poll.VotersCount != null)
-            footerText.Add(Loc["{0} users voted", Poll.VotersCount]);
+            footerText.Add(Loc[L.Note_Poll_VoteCount_Total, Poll.VotersCount]);
         @if (Poll.ExpiresAt != null)
-            footerText.Add(Poll.ExpiresAt <= DateTime.UtcNow ? Loc["Ended"] : Loc["Ends at {0}", Poll.ExpiresAt.Value.ToLocalTime().ToString("G")]);
+            footerText.Add(Poll.ExpiresAt <= DateTime.UtcNow ? Loc[L.Note_Poll_Expired] : Loc[L.Note_Poll_ExpiresAt_DateTime, Poll.ExpiresAt.Value.ToLocalTime().ToString("G")]);
     }
     <span class="poll-footer">@string.Join(" - ", footerText)</span>
 </div>

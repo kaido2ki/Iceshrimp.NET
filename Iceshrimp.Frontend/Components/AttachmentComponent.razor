@@ -15,8 +15,8 @@
     {
         <div class="attachment contents blur-image">
             <Icon Name="Icons.Warning" Size="3em"/>
-            <span>@Loc["Sensitive media"]</span>
-            <span>@Loc["Click to reveal"]</span>
+            <span>@Loc[L.Note_Attachment_SensitiveWarning]</span>
+            <span>@Loc[L.Note_CwShow]</span>
         </div>
     }
     //  else if (Attachment.ContentType == "audio/x-mod")
@@ -52,14 +52,14 @@
         }
         else
         {
-            <button @onclick="DisplayAlt" @onclick:stopPropagation="true" title="@Loc["No alt text"]">
+            <button @onclick="DisplayAlt" @onclick:stopPropagation="true" title="@Loc[L.Note_Attachment_NoAltWarning]">
                 <Icon Name="Icons.Warning"/>
             </button>
         }
         
         @if (!BlurImage)
         {
-            <button @onclick="() => BlurImage = true" @onclick:stopPropagation="true" title="@Loc["Hide content"]">
+            <button @onclick="() => BlurImage = true" @onclick:stopPropagation="true" title="@Loc[L.Note_CwHide]">
                 <Icon Name="@Icons.EyeSlash"/>
             </button>
         }

@@ -124,4 +124,124 @@
     <data name="Error_Api_Http_Status" xml:space="preserve">
         <value>The API request failed with status code {0}.</value>
     </data>
+    <data name="Note_RenotedLabel" xml:space="preserve">
+        <value>Renoted by</value>
+    </data>
+    <data name="Note_HiddenByFilter" xml:space="preserve">
+        <value>This note is hidden by your filter</value>
+    </data>
+    <data name="Common_Show" xml:space="preserve">
+        <value>Show</value>
+    </data>
+    <data name="Common_Hide" xml:space="preserve">
+        <value>Hide</value>
+    </data>
+    <data name="Note_CwShow" xml:space="preserve">
+        <value>Show content</value>
+    </data>
+    <data name="Note_CwHide" xml:space="preserve">
+        <value>Hide content</value>
+    </data>
+    <data name="Note_CwShow_Characters" xml:space="preserve">
+        <value>Show content ({0} characters)</value>
+    </data>
+    <data name="Note_Renote" xml:space="preserve">
+        <value>Renote</value>
+    </data>
+    <data name="Note_Renote_Unlisted" xml:space="preserve">
+        <value>Renote (Unlisted)</value>
+    </data>
+    <data name="Note_Renote_Followers" xml:space="preserve">
+        <value>Renote (Followers-only)</value>
+    </data>
+    <data name="Note_Unrenote" xml:space="preserve">
+        <value>Unrenote</value>
+    </data>
+    <data name="Common_Refetch" xml:space="preserve">
+        <value>Refetch</value>
+    </data>
+    <data name="Note_Menu_Bookmark_Add" xml:space="preserve">
+        <value>Add bookmark</value>
+    </data>
+    <data name="Note_Menu_Bookmark_Remove" xml:space="preserve">
+        <value>Remove bookmark</value>
+    </data>
+    <data name="Note_Menu_Pin" xml:space="preserve">
+        <value>Pin to profile</value>
+    </data>
+    <data name="Note_Menu_Unpin" xml:space="preserve">
+        <value>Unpin from profile</value>
+    </data>
+    <data name="Note_Menu_MuteThread" xml:space="preserve">
+        <value>Mute thread</value>
+    </data>
+    <data name="Common_AboutPage" xml:space="preserve">
+        <value>About (debug)</value>
+    </data>
+    <data name="Common_OpenOriginal" xml:space="preserve">
+        <value>Open original page</value>
+    </data>
+    <data name="Common_Bite" xml:space="preserve">
+        <value>Bite</value>
+    </data>
+    <data name="Common_Share" xml:space="preserve">
+        <value>Share</value>
+    </data>
+    <data name="Common_CopyLink" xml:space="preserve">
+        <value>Copy link</value>
+    </data>
+    <data name="Common_CopyLink_Remote" xml:space="preserve">
+        <value>Copy link (remote)</value>
+    </data>
+    <data name="Note_Menu_CopyContents" xml:space="preserve">
+        <value>Copy contents</value>
+    </data>
+    <data name="Common_Edit" xml:space="preserve">
+        <value>Edit</value>
+    </data>
+    <data name="Common_Delete" xml:space="preserve">
+        <value>Delete</value>
+    </data>
+    <data name="Note_Menu_Redraft" xml:space="preserve">
+        <value>Delete &amp; redraft</value>
+    </data>
+    <data name="Note_Menu_Report" xml:space="preserve">
+        <value>Report note</value>
+    </data>
+    <data name="Note_Visibility_Public" xml:space="preserve">
+        <value>Public</value>
+    </data>
+    <data name="Note_Visibility_Unlisted" xml:space="preserve">
+        <value>Unlisted</value>
+    </data>
+    <data name="Note_Visibility_Followers" xml:space="preserve">
+        <value>Followers-only</value>
+    </data>
+    <data name="Note_Visibility_Specified" xml:space="preserve">
+        <value>Direct</value>
+    </data>
+    <data name="Note_Poll_Vote" xml:space="preserve">
+        <value>Vote</value>
+    </data>
+    <data name="Note_Poll_VoteCount_Choice" xml:space="preserve">
+        <value>{0} votes</value>
+    </data>
+    <data name="Note_Poll_MultipleChoice" xml:space="preserve">
+        <value>Multiple choice</value>
+    </data>
+    <data name="Note_Poll_VoteCount_Total" xml:space="preserve">
+        <value>{0} users voted</value>
+    </data>
+    <data name="Note_Poll_Expired" xml:space="preserve">
+        <value>Ended</value>
+    </data>
+    <data name="Note_Poll_ExpiresAt_DateTime" xml:space="preserve">
+        <value>Ends at {0}</value>
+    </data>
+    <data name="Note_Attachment_SensitiveWarning" xml:space="preserve">
+        <value>Sensitive media</value>
+    </data>
+    <data name="Note_Attachment_NoAltWarning" xml:space="preserve">
+        <value>No alt text</value>
+    </data>
 </root>
