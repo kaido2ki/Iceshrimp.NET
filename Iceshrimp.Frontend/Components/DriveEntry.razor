@@ -14,11 +14,11 @@
         <div class="labels">
             @if (File.IsAvatar)
             {
-                <Icon Name="Icons.UserCircle" title="@Loc["Avatar"]"/>
+                <Icon Name="Icons.UserCircle" title="@Loc[L.Drive_Entry_Avatar]"/>
             }
             @if (File.IsBanner)
             {
-                <Icon Name="Icons.Image" title="@Loc["Banner"]"/>
+                <Icon Name="Icons.Image" title="@Loc[L.Drive_Entry_Banner]"/>
             }
             @if (File.Description != null)
             {
@@ -26,11 +26,11 @@
             }
             else
             {
-                <Icon Name="Icons.Warning" title="@Loc["No alt text"]"/>
+                <Icon Name="Icons.Warning" title="@Loc[L.Drive_Entry_NoAlt]"/>
             }
             @if (File.Sensitive)
             {
-                <Icon Name="Icons.EyeSlash" title="@Loc["Sensitive"]"/>
+                <Icon Name="Icons.EyeSlash" title="@Loc[L.Drive_Entry_Sensitive]"/>
             }
         </div>
         @if (File.ContentType.StartsWith("image") || Constants.CommonImageExtensions.Any(e => File.Filename.EndsWith(e)))
@@ -58,39 +58,39 @@
         <span>@File.Filename</span>
         <Menu @ref="FileMenu">
             <MenuElement Icon="Icons.ArrowSquareOut" OnSelect="OpenFile">
-                <Text>@Loc["Open"]</Text>
+                <Text>@Loc[L.Common_Open]</Text>
             </MenuElement>
             <MenuElement Icon="Icons.Share" OnSelect="CopyFileLink">
-                <Text>@Loc["Copy link"]</Text>
+                <Text>@Loc[L.Common_CopyLink]</Text>
             </MenuElement>
             <hr class="rule"/>
             <MenuElement Icon="Icons.CursorText" OnSelect="RenameFile">
-                <Text>@Loc["Rename"]</Text>
+                <Text>@Loc[L.Common_Rename]</Text>
             </MenuElement>
             @if (File.Sensitive)
             {
                 <MenuElement Icon="Icons.Eye" OnSelect="MarkFileNotSensitive">
-                    <Text>@Loc["Mark as not sensitive"]</Text>
+                    <Text>@Loc[L.Drive_Entry_Menu_Sensitive_Remove]</Text>
                 </MenuElement>
             }
             else
             {
                 <MenuElement Icon="Icons.EyeSlash" OnSelect="MarkFileAsSensitive">
-                    <Text>@Loc["Mark as sensitive"]</Text>
+                    <Text>@Loc[L.Drive_Entry_Menu_Sensitive_Add]</Text>
                 </MenuElement>
             }
             <MenuElement Icon="Icons.ClosedCaptioning" OnSelect="SetFileAltText">
-                <Text>@Loc["Set alt text"]</Text>
+                <Text>@Loc[L.Drive_Entry_Menu_SetAlt]</Text>
             </MenuElement>
             <hr class="rule"/>
             @if (ParentId != null || FolderList.Count != 0)
             {
                 <MenuElement Icon="Icons.FolderDashed" OnSelect="MoveFile">
-                    <Text>@Loc["Move"]</Text>
+                    <Text>@Loc[L.Drive_Entry_Menu_Move]</Text>
                 </MenuElement>
             }
             <MenuElement Icon="Icons.Trash" OnSelect="DeleteFile" Danger>
-                <Text>@Loc["Delete"]</Text>
+                <Text>@Loc[L.Common_Delete]</Text>
             </MenuElement>
             <ClosingBackdrop OnClose="FileMenu.Close"></ClosingBackdrop>
         </Menu>
@@ -105,17 +105,17 @@
         <span>@Folder.Name</span>
         <Menu @ref="FolderMenu">
             <MenuElement Icon="Icons.FolderOpen" OnSelect="OpenFolder">
-                <Text>@Loc["Open"]</Text>
+                <Text>@Loc[L.Common_Open]</Text>
             </MenuElement>
             <hr class="rule"/>
             <MenuElement Icon="Icons.CursorText" OnSelect="RenameFolder">
-                <Text>@Loc["Rename"]</Text>
+                <Text>@Loc[L.Common_Rename]</Text>
             </MenuElement>
             @if (ParentId != null || FolderList.Count > 1)
             {
                 <hr class="rule"/>
                 <MenuElement Icon="Icons.FolderDashed" OnSelect="MoveFolder">
-                    <Text>@Loc["Move"]</Text>
+                    <Text>@Loc[L.Drive_Entry_Menu_Move]</Text>
                 </MenuElement>
             }
             <ClosingBackdrop OnClose="FolderMenu.Close"></ClosingBackdrop>
@@ -137,7 +137,7 @@
     private void SelectFile() => FileMenu.Toggle(FileButton);
 
     private async Task RenameFile() =>
-        await Global.PromptDialog?.Prompt(new EventCallback<string?>(this, RenameFileCallback), Loc["Rename file"], Loc["File name"], File!.Filename, buttonText: Loc["Rename"])!;
+        await Global.PromptDialog?.Prompt(new EventCallback<string?>(this, RenameFileCallback), Loc[L.Common_Rename], Loc[L.Drive_Entry_RenameDialog_FilePlaceholder], File!.Filename, buttonText: Loc[L.Drive_Entry_RenameDialog_Confirm])!;
 
     private async Task RenameFileCallback(string? filename)
     {
@@ -180,7 +180,7 @@
     private async Task MarkFileAsSensitive() => await MarkFileSensitive(true);
 
     private async Task SetFileAltText() =>
-        await Global.PromptDialog?.Prompt(new EventCallback<string?>(this, SetFileAltTextCallback), Loc["Set alt text"], "", File!.Description ?? "", true, true)!;
+        await Global.PromptDialog?.Prompt(new EventCallback<string?>(this, SetFileAltTextCallback), Loc[L.Drive_Entry_Menu_SetAlt], "", File!.Description ?? "", true, true)!;
 
     private async Task SetFileAltTextCallback(string? alt)
     {
@@ -205,7 +205,7 @@
     {
         var folders = FolderList.Select(f => (f.Name ?? "/", (object)(f.Id ?? ""))).OrderBy(f => f.Item1).ToList();
         if (ParentId != null) folders.Insert(0, ("/", ""));
-        await Global.SelectDialog?.Select(new EventCallback<object?>(this, MoveFileCallback), Loc["Move to folder"], folders)!;
+        await Global.SelectDialog?.Select(new EventCallback<object?>(this, MoveFileCallback), Loc[L.Drive_Entry_Menu_Move], folders)!;
     }
 
     private async Task MoveFileCallback(object? folderId)
@@ -232,7 +232,7 @@
     private void CopyFileLink() => Js.InvokeVoidAsync("navigator.clipboard.writeText", File!.Url);
 
     private async Task DeleteFile() =>
-        await Global.ConfirmDialog?.Confirm(new EventCallback<bool>(this, DeleteFileCallback), Loc["Delete {0}?", File!.Filename], Icons.Trash, Loc["Delete"])!;
+        await Global.ConfirmDialog?.Confirm(new EventCallback<bool>(this, DeleteFileCallback), Loc[L.Drive_Entry_DeleteDialog_Question, File!.Filename], Icons.Trash, Loc[L.Common_Delete])!;
 
     private async Task DeleteFileCallback(bool delete)
     {
@@ -255,7 +255,7 @@
     private async Task RenameFolder()
     {
         if (Folder is not { Id: not null, Name: not null }) return;
-        await Global.PromptDialog?.Prompt(new EventCallback<string?>(this, RenameFolderCallback), Loc["Rename folder"], Loc["Folder name"], Folder!.Name, buttonText: Loc["Rename"])!;
+        await Global.PromptDialog?.Prompt(new EventCallback<string?>(this, RenameFolderCallback), Loc[L.Common_Rename], Loc[L.Drive_Entry_RenameDialog_FolderPlaceholder], Folder!.Name, buttonText: Loc[L.Drive_Entry_RenameDialog_Confirm])!;
     }
 
     private async Task RenameFolderCallback(string? name)
@@ -282,7 +282,7 @@
     {
         var folders = FolderList.Where(f => f.Id != Folder!.Id).Select(f => (f.Name ?? "/", (object)(f.Id ?? ""))).OrderBy(f => f.Item1).ToList();
         if (ParentId != null) folders.Insert(0, ("/", ""));
-        await Global.SelectDialog?.Select(new EventCallback<object?>(this, MoveFolderCallback), Loc["Move to folder"], folders)!;
+        await Global.SelectDialog?.Select(new EventCallback<object?>(this, MoveFolderCallback), Loc[L.Drive_Entry_Menu_Move], folders)!;
     }
 
     private async Task MoveFolderCallback(object? folderId)

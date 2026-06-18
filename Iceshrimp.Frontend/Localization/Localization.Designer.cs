@@ -483,15 +483,147 @@ namespace Iceshrimp.Frontend.Localization {
             }
         }
         
-        internal static string Note_Attachment_SensitiveWarning {
+        internal static string Drive_Entry_Sensitive {
             get {
-                return ResourceManager.GetString("Note_Attachment_SensitiveWarning", resourceCulture);
+                return ResourceManager.GetString("Drive_Entry_Sensitive", resourceCulture);
             }
         }
         
-        internal static string Note_Attachment_NoAltWarning {
+        internal static string Drive_Entry_NoAlt {
             get {
-                return ResourceManager.GetString("Note_Attachment_NoAltWarning", resourceCulture);
+                return ResourceManager.GetString("Drive_Entry_NoAlt", resourceCulture);
+            }
+        }
+        
+        internal static string Drive {
+            get {
+                return ResourceManager.GetString("Drive", resourceCulture);
+            }
+        }
+        
+        internal static string Drive_Status {
+            get {
+                return ResourceManager.GetString("Drive_Status", resourceCulture);
+            }
+        }
+        
+        internal static string Drive_Folder_Create {
+            get {
+                return ResourceManager.GetString("Drive_Folder_Create", resourceCulture);
+            }
+        }
+        
+        internal static string Drive_Folder_Delete {
+            get {
+                return ResourceManager.GetString("Drive_Folder_Delete", resourceCulture);
+            }
+        }
+        
+        internal static string Drive_UploadFile {
+            get {
+                return ResourceManager.GetString("Drive_UploadFile", resourceCulture);
+            }
+        }
+        
+        internal static string Drive_Count_Folders_Files {
+            get {
+                return ResourceManager.GetString("Drive_Count_Folders_Files", resourceCulture);
+            }
+        }
+        
+        internal static string Drive_Status_FileCount {
+            get {
+                return ResourceManager.GetString("Drive_Status_FileCount", resourceCulture);
+            }
+        }
+        
+        internal static string Drive_Status_Usage_Size {
+            get {
+                return ResourceManager.GetString("Drive_Status_Usage_Size", resourceCulture);
+            }
+        }
+        
+        internal static string Drive_CreateFolderDialog_Placeholder {
+            get {
+                return ResourceManager.GetString("Drive_CreateFolderDialog_Placeholder", resourceCulture);
+            }
+        }
+        
+        internal static string Drive_CreateFolderDialog_Confirm {
+            get {
+                return ResourceManager.GetString("Drive_CreateFolderDialog_Confirm", resourceCulture);
+            }
+        }
+        
+        internal static string Drive_Entry_Avatar {
+            get {
+                return ResourceManager.GetString("Drive_Entry_Avatar", resourceCulture);
+            }
+        }
+        
+        internal static string Drive_Entry_Banner {
+            get {
+                return ResourceManager.GetString("Drive_Entry_Banner", resourceCulture);
+            }
+        }
+        
+        internal static string Common_Open {
+            get {
+                return ResourceManager.GetString("Common_Open", resourceCulture);
+            }
+        }
+        
+        internal static string Drive_Entry_Menu_Move {
+            get {
+                return ResourceManager.GetString("Drive_Entry_Menu_Move", resourceCulture);
+            }
+        }
+        
+        internal static string Drive_Entry_Menu_SetAlt {
+            get {
+                return ResourceManager.GetString("Drive_Entry_Menu_SetAlt", resourceCulture);
+            }
+        }
+        
+        internal static string Drive_Entry_Menu_Sensitive_Add {
+            get {
+                return ResourceManager.GetString("Drive_Entry_Menu_Sensitive_Add", resourceCulture);
+            }
+        }
+        
+        internal static string Drive_Entry_Menu_Sensitive_Remove {
+            get {
+                return ResourceManager.GetString("Drive_Entry_Menu_Sensitive_Remove", resourceCulture);
+            }
+        }
+        
+        internal static string Common_Rename {
+            get {
+                return ResourceManager.GetString("Common_Rename", resourceCulture);
+            }
+        }
+        
+        internal static string Drive_Entry_RenameDialog_FilePlaceholder {
+            get {
+                return ResourceManager.GetString("Drive_Entry_RenameDialog_FilePlaceholder", resourceCulture);
+            }
+        }
+        
+        internal static string Drive_Entry_RenameDialog_FolderPlaceholder {
+            get {
+                return ResourceManager.GetString("Drive_Entry_RenameDialog_FolderPlaceholder", resourceCulture);
+            }
+        }
+        
+        internal static string Drive_Entry_RenameDialog_Confirm {
+            get {
+                return ResourceManager.GetString("Drive_Entry_RenameDialog_Confirm", resourceCulture);
+            }
+        }
+        
+        internal static string Drive_Entry_DeleteDialog_Question {
+            get {
+                return ResourceManager.GetString("Drive_Entry_DeleteDialog_Question", resourceCulture);
             }
         }
     }

@@ -15,7 +15,7 @@
     {
         <div class="attachment contents blur-image">
             <Icon Name="Icons.Warning" Size="3em"/>
-            <span>@Loc[L.Note_Attachment_SensitiveWarning]</span>
+            <span>@Loc[L.Drive_Entry_Sensitive]</span>
             <span>@Loc[L.Note_CwShow]</span>
         </div>
     }
@@ -52,7 +52,7 @@
         }
         else
         {
-            <button @onclick="DisplayAlt" @onclick:stopPropagation="true" title="@Loc[L.Note_Attachment_NoAltWarning]">
+            <button @onclick="DisplayAlt" @onclick:stopPropagation="true" title="@Loc[L.Drive_Entry_NoAlt]">
                 <Icon Name="Icons.Warning"/>
             </button>
         }

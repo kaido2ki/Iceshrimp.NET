@@ -238,10 +238,76 @@
     <data name="Note_Poll_ExpiresAt_DateTime" xml:space="preserve">
         <value>Ends at {0}</value>
     </data>
-    <data name="Note_Attachment_SensitiveWarning" xml:space="preserve">
+    <data name="Drive_Entry_Sensitive" xml:space="preserve">
         <value>Sensitive media</value>
     </data>
-    <data name="Note_Attachment_NoAltWarning" xml:space="preserve">
+    <data name="Drive_Entry_NoAlt" xml:space="preserve">
         <value>No alt text</value>
+    </data>
+    <data name="Drive" xml:space="preserve">
+        <value>Drive</value>
+    </data>
+    <data name="Drive_Status" xml:space="preserve">
+        <value>Status</value>
+    </data>
+    <data name="Drive_Folder_Create" xml:space="preserve">
+        <value>Create folder</value>
+    </data>
+    <data name="Drive_Folder_Delete" xml:space="preserve">
+        <value>Delete folder</value>
+    </data>
+    <data name="Drive_UploadFile" xml:space="preserve">
+        <value>Upload file</value>
+    </data>
+    <data name="Drive_Count_Folders_Files" xml:space="preserve">
+        <value>({0} folders, {1} files)</value>
+    </data>
+    <data name="Drive_Status_FileCount" xml:space="preserve">
+        <value>Total files: {0}</value>
+    </data>
+    <data name="Drive_Status_Usage_Size" xml:space="preserve">
+        <value>Storage usage: {0}</value>
+    </data>
+    <data name="Drive_CreateFolderDialog_Placeholder" xml:space="preserve">
+        <value>Folder name</value>
+    </data>
+    <data name="Drive_CreateFolderDialog_Confirm" xml:space="preserve">
+        <value>Create</value>
+    </data>
+    <data name="Drive_Entry_Avatar" xml:space="preserve">
+        <value>Avatar</value>
+    </data>
+    <data name="Drive_Entry_Banner" xml:space="preserve">
+        <value>Banner</value>
+    </data>
+    <data name="Common_Open" xml:space="preserve">
+        <value>Open</value>
+    </data>
+    <data name="Drive_Entry_Menu_Move" xml:space="preserve">
+        <value>Move</value>
+    </data>
+    <data name="Drive_Entry_Menu_SetAlt" xml:space="preserve">
+        <value>Set alt text</value>
+    </data>
+    <data name="Drive_Entry_Menu_Sensitive_Add" xml:space="preserve">
+        <value>Mark as sensitive</value>
+    </data>
+    <data name="Drive_Entry_Menu_Sensitive_Remove" xml:space="preserve">
+        <value>Unmark as sensitive</value>
+    </data>
+    <data name="Common_Rename" xml:space="preserve">
+        <value>Rename</value>
+    </data>
+    <data name="Drive_Entry_RenameDialog_FilePlaceholder" xml:space="preserve">
+        <value>New file name</value>
+    </data>
+    <data name="Drive_Entry_RenameDialog_FolderPlaceholder" xml:space="preserve">
+        <value>New folder name</value>
+    </data>
+    <data name="Drive_Entry_RenameDialog_Confirm" xml:space="preserve">
+        <value>Rename</value>
+    </data>
+    <data name="Drive_Entry_DeleteDialog_Question" xml:space="preserve">
+        <value>Delete {0}?</value>
     </data>
 </root>
