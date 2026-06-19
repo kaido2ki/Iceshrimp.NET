@@ -16,6 +16,7 @@
 @using Iceshrimp.Frontend.Core.Services
 @using Iceshrimp.Shared.Helpers
 @attribute [Authorize]
+@inject JsService                      JsSvc;
 @inject IStringLocalizer<Localization> Loc;
 @inject GlobalComponentSvc             GlobalComponentSvc;
 @inject NavigationManager              Nav;
@@ -27,39 +28,56 @@
 <SectionContent SectionName="top-bar">
     <Icon Name="Icons.House"></Icon>
     @Loc[L.Common_Timeline]
-    <button class="button selector" @onclick="() => MenuRef.Toggle(MenuButton, false)" @ref="MenuButton">
-        <div class="current-timeline">@switch (CurrentTimeline!.Enum)
-            {
-                case TimelineEnum.Home:
-                    <Icon Name="Icons.House"/>
-                    @Loc[L.Timeline_Home]
-                    break;
-                case TimelineEnum.Local:
-                    <Icon Name="Icons.Users"/>
-                    @Loc[L.Timeline_Local]
-                    break;
-                case TimelineEnum.Social:
-                    <Icon Name="Icons.Handshake"/>
-                    @Loc[L.Timeline_Social]
-                    break;
-                case TimelineEnum.Bubble:
-                    <Icon Name="Icons.Hexagon"/>
-                    @Loc[L.Timeline_Bubble]
-                    break;
-                case TimelineEnum.Global:
-                    <Icon Name="Icons.Globe"/>
-                    @Loc[L.Timeline_Global]
-                    break;
-                case TimelineEnum.Remote:
-                    <Icon Name="Icons.Airplane"/>
-                    @(CurrentTimeline.Remote != null ? Loc[L.Timeline_Remote_Host, CurrentTimeline.Remote] : Loc[L.Timeline_Remote])
-                    break;
-                case TimelineEnum.Tag:
-                    <Icon Name="Icons.Tag"/>
-                    @(CurrentTimeline.Tag != null ? Loc[L.Timeline_Tag_Name, CurrentTimeline.Tag] : Loc[L.Timeline_Tag])
-                    break;
-            }
-        </div>
+    <span class="action btn" @onclick="ScrollToTop" title="@Loc["Scroll to top"]">
+        <Icon Name="Icons.ArrowLineUp"/>
+        <span>@Loc["Scroll to top"]</span>
+    </span>
+    <span class="action btn" @onclick="() => MenuRef.Toggle(MenuButton, false)" @ref="MenuButton">
+        @switch (CurrentTimeline!.Enum)
+        {
+            case TimelineEnum.Home:
+                <Icon Name="Icons.House"/>
+                <span>@Loc[L.Timeline_Home]</span>
+                break;
+            case TimelineEnum.Local:
+                <Icon Name="Icons.Users"/>
+                <span>@Loc[L.Timeline_Local]</span>
+                break;
+            case TimelineEnum.Social:
+                <Icon Name="Icons.Handshake"/>
+                <span>@Loc[L.Timeline_Social]</span>
+                break;
+            case TimelineEnum.Bubble:
+                <Icon Name="Icons.Hexagon"/>
+                <span>@Loc[L.Timeline_Bubble]</span>
+                break;
+            case TimelineEnum.Global:
+                <Icon Name="Icons.Globe"/>
+                <span>@Loc[L.Timeline_Global]</span>
+                break;
+            case TimelineEnum.Remote:
+                <Icon Name="Icons.Airplane"/>
+                @if (CurrentTimeline.Remote != null)
+                {
+                    <span>@Loc[L.Timeline_Remote_Host, CurrentTimeline.Remote]</span>
+                }
+                else
+                {
+                    <span>@Loc[L.Timeline_Remote]</span>
+                }
+                break;
+            case TimelineEnum.Tag:
+                <Icon Name="Icons.Tag"/>
+                @if (CurrentTimeline.Tag != null)
+                {
+                    <span>@Loc[L.Timeline_Tag_Name, CurrentTimeline.Tag]</span>
+                }
+                else
+                {
+                    <span>@Loc[L.Timeline_Tag]</span>
+                }
+                break;
+        }
         <Menu @ref="MenuRef" Fixed="true">
             <MenuElement OnSelect="() => SwitchTimeline(TimelineEnum.Home)">
                 <Text>
@@ -92,11 +110,11 @@
                 </Text>
             </MenuElement>
         </Menu>
-    </button>
+    </span>
 
 
 </SectionContent>
-<div class="timeline">
+<div @ref="TimelineRef" class="timeline">
     @if (NoteResponses is not null && _loaded)
     {
         <VirtualScroller InitialItems="NoteResponses" ItemProvider="Provider" StateKey="@CurrentTimeline!.Key"
@@ -120,6 +138,7 @@
     private            Menu                           MenuRef         { get; set; } = null!;
     private            ElementReference               MenuButton      { get; set; }
     private            VirtualScroller<NoteResponse>? VirtualScroller { get; set; }
+    private            ElementReference               TimelineRef     { get; set; }
 
     protected override async Task OnInitializedAsync()
     {
@@ -239,6 +258,11 @@
         }
 
         CurrentTimeline = timeline;
+    }
+
+    private async Task ScrollToTop()
+    {
+        await JsSvc.ScrollToElementAsync(TimelineRef, JsService.ScrollBehavior.Smooth);
     }
 
     public void Dispose()
