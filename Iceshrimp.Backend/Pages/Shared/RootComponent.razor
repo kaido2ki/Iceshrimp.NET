@@ -45,17 +45,19 @@
     [Inject] public required InstanceService InstanceSvc { get; set; }
     [Inject] public required MetaService     Meta        { get; set; }
 
+    [Inject] public required IOptionsSnapshot<Config.InstanceSection> Config { get; set; }
+
     // This is separate from AuthorizationMiddleware.AuthorizeAttribute, as that middleware is meant for API calls.
     public class RequireAuthorizationAttribute : Attribute;
 
-    private string? _instanceName;
-    private User?   _user;
+    private string _instanceName = null!;
+    private User?  _user;
 
     protected override async Task OnParametersSetAsync()
     {
         _user = Context.GetUser();
 
-        _instanceName = await Meta.GetAsync(MetaEntity.InstanceName);
+        _instanceName = await Meta.GetAsync(MetaEntity.InstanceName) ?? Config.Value.AccountDomain;
 
         if (Context.GetEndpoint()?.Metadata.GetMetadata<RequireAuthorizationAttribute>() == null)
             return;

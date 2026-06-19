@@ -7,10 +7,10 @@
 @using Microsoft.Extensions.Options
 @attribute [PublicPreviewRouteFilter]
 @inherits AsyncComponentBase
-<PageTitle>Home - @(InstanceName ?? "Iceshrimp.NET")</PageTitle>
+<PageTitle>Home - @InstanceName</PageTitle>
 <HeadContent>
     <meta name="twitter:card" content="summary">
-    <meta property="og:title" content="Home - @InstanceName">
+    <meta property="og:title" content="Home">
     <meta property="og:description" content="@_instanceDescription">
     <meta property="og:site_name" content="@InstanceName">
 </HeadContent>
@@ -62,7 +62,7 @@
 
 @code {
     [CascadingParameter(Name = "InstanceName")]
-    public required string? InstanceName { get; set; }
+    public required string InstanceName { get; set; }
 
     [Inject] public required InstanceService                          Instance { get; set; }
     [Inject] public required MetaService                              Meta     { get; set; }

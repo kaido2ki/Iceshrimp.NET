@@ -1,10 +1,12 @@
 @page "/admin/metadata"
 @using System.Text.RegularExpressions
 @using Iceshrimp.Backend.Components.Admin
+@using Iceshrimp.Backend.Core.Configuration
 @using Iceshrimp.Backend.Core.Extensions
 @using Iceshrimp.Backend.Core.Services
 @using Microsoft.AspNetCore.Components.Forms
 @using Microsoft.EntityFrameworkCore
+@using Microsoft.Extensions.Options
 @inherits AdminComponentBase
 
 <AdminPageHeader Title="Instance metadata"/>
@@ -33,7 +35,7 @@
     }
     <InputFile name="Model.BannerFile" id="banner" accept="image/*"/>
     <label for="name">Instance name</label>
-    <InputText @bind-Value="@Model.Name" id="name" placeholder="Shrimp & friends"/>
+    <InputText @bind-Value="@Model.Name" id="name" placeholder="@Config.Value.AccountDomain"/>
     <label for="desc">Instance description</label>
     <InputTextArea @bind-Value="@Model.Description" id="desc" placeholder="Welcome to my instance!"/>
     <label for="theme-color">Theme color</label>
@@ -47,6 +49,8 @@
     [Inject] public required DriveService      Drive      { get; set; }
     [Inject] public required MetaService       Meta       { get; set; }
     [Inject] public required SystemUserService SystemUser { get; set; }
+
+    [Inject] public required IOptionsSnapshot<Config.InstanceSection> Config { get; set; }
 
     [SupplyParameterFromForm] private MetadataModel Model { get; set; } = null!;
 
