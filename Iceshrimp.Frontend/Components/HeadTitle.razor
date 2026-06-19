@@ -12,13 +12,11 @@ else
 
 @code {
     [Parameter] public string? Text         { get; set; }
-    private            string  InstanceName { get; set; } = "Iceshrimp.NET";
+    private            string  InstanceName { get; set; } = null!;
 
     protected override async Task OnInitializedAsync()
     {
         var metadata = await Metadata.Instance.Value;
-
-        if (metadata.Name != null)
-            InstanceName = metadata.Name;
+        InstanceName = metadata.Name;
     }
 }

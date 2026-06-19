@@ -19,7 +19,7 @@
     <div class="body">
         <img class="logo" src="/_content/Iceshrimp.Assets.Branding/splash.png"/>
         <span>
-            <h3>@Loc[L.Auth_Register_Header, Name ?? "Iceshrimp.NET"]</h3></span>
+            <h3>@Loc[L.Auth_Register_Header, Name]</h3></span>
         @if (RegistrationAvailability is not Registrations.Closed)
         {
             @if (Rules.Count != 0 && AcceptedRules == false)
@@ -84,7 +84,7 @@
     private Registrations RegistrationAvailability { get; set; }
     private State         State                    { get; set; } = State.Loading;
     private string?       RegistrationError        { get; set; }
-    private string?       Name                     { get; set; }
+    private string        Name                     { get; set; } = null!;
     private StateButton   LoginButton              { get; set; } = null!;
     private bool          AcceptedRules            { get; set; }
 

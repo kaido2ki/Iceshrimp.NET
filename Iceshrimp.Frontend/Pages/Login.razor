@@ -21,7 +21,7 @@
 <div class="body">
     <img class="logo" src="/_content/Iceshrimp.Assets.Branding/splash.png"/>
     <span>
-            <h3>@Loc[L.Auth_Login_Header, Name ?? "Iceshrimp.NET"]</h3></span>
+            <h3>@Loc[L.Auth_Login_Header, Name]</h3></span>
     <div class="login-form">
         <input placeholder="@Loc[L.User_Username]" autocomplete="username" name="username" required="required"
                @bind="@Username"/>
@@ -93,7 +93,7 @@
     private          string?                        Username  { get; set; }
     private          bool                           Loading   { get; set; }
     private          bool                           Failure   { get; set; }
-    private          string?                        Name      { get; set; }
+    private          string                         Name      { get; set; } = null!;
     private          ElementReference               Dialog    { get; set; }
     private          string?                        Otp       { get; set; }
     private          StateButton                    OtpButton { get; set; } = null!;
