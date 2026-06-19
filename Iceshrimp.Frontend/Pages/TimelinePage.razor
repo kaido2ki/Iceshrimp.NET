@@ -28,13 +28,13 @@
 <SectionContent SectionName="top-bar">
     <Icon Name="Icons.House"></Icon>
     @Loc[L.Common_Timeline]
-    <span class="action btn" @onclick="ScrollToTop" title="@Loc["Scroll to top"]">
+    <span class="action btn" @onclick="ScrollToTop" title="@Loc[L.Common_ScrollTop]">
         <Icon Name="Icons.ArrowLineUp"/>
-        <span>@Loc["Scroll to top"]</span>
+        <span>@Loc[L.Common_ScrollTop]</span>
     </span>
-    <span class="action btn" @onclick="RefetchTimeline" title="@Loc["Refetch"]">
+    <span class="action btn" @onclick="RefetchTimeline" title="@Loc[L.Common_Refetch]">
         <Icon Name="Icons.ArrowsClockwise"/>
-        <span>@Loc["Refetch"]</span>
+        <span>@Loc[L.Common_Refetch]</span>
     </span>
     <span class="action btn" @onclick="() => MenuRef.Toggle(MenuButton, false)" @ref="MenuButton">
         @switch (CurrentTimeline!.Enum)

@@ -1501,4 +1501,7 @@
     <data name="Banner_MoreCount" xml:space="preserve">
         <value>and {0} more</value>
     </data>
+    <data name="Common_ScrollTop" xml:space="preserve">
+        <value>Scroll to top</value>
+    </data>
 </root>

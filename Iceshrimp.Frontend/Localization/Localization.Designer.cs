@@ -3008,5 +3008,11 @@ namespace Iceshrimp.Frontend.Localization {
                 return ResourceManager.GetString("Banner_MoreCount", resourceCulture);
             }
         }
+        
+        internal static string Common_ScrollTop {
+            get {
+                return ResourceManager.GetString("Common_ScrollTop", resourceCulture);
+            }
+        }
     }
 }
