@@ -286,7 +286,7 @@
     private async Task Bite() {
         try {
             await Api.Users.BiteUserAsync(User.Id);
-            await GlobalComponentSvc.NoticeDialog?.Display(Loc[L.User_Menu_Bite_Notice, User.DisplayName ?? User.Username])!;
+            await GlobalComponentSvc.NoticeDialog?.Display(Loc[L.User_BiteDialog_Notice, User.DisplayName ?? User.Username])!;
         }
         catch (ApiException e)
         {

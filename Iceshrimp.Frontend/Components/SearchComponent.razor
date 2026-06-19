@@ -21,76 +21,86 @@
                 <option value="@type">@type</option>
             }
         </InputSelect>
-        <button class="button"><Icon Name="Icons.MagnifyingGlass"/>@Loc["Search"]</button>
+        <button class="button"><Icon Name="Icons.MagnifyingGlass"/>@Loc[L.Search]</button>
     </section>
 
     @if (SearchType == SearchTypeEnum.Note)
     {
         <details class="search-filters">
-            <summary>@Loc["Advanced search"]</summary>
+            <summary>@Loc[L.Search_Advanced]</summary>
             <div class="filter-groups">
                 <section>
-                    <span>@Loc["Note in"] (<code>in:</code>)</span>
+                    <span>@Loc[L.Search_Advanced_Filter_In] (<code>in:</code>)</span>
                     <label>
                         <input @bind="FilterInBookmarks" type="checkbox"/>
-                        @Loc["Bookmarks"]
+                        @Loc[L.Common_Bookmarks]
+                        (<code>bookmarks</code>)
                     </label>
                     <label>
                         <input @bind="FilterInLikes" type="checkbox"/>
-                        @Loc["Likes"]
+                        @Loc[L.Common_Likes]
+                        (<code>likes</code>)
                     </label>
                     <label>
                         <input @bind="FilterInReactions" type="checkbox"/>
-                        @Loc["Reactions"]
+                        @Loc[L.Common_Reactions]
+                        (<code>reactions</code>)
                     </label>
                     <label>
                         <input @bind="FilterInInteractions" type="checkbox"/>
-                        @Loc["Interactions"]
+                        @Loc[L.Common_Interactions]
+                        (<code>interactions</code>)
                     </label>
-                    <span class="subgroup">@Loc["Note has"] (<code>has:</code>)</span>
+                    <span class="subgroup">@Loc[L.Search_Advanced_Filter_Has] (<code>has:</code>)</span>
                     <label>
                         <input @bind="FilterHasFile" type="checkbox"/>
-                        @Loc["File"]
+                        @Loc[L.Drive_Entry_File]
+                        (<code>file</code>)
                     </label>
                     <label>
                         <input @bind="FilterHasMedia" type="checkbox"/>
-                        @Loc["Media"]
+                        @Loc[L.Drive_Entry_Media]
+                        (<code>media</code>)
                     </label>
                     <label>
                         <input @bind="FilterHasAudio" type="checkbox"/>
-                        @Loc["Audio"]
+                        @Loc[L.Drive_Entry_Audio]
+                        (<code>audio</code>)
                     </label>
                     <label>
                         <input @bind="FilterHasImage" type="checkbox"/>
-                        @Loc["Image"]
+                        @Loc[L.Drive_Entry_Image]
+                        (<code>image</code>)
                     </label>
                     <label>
                         <input @bind="FilterHasVideo" type="checkbox"/>
-                        @Loc["Video"]
+                        @Loc[L.Drive_Entry_Video]
+                        (<code>video</code>)
                     </label>
                     <label>
                         <input @bind="FilterHasPoll" type="checkbox"/>
-                        @Loc["Poll"]
+                        @Loc[L.Note_Poll]
+                        (<code>poll</code>)
                     </label>
                 </section>
                 <section>
-                    <label for="filter-from">@Loc["From user"] (<code>from:</code>)</label>
-                    <input @bind="FilterFrom" type="text" class="input" id="filter-from" placeholder="user | user@@example.org"/>
-                    <label for="filter-instance">@Loc["From instance"] (<code>instance:</code>)</label>
+                    <label for="filter-from">@Loc[L.Search_Advanced_Filter_From] (<code>from:</code>)</label>
+                    <input @bind="FilterFrom" type="text" class="input" id="filter-from" placeholder="@Loc[L.Search_Advanced_UserPlaceholder]"/>
+                    <label for="filter-instance">@Loc[L.Search_Advanced_Filter_Instance] (<code>instance:</code>)</label>
                     <input @bind="FilterInstance" type="text" class="input" id="filter-instance"
-                           placeholder="local | example.org"/>
-                    <label for="filter-mentions">@Loc["Mentions"] (<code>mentions:</code>)</label>
+                           placeholder="@Loc[L.Search_Advanced_InstancePlaceholder]"/>
+                    <label for="filter-mentions">@Loc[L.Search_Advanced_Filter_Mentions] (<code>mentions:</code>)</label>
                     <input @bind="FilterMentions" type="text" class="input" id="filter-mentions"
-                           placeholder="user | user@@example.org"/>
-                    <label for="filter-reply">@Loc["Replying to"] (<code>reply:</code>)</label>
-                    <input @bind="FilterReply" type="text" class="input" id="filter-reply" placeholder="user | user@@example.org"/>
+                           placeholder="@Loc[L.Search_Advanced_UserPlaceholder]"/>
+                    <label for="filter-reply">@Loc[L.Search_Advanced_Filter_Reply] (<code>reply:</code>)</label>
+                    <input @bind="FilterReply" type="text" class="input" id="filter-reply" placeholder="@Loc[L.Search_Advanced_UserPlaceholder]"/>
                 </section>
                 <section>
-                    <label for="filter-before">@Loc["Posted before - inclusive"] (<code>before:</code>)</label>
+                    <label for="filter-before">@Loc[L.Search_Advanced_Filter_Before] (<code>before:</code>)</label>
                     <input @bind="FilterBefore" type="text" class="input" id="filter-before" placeholder="YYYY-MM-DD"/>
-                    <label for="filter-after">@Loc["Posted after - exclusive"] (<code>after:</code>)</label>
+                    <label for="filter-after">@Loc[L.Search_Advanced_Filter_After] (<code>after:</code>)</label>
                     <input @bind="FilterAfter" type="text" class="input" id="filter-after" placeholder="YYYY-MM-DD"/>
-                    <a class="subgroup" href="https://iceshrimp.net/help/fts" target="_blank">@Loc["More search filters"]</a>
+                    <a class="subgroup" href="https://iceshrimp.net/help/fts" target="_blank">@Loc[L.Search_Advanced_MoreFilters]</a>
                 </section>
             </div>
         </details>

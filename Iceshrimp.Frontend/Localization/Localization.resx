@@ -1333,4 +1333,82 @@
     <data name="Common_Bookmarks" xml:space="preserve">
         <value>Bookmarks</value>
     </data>
+    <data name="Search_Advanced" xml:space="preserve">
+        <value>Advanced search</value>
+    </data>
+    <data name="Common_Likes" xml:space="preserve">
+        <value>Likes</value>
+    </data>
+    <data name="Common_Reactions" xml:space="preserve">
+        <value>Reactions</value>
+    </data>
+    <data name="Common_Interactions" xml:space="preserve">
+        <value>Interactions</value>
+    </data>
+    <data name="Drive_Entry_Media" xml:space="preserve">
+        <value>Media</value>
+    </data>
+    <data name="Drive_Entry_Audio" xml:space="preserve">
+        <value>Audio</value>
+    </data>
+    <data name="Drive_Entry_Image" xml:space="preserve">
+        <value>Image</value>
+    </data>
+    <data name="Drive_Entry_Video" xml:space="preserve">
+        <value>Video</value>
+    </data>
+    <data name="Search_Advanced_Filter_In" xml:space="preserve">
+        <value>Note in</value>
+    </data>
+    <data name="Search_Advanced_Filter_Has" xml:space="preserve">
+        <value>Note has</value>
+    </data>
+    <data name="Drive_Entry_File" xml:space="preserve">
+        <value>File</value>
+    </data>
+    <data name="Drive_Entry_Folder" xml:space="preserve">
+        <value>Folder</value>
+    </data>
+    <data name="Search_Advanced_Filter_From" xml:space="preserve">
+        <value>From user</value>
+    </data>
+    <data name="Search_Advanced_Filter_Instance" xml:space="preserve">
+        <value>From instance</value>
+    </data>
+    <data name="Search_Advanced_Filter_Mentions" xml:space="preserve">
+        <value>Mentions</value>
+    </data>
+    <data name="Search_Advanced_Filter_Reply" xml:space="preserve">
+        <value>Replying to</value>
+    </data>
+    <data name="Search_Advanced_Filter_Before" xml:space="preserve">
+        <value>Posted before - inclusive</value>
+    </data>
+    <data name="Search_Advanced_Filter_After" xml:space="preserve">
+        <value>Posted after - exclusive</value>
+    </data>
+    <data name="Search_Advanced_MoreFilters" xml:space="preserve">
+        <value>More search filters</value>
+    </data>
+    <data name="Search_Advanced_UserPlaceholder" xml:space="preserve">
+        <value>user | user@example.org</value>
+    </data>
+    <data name="Search_Advanced_InstancePlaceholder" xml:space="preserve">
+        <value>local | example.org</value>
+    </data>
+    <data name="FollowRequests" xml:space="preserve">
+        <value>Follow requests</value>
+    </data>
+    <data name="FollowRequests_Outgoing" xml:space="preserve">
+        <value>Sent follow requests</value>
+    </data>
+    <data name="FollowRequests_SwitchToOutgoing" xml:space="preserve">
+        <value>Sent</value>
+    </data>
+    <data name="FollowRequests_SwitchToIncoming" xml:space="preserve">
+        <value>Received</value>
+    </data>
+    <data name="FollowRequests_Empty" xml:space="preserve">
+        <value>No follow requests were found.</value>
+    </data>
 </root>

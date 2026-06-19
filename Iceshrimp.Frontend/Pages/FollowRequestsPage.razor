@@ -6,14 +6,14 @@
 @attribute [Authorize]
 @inject IStringLocalizer<Localization> Loc;
 
-<HeadTitle Text="@Loc["Follow requests"]"/>
+<HeadTitle Text="@Loc[L.FollowRequests]"/>
 
 <SectionContent SectionName="top-bar">
     <Icon Name="Icons.HandWaving"></Icon>
-    @Loc["Follow requests"]
+    @Loc[L.FollowRequests]
     <a class="action btn" href="/follow-requests/sent">
         <Icon Name="Icons.ArrowSquareOut"/>
-        <span>@Loc["Sent"]</span>
+        <span>@Loc[L.FollowRequests_SwitchToOutgoing]</span>
     </a>
 </SectionContent>
 

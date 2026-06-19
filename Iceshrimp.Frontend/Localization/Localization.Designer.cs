@@ -2672,5 +2672,161 @@ namespace Iceshrimp.Frontend.Localization {
                 return ResourceManager.GetString("Common_Bookmarks", resourceCulture);
             }
         }
+        
+        internal static string Search_Advanced {
+            get {
+                return ResourceManager.GetString("Search_Advanced", resourceCulture);
+            }
+        }
+        
+        internal static string Common_Likes {
+            get {
+                return ResourceManager.GetString("Common_Likes", resourceCulture);
+            }
+        }
+        
+        internal static string Common_Reactions {
+            get {
+                return ResourceManager.GetString("Common_Reactions", resourceCulture);
+            }
+        }
+        
+        internal static string Common_Interactions {
+            get {
+                return ResourceManager.GetString("Common_Interactions", resourceCulture);
+            }
+        }
+        
+        internal static string Drive_Entry_Media {
+            get {
+                return ResourceManager.GetString("Drive_Entry_Media", resourceCulture);
+            }
+        }
+        
+        internal static string Drive_Entry_Audio {
+            get {
+                return ResourceManager.GetString("Drive_Entry_Audio", resourceCulture);
+            }
+        }
+        
+        internal static string Drive_Entry_Image {
+            get {
+                return ResourceManager.GetString("Drive_Entry_Image", resourceCulture);
+            }
+        }
+        
+        internal static string Drive_Entry_Video {
+            get {
+                return ResourceManager.GetString("Drive_Entry_Video", resourceCulture);
+            }
+        }
+        
+        internal static string Search_Advanced_Filter_In {
+            get {
+                return ResourceManager.GetString("Search_Advanced_Filter_In", resourceCulture);
+            }
+        }
+        
+        internal static string Search_Advanced_Filter_Has {
+            get {
+                return ResourceManager.GetString("Search_Advanced_Filter_Has", resourceCulture);
+            }
+        }
+        
+        internal static string Drive_Entry_File {
+            get {
+                return ResourceManager.GetString("Drive_Entry_File", resourceCulture);
+            }
+        }
+        
+        internal static string Drive_Entry_Folder {
+            get {
+                return ResourceManager.GetString("Drive_Entry_Folder", resourceCulture);
+            }
+        }
+        
+        internal static string Search_Advanced_Filter_From {
+            get {
+                return ResourceManager.GetString("Search_Advanced_Filter_From", resourceCulture);
+            }
+        }
+        
+        internal static string Search_Advanced_Filter_Instance {
+            get {
+                return ResourceManager.GetString("Search_Advanced_Filter_Instance", resourceCulture);
+            }
+        }
+        
+        internal static string Search_Advanced_Filter_Mentions {
+            get {
+                return ResourceManager.GetString("Search_Advanced_Filter_Mentions", resourceCulture);
+            }
+        }
+        
+        internal static string Search_Advanced_Filter_Reply {
+            get {
+                return ResourceManager.GetString("Search_Advanced_Filter_Reply", resourceCulture);
+            }
+        }
+        
+        internal static string Search_Advanced_Filter_Before {
+            get {
+                return ResourceManager.GetString("Search_Advanced_Filter_Before", resourceCulture);
+            }
+        }
+        
+        internal static string Search_Advanced_Filter_After {
+            get {
+                return ResourceManager.GetString("Search_Advanced_Filter_After", resourceCulture);
+            }
+        }
+        
+        internal static string Search_Advanced_MoreFilters {
+            get {
+                return ResourceManager.GetString("Search_Advanced_MoreFilters", resourceCulture);
+            }
+        }
+        
+        internal static string Search_Advanced_UserPlaceholder {
+            get {
+                return ResourceManager.GetString("Search_Advanced_UserPlaceholder", resourceCulture);
+            }
+        }
+        
+        internal static string Search_Advanced_InstancePlaceholder {
+            get {
+                return ResourceManager.GetString("Search_Advanced_InstancePlaceholder", resourceCulture);
+            }
+        }
+        
+        internal static string FollowRequests {
+            get {
+                return ResourceManager.GetString("FollowRequests", resourceCulture);
+            }
+        }
+        
+        internal static string FollowRequests_Outgoing {
+            get {
+                return ResourceManager.GetString("FollowRequests_Outgoing", resourceCulture);
+            }
+        }
+        
+        internal static string FollowRequests_SwitchToOutgoing {
+            get {
+                return ResourceManager.GetString("FollowRequests_SwitchToOutgoing", resourceCulture);
+            }
+        }
+        
+        internal static string FollowRequests_SwitchToIncoming {
+            get {
+                return ResourceManager.GetString("FollowRequests_SwitchToIncoming", resourceCulture);
+            }
+        }
+        
+        internal static string FollowRequests_Empty {
+            get {
+                return ResourceManager.GetString("FollowRequests_Empty", resourceCulture);
+            }
+        }
     }
 }
