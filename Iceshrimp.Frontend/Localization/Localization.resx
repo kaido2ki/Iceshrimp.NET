@@ -1504,4 +1504,7 @@
     <data name="Common_ScrollTop" xml:space="preserve">
         <value>Scroll to top</value>
     </data>
+    <data name="Moderation_Emojis_Uncategorized" xml:space="preserve">
+        <value>Uncategorized</value>
+    </data>
 </root>

@@ -3014,5 +3014,11 @@ namespace Iceshrimp.Frontend.Localization {
                 return ResourceManager.GetString("Common_ScrollTop", resourceCulture);
             }
         }
+        
+        internal static string Moderation_Emojis_Uncategorized {
+            get {
+                return ResourceManager.GetString("Moderation_Emojis_Uncategorized", resourceCulture);
+            }
+        }
     }
 }

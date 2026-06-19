@@ -75,7 +75,13 @@
 {
     @foreach (var category in Categories)
     {
-        <span class="category-name">@category.Category</span>
+        <span class="category-name">
+            @if (category.Category == null)
+            {
+                <Icon Name="Icons.Question"/>
+            }
+            @(category.Category ?? Loc[L.Moderation_Emojis_Uncategorized])
+        </span>
         <div class="emoji-list">
             @foreach (var emoji in category.Emojis)
             {
@@ -118,18 +124,12 @@
     {
         Categories = Emojis
                      .Where(p => p.Name.Contains(EmojiFilter.Trim()) || p.Tags.Count(a => a.Contains(EmojiFilter.Trim())) != 0)
-                     .Select(p =>
-                     {
-                         p.Category ??= Loc[L.Common_Other];
-                         return p;
-                     })
                      .OrderBy(p => p.Name)
                      .ThenBy(p => p.Id)
                      .GroupBy(p => p.Category)
-                     .OrderBy(p => string.IsNullOrEmpty(p.Key))
-                     .ThenBy(p => p.Key != Loc[L.Common_Other]) // ensure the "Other" category comes first
+                     .OrderBy(p => p.Key != null)
                      .ThenBy(p => p.Key)
-                     .Select(p => (p.Key?.ToString(), p.ToList()))
+                     .Select(p => (p.Key, p.ToList()))
                      .ToList();
         StateHasChanged();
     }

@@ -36,7 +36,7 @@
     private double                       _left;
 
     private string                               EmojiFilter { get; set; } = "";
-    private List<(string? Category, List<EmojiResponse> Emojis)> Categories  { get; set; } = [];
+    private List<(string Category, List<EmojiResponse> Emojis)> Categories  { get; set; } = [];
 
     protected override void OnInitialized()
     {
@@ -78,17 +78,12 @@
     {
         Categories = EmojiList
             .Where(p => FilterName(p) || p.Tags.Count(a => a.Contains(EmojiFilter.StripLeadingTrailingSpaces())) != 0)
-            .Select(p =>
-            {
-                p.Category ??= Loc[L.Common_Other];
-                return p;
-            })
             .OrderBy(p => p.Name)
             .ThenBy(p => p.Id)
             .GroupBy(p => p.Category)
-            .OrderBy(p => string.IsNullOrEmpty(p.Key))
+            .OrderBy(p => p.Key == null)
             .ThenBy(p => p.Key)
-            .Select(p => (p.Key?.ToString(), p.ToList()))
+            .Select(p => (p.Key ?? Loc[L.Common_Other], p.ToList()))
             .ToList();
     }
 }
