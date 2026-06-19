@@ -14,8 +14,8 @@
     @if (User.MovedTo != null)
     {
         <WarningBanner>
-            @Loc["This account has been migrated to another account."]
-            <a href="@User.MovedTo" target="_blank">@Loc["Go to account"]</a>
+            @Loc[L.Settings_Migration_MigratedNotice]
+            <a href="@User.MovedTo" target="_blank">@Loc[L.Settings_Migration_GotoMigrated]</a>
         </WarningBanner>
     }
     <div class="top-row">
@@ -29,13 +29,13 @@
                 case Role.Moderator:
                     <span class="badge">
                         <Icon Name="Icons.Shield" Size="1.3em"/>
-                        @Loc["Moderator"]
+                        @Loc[L.User_Badge_ModeratorRole]
                     </span>
                     break;
                 case Role.Admin:
                     <span class="badge">
                         <Icon Name="Icons.ShieldStar" Size="1.3em"/>
-                        @Loc["Admin"]
+                        @Loc[L.User_Badge_AdminRole]
                     </span>
                     break;
                 case Role.None:
@@ -47,14 +47,14 @@
             {
                 <span class="badge">
                     <Icon Name="Icons.Robot" Size="1.3em"/>
-                    @Loc["Automated"]
+                    @Loc[L.User_Badge_IsBot]
                 </span>
             }
             @if (UserProfile.IsLocked)
             {
                 <span class="badge">
                     <Icon Name="Icons.Lock" Size="1.3em"/>
-                    @Loc["Private"]
+                    @Loc[L.User_Badge_IsLocked]
                 </span>
             }
         </div>
@@ -66,59 +66,59 @@
                     @if (UserProfile.Relations.HasFlag(Relations.Self))
                     {
                         <MenuElement Icon="Icons.Pencil" OnSelect="EditProfile">
-                            <Text>@Loc["Edit profile"]</Text>
+                            <Text>@Loc[L.User_Menu_EditProfile]</Text>
                         </MenuElement>
                     }
                     else if (UserProfile.Relations.HasFlag(Relations.CanBite))
                     {
                         <MenuElement Icon="Icons.Tooth" OnSelect="Bite">
-                            <Text>@Loc["Bite"]</Text>
+                            <Text>@Loc[L.Common_Bite]</Text>
                         </MenuElement>
                     }
                     @if (User.Host != null)
                     {
                         <MenuElement Icon="Icons.ArrowsClockwise" OnSelect="RefetchUser">
-                            <Text>@Loc["Refetch"]</Text>
+                            <Text>@Loc[L.Common_Refetch]</Text>
                         </MenuElement>
                     }
                     <MenuElement Icon="Icons.Info" OnSelect="OpenAbout">
-                        <Text>@Loc["About"]</Text>
+                        <Text>@Loc[L.Common_AboutPage]</Text>
                     </MenuElement>
                     <hr class="rule"/>
                     @if (User.Host != null && UserProfile.Url != null)
                     {
                         <MenuElement Icon="Icons.ArrowSquareOut" OnSelect="OpenOriginal">
-                            <Text>@Loc["Open original page"]</Text>
+                            <Text>@Loc[L.Common_OpenOriginal]</Text>
                         </MenuElement>
                     }
                     @if (CanShare)
                     {
                         <MenuElement Icon="Icons.Share" OnSelect="Share">
-                            <Text>@Loc["Share"]</Text>
+                            <Text>@Loc[L.Common_Share]</Text>
                         </MenuElement>
                     }
                     <MenuElement Icon="Icons.Share" OnSelect="CopyLink">
-                        <Text>@Loc["Copy link"]</Text>
+                        <Text>@Loc[L.Common_CopyLink]</Text>
                     </MenuElement>
                     @if (User.Host != null && UserProfile.Url != null)
                     {
                         <MenuElement Icon="Icons.ShareNetwork" OnSelect="CopyLinkRemote">
-                            <Text>@Loc["Copy link (remote)"]</Text>
+                            <Text>@Loc[L.Common_CopyLink_Remote]</Text>
                         </MenuElement>
                     }
                     <MenuElement Icon="Icons.At" OnSelect="CopyUsername">
-                        <Text>@Loc["Copy username"]</Text>
+                        <Text>@Loc[L.User_Menu_CopyUsername]</Text>
                     </MenuElement>
                     @if (User.Host == null)
                     {
                         <MenuElement Icon="Icons.Atom" OnSelect="CopyAtomFeed">
-                            <Text>@Loc["Copy Atom feed"]</Text>
+                            <Text>@Loc[L.User_Menu_CopyFeed_Atom]</Text>
                         </MenuElement>
                         <MenuElement Icon="Icons.BracketsCurly" OnSelect="CopyJsonFeed">
-                            <Text>@Loc["Copy JSON feed"]</Text>
+                            <Text>@Loc[L.User_Menu_CopyFeed_Json]</Text>
                         </MenuElement>
                         <MenuElement Icon="Icons.Rss" OnSelect="CopyRssFeed">
-                            <Text>@Loc["Copy RSS feed"]</Text>
+                            <Text>@Loc[L.User_Menu_CopyFeed_Rss]</Text>
                         </MenuElement>
                     }
                     @if (!UserProfile.Relations.HasFlag(Relations.Self))
@@ -127,54 +127,54 @@
                         @if (UserProfile.Relations.HasFlag(Relations.Muting))
                         {
                             <MenuElement Icon="Icons.Eye" OnSelect="Unmute">
-                                <Text>@Loc["Unmute"]</Text>
+                                <Text>@Loc[L.User_Menu_Mute_Remove]</Text>
                             </MenuElement>
                         }
                         else
                         {
                             <MenuElement Icon="Icons.EyeSlash" OnSelect="Mute">
-                                <Text>@Loc["Mute"]</Text>
+                                <Text>@Loc[L.User_Menu_Mute_Add]</Text>
                             </MenuElement>
                             <MenuElement Icon="Icons.Timer" OnSelect="TemporaryMute">
-                                <Text>@Loc["Temporary mute"]</Text>
+                                <Text>@Loc[L.User_Menu_Mute_AddTemporary]</Text>
                             </MenuElement>
                         }
                         
                         @if (UserProfile.Relations.HasFlag(Relations.MutedRenotes))
                         {
                             <MenuElement Icon="Icons.Repeat" OnSelect="UnmuteRenotes">
-                                <Text>@Loc["Unmute renotes"]</Text>
+                                <Text>@Loc[L.User_Menu_MuteRenotes_Remove]</Text>
                             </MenuElement>
                         }
                         else
                         {
                             <MenuElement Icon="Icons.EyeClosed" OnSelect="MuteRenotes">
-                                <Text>@Loc["Mute renotes"]</Text>
+                                <Text>@Loc[L.User_Menu_MuteRenotes_Add]</Text>
                             </MenuElement>
                         }
 
                         @if (UserProfile.Relations.HasFlag(Relations.FollowedBy))
                         {
                             <MenuElement Icon="Icons.LinkBreak" OnSelect="RemoveFromFollowers" Danger>
-                                <Text>@Loc["Remove follower"]</Text>
+                                <Text>@Loc[L.User_Menu_RemoveFollower]</Text>
                             </MenuElement>
                         }
 
                         @if (UserProfile.Relations.HasFlag(Relations.Blocking))
                         {
                             <MenuElement Icon="Icons.Prohibit" OnSelect="Unblock" Danger>
-                                <Text>@Loc["Unblock"]</Text>
+                                <Text>@Loc[L.User_Menu_Block_Remove]</Text>
                             </MenuElement>
                         }
                         else
                         {
                             <MenuElement Icon="Icons.Prohibit" OnSelect="Block" Danger>
-                                <Text>@Loc["Block"]</Text>
+                                <Text>@Loc[L.User_Menu_Block_Add]</Text>
                             </MenuElement>
                         }
 
                         <MenuElement Icon="Icons.WarningCircle" OnSelect="Report" Danger>
-                            <Text>@Loc["Report"]</Text>
+                            <Text>@Loc[L.Report_User]</Text>
                         </MenuElement>
                     }
                     <ClosingBackdrop OnClose="ContextMenu.Close"></ClosingBackdrop>
@@ -191,15 +191,15 @@
     @if (!UserProfile.Relations.HasFlag(Relations.Self))
     {
         <details class="memo-details">
-            <summary>@Loc["Private memo"]</summary>
+            <summary>@Loc[L.User_Memo]</summary>
             <EditForm OnSubmit="SetMemo" Model="MemoForm">
                 <textarea class="input memo" @bind="@MemoForm.Text" @bind:event="oninput" @bind:after="ResetMemoButton" rows="5"></textarea>
                 <StateButton ExtraClasses="button" @ref="@MemoButton" OnClick="SetMemo">
-                    <Initial>@Loc["Update"]</Initial>
-                    <Success>@Loc["Updated"]</Success>
-                    <Loading>@Loc["Loading"]<LoadingSpinner/>
+                    <Initial>@Loc[L.StateButton_SaveChanges]</Initial>
+                    <Success>@Loc[L.StateButton_Saved]</Success>
+                    <Loading>@Loc[L.StateButton_Loading]<LoadingSpinner/>
                     </Loading>
-                    <Failed>@Loc["Error"]</Failed>
+                    <Failed>@Loc[L.StateButton_Retry]</Failed>
                 </StateButton>
             </EditForm>
         </details>
@@ -210,7 +210,7 @@
             <div class="birthday field">
                 <span class="field-name">
                     <Icon Name="Icons.Balloon" Size="1.3em"/>
-                    @Loc["Birthday"]
+                    @Loc[L.User_Birthday]
                 </span>
                 <span class="field-value">@UserProfile.Birthday</span>
             </div>
@@ -220,7 +220,7 @@
             <div class="location field">
                 <span class="field-name">
                     <Icon Name="Icons.MapPin" Size="1.3em"/>
-                    @Loc["Location"]
+                    @Loc[L.User_Location]
                 </span>
                 <span class="field-value">@UserProfile.Location</span>
             </div>
@@ -230,7 +230,7 @@
             <div class="pronouns field">
                 <span class="field-name">
                     <Icon Name="Icons.IdentificationCard" Size="1.3em"/>
-                    @Loc["Pronouns"]
+                    @Loc[L.User_Pronouns]
                 </span>
                 <span class="field-value">@string.Join(", ", UserProfile.Pronouns.Select(p => $"{p.Value} ({_languages.GetValueOrDefault(p.Key) ?? p.Key.ToUpper()})"))</span>
             </div>
@@ -251,7 +251,7 @@
                 @UserProfile.Followers
             </div>
             <div class="field-text">
-                @Loc["Followers"]
+                @Loc[L.User_Followers]
             </div>
         </div>
         <div class="section">
@@ -259,7 +259,7 @@
                 @UserProfile.Following
             </div>
             <div class="field-text">
-                @Loc["Following"]
+                @Loc[L.User_Following]
             </div>
         </div>
     </div>
@@ -286,7 +286,7 @@
     private async Task Bite() {
         try {
             await Api.Users.BiteUserAsync(User.Id);
-            await GlobalComponentSvc.NoticeDialog?.Display(Loc["Bit {0}", User.DisplayName ?? User.Username])!;
+            await GlobalComponentSvc.NoticeDialog?.Display(Loc[L.User_Menu_Bite_Notice, User.DisplayName ?? User.Username])!;
         }
         catch (ApiException e)
         {
@@ -301,17 +301,17 @@
         var removed = await Api.Users.RemoveUserFromFollowersAsync(User.Id);
         if (!removed) return;
 
-        await GlobalComponentSvc.NoticeDialog?.Display(Loc["Removed {0} from followers", User.DisplayName ?? User.Username])!;
+        await GlobalComponentSvc.NoticeDialog?.Display(Loc[L.User_RemoveFollowerDialog_Notice, User.DisplayName ?? User.Username])!;
 
         UserProfile.Relations &= ~Relations.FollowedBy;
         StateHasChanged();
     }
 
     private void RemoveFromFollowers() =>
-        GlobalComponentSvc.ConfirmDialog?.Confirm(new EventCallback<bool>(this, RemoveFromFollowersAction), Loc["Remove {0} from followers?", User.DisplayName ?? User.Username], buttonText: Loc["Remove follower"]);
+        GlobalComponentSvc.ConfirmDialog?.Confirm(new EventCallback<bool>(this, RemoveFromFollowersAction), Loc[L.User_RemoveFollowerDialog_Question, User.DisplayName ?? User.Username]);
 
     private void Mute() =>
-        GlobalComponentSvc.ConfirmDialog?.Confirm(new EventCallback<bool>(this, MuteCallback), Loc["Mute {0}?", User.DisplayName ?? User.Username], buttonText: Loc["Mute"]);
+        GlobalComponentSvc.ConfirmDialog?.Confirm(new EventCallback<bool>(this, MuteCallback), Loc[L.User_MuteDialog_Question, User.DisplayName ?? User.Username]);
 
     private async Task MuteCallback(bool confirm)
     {
@@ -321,7 +321,7 @@
         {
             await Api.Users.MuteUserAsync(User.Id, null);
 
-            await GlobalComponentSvc.NoticeDialog?.Display(Loc["Muted {0}", User.DisplayName ?? User.Username])!;
+            await GlobalComponentSvc.NoticeDialog?.Display(Loc[L.User_MuteDialog_Notice, User.DisplayName ?? User.Username])!;
 
             UserProfile.Relations += (int)Relations.Muting;
             StateHasChanged();
@@ -333,7 +333,7 @@
     }
 
     private void TemporaryMute() =>
-        GlobalComponentSvc.SelectDialog?.Select(new EventCallback<object?>(this, TemporaryMuteCallback), Loc["Mute {0}?", User.DisplayName ?? User.Username], [(Loc["For 1 hour"], DateTime.Now.AddHours(1)), (Loc["For {0} hours", 3], DateTime.Now.AddHours(3)), (Loc["For {0} hours", 8], DateTime.Now.AddHours(8)), (Loc["For 1 day"], DateTime.Now.AddDays(1)), (Loc["For 1 week"], DateTime.Now.AddDays(7))], Loc["Mute"]);
+        GlobalComponentSvc.SelectDialog?.Select(new EventCallback<object?>(this, TemporaryMuteCallback), Loc[L.User_MuteDialog_Question, User.DisplayName ?? User.Username], [(Loc[L.Timestamp_Hour_X, 1], DateTime.Now.AddHours(1)), (Loc[L.Timestamp_Hour_X, 3], DateTime.Now.AddHours(3)), (Loc[L.Timestamp_Hour_X, 8], DateTime.Now.AddHours(8)), (Loc[L.Timestamp_Day_X, 1], DateTime.Now.AddDays(1)), (Loc[L.Timestamp_Week_X, 1], DateTime.Now.AddDays(7))]);
 
     private async Task TemporaryMuteCallback(object? value)
     {
@@ -343,7 +343,7 @@
         {
             await Api.Users.MuteUserAsync(User.Id, expires);
 
-            await GlobalComponentSvc.NoticeDialog?.Display(Loc["Muted {0}", User.DisplayName ?? User.Username])!;
+            await GlobalComponentSvc.NoticeDialog?.Display(Loc[L.User_MuteDialog_Notice, User.DisplayName ?? User.Username])!;
 
             UserProfile.Relations += (int)Relations.Muting;
             StateHasChanged();
@@ -355,7 +355,7 @@
     }
 
     private void Unmute() =>
-        GlobalComponentSvc.ConfirmDialog?.Confirm(new EventCallback<bool>(this, UnmuteCallback), Loc["Unmute {0}?", User.DisplayName ?? User.Username], buttonText: Loc["Unmute"]);
+        GlobalComponentSvc.ConfirmDialog?.Confirm(new EventCallback<bool>(this, UnmuteCallback), Loc[L.User_UnmuteDialog_Question, User.DisplayName ?? User.Username]);
 
     private async Task UnmuteCallback(bool confirm)
     {
@@ -365,7 +365,7 @@
         {
             await Api.Users.UnmuteUserAsync(User.Id);
 
-            await GlobalComponentSvc.NoticeDialog?.Display(Loc["Unmuted {0}", User.DisplayName ?? User.Username])!;
+            await GlobalComponentSvc.NoticeDialog?.Display(Loc[L.User_UnmuteDialog_Notice, User.DisplayName ?? User.Username])!;
 
             UserProfile.Relations -= (int)Relations.Muting;
             StateHasChanged();
@@ -377,7 +377,7 @@
     }
     
     private void MuteRenotes() =>
-        GlobalComponentSvc.ConfirmDialog?.Confirm(new EventCallback<bool>(this, MuteRenotesCallback), Loc["Mute {0}'s renotes?", User.DisplayName ?? User.Username], buttonText: Loc["Mute renotes"]);
+        GlobalComponentSvc.ConfirmDialog?.Confirm(new EventCallback<bool>(this, MuteRenotesCallback), Loc[L.User_MuteRenotesDialog_Question, User.DisplayName ?? User.Username]);
 
     private async Task MuteRenotesCallback(bool confirm)
     {
@@ -387,7 +387,7 @@
         {
             await Api.Users.MuteRenotesAsync(User.Id);
 
-            await GlobalComponentSvc.NoticeDialog?.Display(Loc["Muted {0}'s renotes", User.DisplayName ?? User.Username])!;
+            await GlobalComponentSvc.NoticeDialog?.Display(Loc[L.User_MuteRenotesDialog_Notice, User.DisplayName ?? User.Username])!;
 
             UserProfile.Relations += (int)Relations.MutedRenotes;
             StateHasChanged();
@@ -399,7 +399,7 @@
     }
     
     private void UnmuteRenotes() =>
-        GlobalComponentSvc.ConfirmDialog?.Confirm(new EventCallback<bool>(this, UnmuteRenotesCallback), Loc["Unmute {0}'s renotes?", User.DisplayName ?? User.Username], buttonText: Loc["Unmute renotes"]);
+        GlobalComponentSvc.ConfirmDialog?.Confirm(new EventCallback<bool>(this, UnmuteRenotesCallback), Loc[L.User_UnmuteRenotesDialog_Question, User.DisplayName ?? User.Username]);
 
     private async Task UnmuteRenotesCallback(bool confirm)
     {
@@ -409,7 +409,7 @@
         {
             await Api.Users.UnmuteRenotesAsync(User.Id);
 
-            await GlobalComponentSvc.NoticeDialog?.Display(Loc["Unmuted {0}'s renotes", User.DisplayName ?? User.Username])!;
+            await GlobalComponentSvc.NoticeDialog?.Display(Loc[L.User_UnmuteRenotesDialog_Notice, User.DisplayName ?? User.Username])!;
 
             UserProfile.Relations -= (int)Relations.MutedRenotes;
             StateHasChanged();
@@ -422,7 +422,7 @@
     
     
     private void Block() =>
-        GlobalComponentSvc.ConfirmDialog?.Confirm(new EventCallback<bool>(this, BlockCallback), Loc["Block {0}?", User.DisplayName ?? User.Username], buttonText: Loc["Block"]);
+        GlobalComponentSvc.ConfirmDialog?.Confirm(new EventCallback<bool>(this, BlockCallback), Loc[L.User_BlockDialog_Question, User.DisplayName ?? User.Username]);
 
     private void Report() =>
         GlobalComponentSvc.ReportDialog?.ReportUser(User);
@@ -435,7 +435,7 @@
         {
             await Api.Users.BlockUserAsync(User.Id);
 
-            await GlobalComponentSvc.NoticeDialog?.Display(Loc["Blocked {0}", User.DisplayName ?? User.Username])!;
+            await GlobalComponentSvc.NoticeDialog?.Display(Loc[L.User_BlockDialog_Notice, User.DisplayName ?? User.Username])!;
 
             UserProfile.Relations += (int)Relations.Blocking;
             StateHasChanged();
@@ -447,7 +447,7 @@
     }
 
     private void Unblock() =>
-        GlobalComponentSvc.ConfirmDialog?.Confirm(new EventCallback<bool>(this, UnblockCallback), Loc["Unblock {0}?", User.DisplayName ?? User.Username], buttonText: Loc["Unblock"]);
+        GlobalComponentSvc.ConfirmDialog?.Confirm(new EventCallback<bool>(this, UnblockCallback), Loc[L.User_UnblockDialog_Question, User.DisplayName ?? User.Username]);
 
     private async Task UnblockCallback(bool confirm)
     {
@@ -457,7 +457,7 @@
         {
             await Api.Users.UnblockUserAsync(User.Id);
 
-            await GlobalComponentSvc.NoticeDialog?.Display(Loc["Unblocked {0}", User.DisplayName ?? User.Username])!;
+            await GlobalComponentSvc.NoticeDialog?.Display(Loc[L.User_UnblockDialog_Notice, User.DisplayName ?? User.Username])!;
 
             UserProfile.Relations -= (int)Relations.Blocking;
             StateHasChanged();
@@ -501,7 +501,7 @@
     private void CopyRssFeed() => Js.InvokeVoidAsync("navigator.clipboard.writeText", $"https://{_instance?.WebDomain}/users/{User.Id}/feed.rss");
 
     private async Task RefetchUser() =>
-        await GlobalComponentSvc.ConfirmDialog?.Confirm(new EventCallback<bool>(this, RefetchUserCallback), Loc["Refetch {0}'s profile?", User.DisplayName ?? User.Username])!;
+        await GlobalComponentSvc.ConfirmDialog?.Confirm(new EventCallback<bool>(this, RefetchUserCallback), Loc[L.User_RefetchDialog_Question, User.DisplayName ?? User.Username])!;
 
     private async Task RefetchUserCallback(bool refetch)
     {
@@ -517,7 +517,7 @@
                 if (newProfile != null)
                     UserProfile = newProfile;
                 StateHasChanged();
-                await GlobalComponentSvc.NoticeDialog?.Display(Loc["Successfully refetched {0}'s profile", User.DisplayName ?? User.Username])!;
+                await GlobalComponentSvc.NoticeDialog?.Display(Loc[L.User_RefetchDialog_Notice, User.DisplayName ?? User.Username])!;
             }
         }
         catch (ApiException e)

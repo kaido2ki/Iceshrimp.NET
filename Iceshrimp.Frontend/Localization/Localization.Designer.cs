@@ -393,9 +393,9 @@ namespace Iceshrimp.Frontend.Localization {
             }
         }
         
-        internal static string Note_Menu_CopyContents {
+        internal static string Common_CopyContents {
             get {
-                return ResourceManager.GetString("Note_Menu_CopyContents", resourceCulture);
+                return ResourceManager.GetString("Common_CopyContents", resourceCulture);
             }
         }
         
@@ -2346,6 +2346,330 @@ namespace Iceshrimp.Frontend.Localization {
         internal static string Compose_RemoveAttachmentDialog_Question {
             get {
                 return ResourceManager.GetString("Compose_RemoveAttachmentDialog_Question", resourceCulture);
+            }
+        }
+        
+        internal static string User_BannerAltFallback {
+            get {
+                return ResourceManager.GetString("User_BannerAltFallback", resourceCulture);
+            }
+        }
+        
+        internal static string User_AvatarAltFallback {
+            get {
+                return ResourceManager.GetString("User_AvatarAltFallback", resourceCulture);
+            }
+        }
+        
+        internal static string User_PinnedNotes {
+            get {
+                return ResourceManager.GetString("User_PinnedNotes", resourceCulture);
+            }
+        }
+        
+        internal static string User_PinnedNotesSkip {
+            get {
+                return ResourceManager.GetString("User_PinnedNotesSkip", resourceCulture);
+            }
+        }
+        
+        internal static string User_LatestNotes {
+            get {
+                return ResourceManager.GetString("User_LatestNotes", resourceCulture);
+            }
+        }
+        
+        internal static string User_Badge_ModeratorRole {
+            get {
+                return ResourceManager.GetString("User_Badge_ModeratorRole", resourceCulture);
+            }
+        }
+        
+        internal static string User_Badge_AdminRole {
+            get {
+                return ResourceManager.GetString("User_Badge_AdminRole", resourceCulture);
+            }
+        }
+        
+        internal static string User_Badge_IsBot {
+            get {
+                return ResourceManager.GetString("User_Badge_IsBot", resourceCulture);
+            }
+        }
+        
+        internal static string User_Badge_IsLocked {
+            get {
+                return ResourceManager.GetString("User_Badge_IsLocked", resourceCulture);
+            }
+        }
+        
+        internal static string User_Menu_EditProfile {
+            get {
+                return ResourceManager.GetString("User_Menu_EditProfile", resourceCulture);
+            }
+        }
+        
+        internal static string User_Menu_CopyUsername {
+            get {
+                return ResourceManager.GetString("User_Menu_CopyUsername", resourceCulture);
+            }
+        }
+        
+        internal static string User_Menu_CopyFeed_Atom {
+            get {
+                return ResourceManager.GetString("User_Menu_CopyFeed_Atom", resourceCulture);
+            }
+        }
+        
+        internal static string User_Menu_CopyFeed_Json {
+            get {
+                return ResourceManager.GetString("User_Menu_CopyFeed_Json", resourceCulture);
+            }
+        }
+        
+        internal static string User_Menu_CopyFeed_Rss {
+            get {
+                return ResourceManager.GetString("User_Menu_CopyFeed_Rss", resourceCulture);
+            }
+        }
+        
+        internal static string User_Menu_Mute_Add {
+            get {
+                return ResourceManager.GetString("User_Menu_Mute_Add", resourceCulture);
+            }
+        }
+        
+        internal static string User_Menu_Mute_Remove {
+            get {
+                return ResourceManager.GetString("User_Menu_Mute_Remove", resourceCulture);
+            }
+        }
+        
+        internal static string User_Menu_Mute_AddTemporary {
+            get {
+                return ResourceManager.GetString("User_Menu_Mute_AddTemporary", resourceCulture);
+            }
+        }
+        
+        internal static string User_Menu_MuteRenotes_Add {
+            get {
+                return ResourceManager.GetString("User_Menu_MuteRenotes_Add", resourceCulture);
+            }
+        }
+        
+        internal static string User_Menu_MuteRenotes_Remove {
+            get {
+                return ResourceManager.GetString("User_Menu_MuteRenotes_Remove", resourceCulture);
+            }
+        }
+        
+        internal static string User_Menu_RemoveFollower {
+            get {
+                return ResourceManager.GetString("User_Menu_RemoveFollower", resourceCulture);
+            }
+        }
+        
+        internal static string User_Menu_Block_Add {
+            get {
+                return ResourceManager.GetString("User_Menu_Block_Add", resourceCulture);
+            }
+        }
+        
+        internal static string User_Menu_Block_Remove {
+            get {
+                return ResourceManager.GetString("User_Menu_Block_Remove", resourceCulture);
+            }
+        }
+        
+        internal static string User_Memo {
+            get {
+                return ResourceManager.GetString("User_Memo", resourceCulture);
+            }
+        }
+        
+        internal static string User_Following {
+            get {
+                return ResourceManager.GetString("User_Following", resourceCulture);
+            }
+        }
+        
+        internal static string User_Followers {
+            get {
+                return ResourceManager.GetString("User_Followers", resourceCulture);
+            }
+        }
+        
+        internal static string User_BiteDialog_Notice {
+            get {
+                return ResourceManager.GetString("User_BiteDialog_Notice", resourceCulture);
+            }
+        }
+        
+        internal static string User_RemoveFollowerDialog_Notice {
+            get {
+                return ResourceManager.GetString("User_RemoveFollowerDialog_Notice", resourceCulture);
+            }
+        }
+        
+        internal static string User_RemoveFollowerDialog_Question {
+            get {
+                return ResourceManager.GetString("User_RemoveFollowerDialog_Question", resourceCulture);
+            }
+        }
+        
+        internal static string User_MuteDialog_Question {
+            get {
+                return ResourceManager.GetString("User_MuteDialog_Question", resourceCulture);
+            }
+        }
+        
+        internal static string User_MuteDialog_Notice {
+            get {
+                return ResourceManager.GetString("User_MuteDialog_Notice", resourceCulture);
+            }
+        }
+        
+        internal static string User_UnmuteDialog_Question {
+            get {
+                return ResourceManager.GetString("User_UnmuteDialog_Question", resourceCulture);
+            }
+        }
+        
+        internal static string User_UnmuteDialog_Notice {
+            get {
+                return ResourceManager.GetString("User_UnmuteDialog_Notice", resourceCulture);
+            }
+        }
+        
+        internal static string User_MuteRenotesDialog_Question {
+            get {
+                return ResourceManager.GetString("User_MuteRenotesDialog_Question", resourceCulture);
+            }
+        }
+        
+        internal static string User_MuteRenotesDialog_Notice {
+            get {
+                return ResourceManager.GetString("User_MuteRenotesDialog_Notice", resourceCulture);
+            }
+        }
+        
+        internal static string User_UnmuteRenotesDialog_Question {
+            get {
+                return ResourceManager.GetString("User_UnmuteRenotesDialog_Question", resourceCulture);
+            }
+        }
+        
+        internal static string User_UnmuteRenotesDialog_Notice {
+            get {
+                return ResourceManager.GetString("User_UnmuteRenotesDialog_Notice", resourceCulture);
+            }
+        }
+        
+        internal static string User_BlockDialog_Question {
+            get {
+                return ResourceManager.GetString("User_BlockDialog_Question", resourceCulture);
+            }
+        }
+        
+        internal static string User_BlockDialog_Notice {
+            get {
+                return ResourceManager.GetString("User_BlockDialog_Notice", resourceCulture);
+            }
+        }
+        
+        internal static string User_UnblockDialog_Question {
+            get {
+                return ResourceManager.GetString("User_UnblockDialog_Question", resourceCulture);
+            }
+        }
+        
+        internal static string User_UnblockDialog_Notice {
+            get {
+                return ResourceManager.GetString("User_UnblockDialog_Notice", resourceCulture);
+            }
+        }
+        
+        internal static string User_RefetchDialog_Question {
+            get {
+                return ResourceManager.GetString("User_RefetchDialog_Question", resourceCulture);
+            }
+        }
+        
+        internal static string User_RefetchDialog_Notice {
+            get {
+                return ResourceManager.GetString("User_RefetchDialog_Notice", resourceCulture);
+            }
+        }
+        
+        internal static string Note_RefetchDialog_Question {
+            get {
+                return ResourceManager.GetString("Note_RefetchDialog_Question", resourceCulture);
+            }
+        }
+        
+        internal static string Note_ByLabel {
+            get {
+                return ResourceManager.GetString("Note_ByLabel", resourceCulture);
+            }
+        }
+        
+        internal static string Note_ReplyCount {
+            get {
+                return ResourceManager.GetString("Note_ReplyCount", resourceCulture);
+            }
+        }
+        
+        internal static string Note_LikeCount {
+            get {
+                return ResourceManager.GetString("Note_LikeCount", resourceCulture);
+            }
+        }
+        
+        internal static string Note_RenoteCount {
+            get {
+                return ResourceManager.GetString("Note_RenoteCount", resourceCulture);
+            }
+        }
+        
+        internal static string Note_ReactionCount {
+            get {
+                return ResourceManager.GetString("Note_ReactionCount", resourceCulture);
+            }
+        }
+        
+        internal static string Note_Quotes {
+            get {
+                return ResourceManager.GetString("Note_Quotes", resourceCulture);
+            }
+        }
+        
+        internal static string Note_Empty {
+            get {
+                return ResourceManager.GetString("Note_Empty", resourceCulture);
+            }
+        }
+        
+        internal static string Note_Error {
+            get {
+                return ResourceManager.GetString("Note_Error", resourceCulture);
+            }
+        }
+        
+        internal static string Timeline_Remote_Host {
+            get {
+                return ResourceManager.GetString("Timeline_Remote_Host", resourceCulture);
+            }
+        }
+        
+        internal static string Timeline_Tag_Name {
+            get {
+                return ResourceManager.GetString("Timeline_Tag_Name", resourceCulture);
+            }
+        }
+        
+        internal static string Common_Bookmarks {
+            get {
+                return ResourceManager.GetString("Common_Bookmarks", resourceCulture);
             }
         }
     }

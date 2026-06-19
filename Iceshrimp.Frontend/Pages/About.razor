@@ -17,11 +17,11 @@
 @inject NavigationManager              Nav;
 @inject SessionService                 SessionSvc;
 
-<HeadTitle Text="@Loc["About"]"/>
+<HeadTitle Text="@Loc[L.Common_AboutPage]"/>
 
 <SectionContent SectionName="top-bar">
     <Icon Name="Icons.Info"></Icon>
-    @Loc["About"]
+    @Loc[L.Common_AboutPage]
 </SectionContent>
 
 @if (State == State.Loaded)
@@ -33,20 +33,20 @@
             <JsonViewer Element="document.Value.RootElement"/>
             <button @onclick="() => CopyToClipboard(document.Value)" class="btn">
                 <Icon Name="Icons.Copy"/>
-                @Loc["Copy contents"]
+                @Loc[L.Common_CopyContents]
             </button>
         </details>
     }
 }
 @if (State == State.Loading)
 {
-    <HeadTitle Text="@Loc["Loading"]"/>
+    <HeadTitle Text="@Loc[L.StateButton_Loading]"/>
 
     <div class="loading"><LoadingSpinner Scale="2" /></div>
 }
 @if (State == State.Error)
 {
-    <HeadTitle Text="@Loc["Error"]"/>
+    <HeadTitle Text="@Loc[L.StateButton_Error]"/>
 
     <div>Failure</div>
 }

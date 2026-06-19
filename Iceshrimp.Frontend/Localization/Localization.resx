@@ -193,7 +193,7 @@
     <data name="Common_CopyLink_Remote" xml:space="preserve">
         <value>Copy link (remote)</value>
     </data>
-    <data name="Note_Menu_CopyContents" xml:space="preserve">
+    <data name="Common_CopyContents" xml:space="preserve">
         <value>Copy contents</value>
     </data>
     <data name="Common_Edit" xml:space="preserve">
@@ -1170,5 +1170,167 @@
     </data>
     <data name="Compose_RemoveAttachmentDialog_Question" xml:space="preserve">
         <value>Remove attachment?</value>
+    </data>
+    <data name="User_BannerAltFallback" xml:space="preserve">
+        <value>{0}'s banner</value>
+    </data>
+    <data name="User_AvatarAltFallback" xml:space="preserve">
+        <value>{0}'s avatar</value>
+    </data>
+    <data name="User_PinnedNotes" xml:space="preserve">
+        <value>Pinned notes</value>
+    </data>
+    <data name="User_PinnedNotesSkip" xml:space="preserve">
+        <value>Skip</value>
+    </data>
+    <data name="User_LatestNotes" xml:space="preserve">
+        <value>Latest notes</value>
+    </data>
+    <data name="User_Badge_ModeratorRole" xml:space="preserve">
+        <value>Moderator</value>
+    </data>
+    <data name="User_Badge_AdminRole" xml:space="preserve">
+        <value>Admin</value>
+    </data>
+    <data name="User_Badge_IsBot" xml:space="preserve">
+        <value>Automated</value>
+    </data>
+    <data name="User_Badge_IsLocked" xml:space="preserve">
+        <value>Locked</value>
+    </data>
+    <data name="User_Menu_EditProfile" xml:space="preserve">
+        <value>Edit profile</value>
+    </data>
+    <data name="User_Menu_CopyUsername" xml:space="preserve">
+        <value>Copy username</value>
+    </data>
+    <data name="User_Menu_CopyFeed_Atom" xml:space="preserve">
+        <value>Copy Atom feed link</value>
+    </data>
+    <data name="User_Menu_CopyFeed_Json" xml:space="preserve">
+        <value>Copy JSON feed link</value>
+    </data>
+    <data name="User_Menu_CopyFeed_Rss" xml:space="preserve">
+        <value>Copy RSS feed link</value>
+    </data>
+    <data name="User_Menu_Mute_Add" xml:space="preserve">
+        <value>Mute</value>
+    </data>
+    <data name="User_Menu_Mute_Remove" xml:space="preserve">
+        <value>Unmute</value>
+    </data>
+    <data name="User_Menu_Mute_AddTemporary" xml:space="preserve">
+        <value>Temporarily mute</value>
+    </data>
+    <data name="User_Menu_MuteRenotes_Add" xml:space="preserve">
+        <value>Mute renotes</value>
+    </data>
+    <data name="User_Menu_MuteRenotes_Remove" xml:space="preserve">
+        <value>Unmute renotes</value>
+    </data>
+    <data name="User_Menu_RemoveFollower" xml:space="preserve">
+        <value>Remove follower</value>
+    </data>
+    <data name="User_Menu_Block_Add" xml:space="preserve">
+        <value>Block</value>
+    </data>
+    <data name="User_Menu_Block_Remove" xml:space="preserve">
+        <value>Unblock</value>
+    </data>
+    <data name="User_Memo" xml:space="preserve">
+        <value>Private memo</value>
+    </data>
+    <data name="User_Following" xml:space="preserve">
+        <value>Following</value>
+    </data>
+    <data name="User_Followers" xml:space="preserve">
+        <value>Followers</value>
+    </data>
+    <data name="User_BiteDialog_Notice" xml:space="preserve">
+        <value>Bit {0}</value>
+    </data>
+    <data name="User_RemoveFollowerDialog_Notice" xml:space="preserve">
+        <value>Removed {0} from followers</value>
+    </data>
+    <data name="User_RemoveFollowerDialog_Question" xml:space="preserve">
+        <value>Remove {0} from followers?</value>
+    </data>
+    <data name="User_MuteDialog_Question" xml:space="preserve">
+        <value>Mute {0}?</value>
+    </data>
+    <data name="User_MuteDialog_Notice" xml:space="preserve">
+        <value>Muted {0}</value>
+    </data>
+    <data name="User_UnmuteDialog_Question" xml:space="preserve">
+        <value>Unmute {0}?</value>
+    </data>
+    <data name="User_UnmuteDialog_Notice" xml:space="preserve">
+        <value>Unmuted {0}</value>
+    </data>
+    <data name="User_MuteRenotesDialog_Question" xml:space="preserve">
+        <value>Mute {0}'s renotes?</value>
+    </data>
+    <data name="User_MuteRenotesDialog_Notice" xml:space="preserve">
+        <value>Muted {0}'s renotes</value>
+    </data>
+    <data name="User_UnmuteRenotesDialog_Question" xml:space="preserve">
+        <value>Unmute {0}'s renotes?</value>
+    </data>
+    <data name="User_UnmuteRenotesDialog_Notice" xml:space="preserve">
+        <value>Unmuted {0}'s renotes</value>
+    </data>
+    <data name="User_BlockDialog_Question" xml:space="preserve">
+        <value>Block {0}?</value>
+    </data>
+    <data name="User_BlockDialog_Notice" xml:space="preserve">
+        <value>Blocked {0}</value>
+    </data>
+    <data name="User_UnblockDialog_Question" xml:space="preserve">
+        <value>Unblock {0}?</value>
+    </data>
+    <data name="User_UnblockDialog_Notice" xml:space="preserve">
+        <value>Unblocked {0}</value>
+    </data>
+    <data name="User_RefetchDialog_Question" xml:space="preserve">
+        <value>Refetch {0}'s profile?</value>
+    </data>
+    <data name="User_RefetchDialog_Notice" xml:space="preserve">
+        <value>Successfully refetched {0}'s profile</value>
+    </data>
+    <data name="Note_RefetchDialog_Question" xml:space="preserve">
+        <value>Refetch note?</value>
+    </data>
+    <data name="Note_ByLabel" xml:space="preserve">
+        <value>Note by {0}</value>
+    </data>
+    <data name="Note_ReplyCount" xml:space="preserve">
+        <value>Replies ({0})</value>
+    </data>
+    <data name="Note_LikeCount" xml:space="preserve">
+        <value>Likes ({0})</value>
+    </data>
+    <data name="Note_RenoteCount" xml:space="preserve">
+        <value>Renotes ({0})</value>
+    </data>
+    <data name="Note_ReactionCount" xml:space="preserve">
+        <value>Reactions ({0})</value>
+    </data>
+    <data name="Note_Quotes" xml:space="preserve">
+        <value>Quotes</value>
+    </data>
+    <data name="Note_Empty" xml:space="preserve">
+        <value>This note has been deleted or you do not have permission to view it.</value>
+    </data>
+    <data name="Note_Error" xml:space="preserve">
+        <value>An error occured loading the notes. Please inspect logs.</value>
+    </data>
+    <data name="Timeline_Remote_Host" xml:space="preserve">
+        <value>Remote: {0}</value>
+    </data>
+    <data name="Timeline_Tag_Name" xml:space="preserve">
+        <value>Tag: #{0}</value>
+    </data>
+    <data name="Common_Bookmarks" xml:space="preserve">
+        <value>Bookmarks</value>
     </data>
 </root>

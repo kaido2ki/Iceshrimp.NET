@@ -32,63 +32,63 @@
             {
                 case TimelineEnum.Home:
                     <Icon Name="Icons.House"/>
-                    @Loc["Home"]
+                    @Loc[L.Timeline_Home]
                     break;
                 case TimelineEnum.Local:
                     <Icon Name="Icons.Users"/>
-                    @Loc["Local"]
+                    @Loc[L.Timeline_Local]
                     break;
                 case TimelineEnum.Social:
                     <Icon Name="Icons.Handshake"/>
-                    @Loc["Social"]
+                    @Loc[L.Timeline_Social]
                     break;
                 case TimelineEnum.Bubble:
                     <Icon Name="Icons.Hexagon"/>
-                    @Loc["Bubble"]
+                    @Loc[L.Timeline_Bubble]
                     break;
                 case TimelineEnum.Global:
                     <Icon Name="Icons.Globe"/>
-                    @Loc["Global"]
+                    @Loc[L.Timeline_Global]
                     break;
                 case TimelineEnum.Remote:
                     <Icon Name="Icons.Airplane"/>
-                    @Loc[$"Remote: {CurrentTimeline.Remote}"]
+                    @(CurrentTimeline.Remote != null ? Loc[L.Timeline_Remote_Host, CurrentTimeline.Remote] : Loc[L.Timeline_Remote])
                     break;
                 case TimelineEnum.Tag:
                     <Icon Name="Icons.Tag"/>
-                    @Loc[$"Tag: #{CurrentTimeline.Tag}"]
+                    @(CurrentTimeline.Tag != null ? Loc[L.Timeline_Tag_Name, CurrentTimeline.Tag] : Loc[L.Timeline_Tag])
                     break;
             }
         </div>
         <Menu @ref="MenuRef" Fixed="true">
             <MenuElement OnSelect="() => SwitchTimeline(TimelineEnum.Home)">
                 <Text>
-                    <Icon Name="Icons.House"/>@Loc["Home"]</Text>
+                    <Icon Name="Icons.House"/>@Loc[L.Timeline_Home]</Text>
             </MenuElement>
             <MenuElement OnSelect="() => SwitchTimeline(TimelineEnum.Local)">
                 <Text>
-                    <Icon Name="Icons.Users"/>@Loc["Local"]</Text>
+                    <Icon Name="Icons.Users"/>@Loc[L.Timeline_Local]</Text>
             </MenuElement>
             <MenuElement OnSelect="() => SwitchTimeline(TimelineEnum.Social)">
                 <Text>
-                    <Icon Name="Icons.Handshake"/>@Loc["Social"]</Text>
+                    <Icon Name="Icons.Handshake"/>@Loc[L.Timeline_Social]</Text>
             </MenuElement>
             <MenuElement OnSelect="() => SwitchTimeline(TimelineEnum.Bubble)">
                 <Text>
-                    <Icon Name="Icons.Hexagon"/>@Loc["Bubble"]</Text>
+                    <Icon Name="Icons.Hexagon"/>@Loc[L.Timeline_Bubble]</Text>
             </MenuElement>
             <MenuElement OnSelect="() => SwitchTimeline(TimelineEnum.Global)">
                 <Text>
-                    <Icon Name="Icons.Globe"/>@Loc["Global"]</Text>
+                    <Icon Name="Icons.Globe"/>@Loc[L.Timeline_Global]</Text>
             </MenuElement>
             <MenuElement OnSelect="PickRemote">
                 <Text>
-                    <Icon Name="Icons.Airplane"/>@Loc["Remote"]
+                    <Icon Name="Icons.Airplane"/>@Loc[L.Timeline_Remote]
                 </Text>
             </MenuElement>
             <MenuElement OnSelect="PickTag">
                 <Text>
-                    <Icon Name="Icons.Tag" />@Loc["Tag"]
+                    <Icon Name="Icons.Tag" />@Loc[L.Timeline_Tag]
                 </Text>
             </MenuElement>
         </Menu>
@@ -181,10 +181,10 @@
     }
 
     private async Task PickRemote()
-        => await GlobalComponentSvc.PromptDialog?.Prompt(new EventCallback<string?>(this, AddQuoteCallback), Loc["Remote Instance"], Loc["Instance hostname"], $"{CurrentTimeline!.Remote}")!;
+        => await GlobalComponentSvc.PromptDialog?.Prompt(new EventCallback<string?>(this, AddQuoteCallback), Loc[L.Timeline_Remote], Loc[L.User_Host], $"{CurrentTimeline!.Remote}")!;
 
     private async Task PickTag()
-        => await GlobalComponentSvc.PromptDialog?.Prompt(new EventCallback<string?>(this, PickTagCallback), Loc["Tag"], Loc["#tag"], $"{CurrentTimeline!.Tag}")!;
+        => await GlobalComponentSvc.PromptDialog?.Prompt(new EventCallback<string?>(this, PickTagCallback), Loc[L.Timeline_Tag], "#", $"{CurrentTimeline!.Tag}")!;
 
     private async Task AddQuoteCallback(string? remote)
     {

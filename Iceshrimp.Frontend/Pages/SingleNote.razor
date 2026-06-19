@@ -23,18 +23,18 @@
 
 @if (_componentState == State.Loaded)
 {
-    <HeadTitle Text="@Loc["Note by {0}", RootNote?.User.DisplayName ?? RootNote?.User.Username ?? ""]"/>
+    <HeadTitle Text="@Loc[L.Note_ByLabel, RootNote?.User.DisplayName ?? RootNote?.User.Username ?? ""]"/>
 
     <SectionContent SectionName="top-bar">
         <Icon Name="Icons.Signpost"></Icon>
         @if (RootNote is { User.DisplayName: not null } && RootNote.User.Emojis.Count != 0)
         {
-            <MfmText Text="@Loc["Note by {0}", RootNote.User.DisplayName]" Emoji="@RootNote.User.Emojis"
+            <MfmText Text="@Loc[L.Note_ByLabel, RootNote.User.DisplayName]" Emoji="@RootNote.User.Emojis"
                      Simple="@true"/>
         }
         else
         {
-            @Loc["Note by {0}", (RootNote?.User.DisplayName ?? RootNote?.User.Username) ?? string.Empty]
+            @Loc[L.Note_ByLabel, (RootNote?.User.DisplayName ?? RootNote?.User.Username) ?? string.Empty]
         }
         <button class="cw-button button" @onclick="ToggleCw">@if (_cwState)
             {
@@ -77,7 +77,7 @@
                     <TabbedMenu>
                         <TabPage>
                             <Title>
-                                @Loc["Replies ({0})", RootNote!.Replies]
+                                @Loc[L.Note_ReplyCount, RootNote!.Replies]
                             </Title>
                             <TabContent>
                                 @if (Descendants != null)
@@ -99,7 +99,7 @@
                         @if (RootNote?.Likes > 0)
                         {
                             <TabPage>
-                                <Title>@Loc["Likes ({0})", RootNote!.Likes]</Title>
+                                <Title>@Loc[L.Note_LikeCount, RootNote!.Likes]</Title>
                                 <TabContent>
                                     <NoteLikeDetails NoteId="@RootNote.Id"/>
                                 </TabContent>
@@ -108,7 +108,7 @@
                         @if (RootNote?.Renotes > 0)
                         {
                             <TabPage>
-                                <Title>@Loc["Renotes ({0})", RootNote!.Renotes]</Title>
+                                <Title>@Loc[L.Note_RenoteCount, RootNote!.Renotes]</Title>
                                 <TabContent>
                                     <NoteRenoteDetails NoteId="@RootNote.Id"/>
                                 </TabContent>
@@ -117,14 +117,14 @@
                         @if (RootNote?.Reactions.Count > 0)
                         {
                             <TabPage>
-                                <Title>@Loc["Reactions ({0})", RootNote!.Reactions.Count]</Title>
+                                <Title>@Loc[L.Note_ReactionCount, RootNote!.Reactions.Count]</Title>
                                 <TabContent>
                                     <NoteReactionDetails Reactions="RootNote.Reactions" NoteId="@RootNote.Id"/>
                                 </TabContent>
                             </TabPage>
                         }
                         <TabPage>
-                            <Title>@Loc["Quotes"]</Title>
+                            <Title>@Loc[L.Note_Quotes]</Title>
                             <TabContent>
                                 <NoteQuoteDetails NoteId="@RootNote!.Id"/>
                             </TabContent>
@@ -138,7 +138,7 @@
 }
 @if (_componentState == State.Loading)
 {
-    <HeadTitle Text="@Loc["Loading"]"/>
+    <HeadTitle Text="@Loc[L.StateButton_Loading]"/>
 
     <div class="loading">
         <LoadingSpinner Scale="2"/>
@@ -146,15 +146,15 @@
 }
 @if (_componentState == State.Empty)
 {
-    <HeadTitle Text="@Loc["Deleted"]"/>
+    <HeadTitle Text="@Loc[L.Error_NoteNotFound]"/>
 
-    <div>@Loc["This post has been deleted"]</div>
+    <div>@Loc[L.Note_Empty]</div>
 }
 @if (_componentState == State.Error)
 {
-    <HeadTitle Text="@Loc["Error"]"/>
+    <HeadTitle Text="@Loc[L.StateButton_Error]"/>
 
-    <div>An error occured loading the notes. Please inspect logs.</div>
+    <div>@Loc[L.Note_Error]</div>
 }
 
 @code {

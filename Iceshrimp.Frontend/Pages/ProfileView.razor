@@ -21,7 +21,7 @@
     }
     else
     {
-        @Loc["Profile"]
+        @Loc[L.Settings_Profile]
     }
 </SectionContent>
 
@@ -39,8 +39,8 @@
         {
             <div class="banner">
                 <img class="banner" src="@UserResponse.BannerUrl"
-                     alt="@(UserResponse.BannerAlt ?? Loc["{0}'s banner", UserResponse.DisplayName ?? UserResponse.Username])"
-                     title="@(UserResponse.BannerAlt ?? Loc["{0}'s banner", UserResponse.DisplayName ?? UserResponse.Username])"/>
+                     alt="@(UserResponse.BannerAlt ?? Loc[L.User_BannerAltFallback, UserResponse.DisplayName ?? UserResponse.Username])"
+                     title="@(UserResponse.BannerAlt ?? Loc[L.User_BannerAltFallback, UserResponse.DisplayName ?? UserResponse.Username])"/>
             </div>
         }
 
@@ -78,10 +78,10 @@
         @if (UserPinned.Count > 0)
         {
             <div class="pins-label">
-                <LabeledRuler Label="@Loc["Pinned notes"]" LeftRule="false"/>
+                <LabeledRuler Label="@Loc[L.User_PinnedNotes]" LeftRule="false"/>
                 @if (UserPinned.Count > 4)
                 {
-                    <button class="button" @onclick="SkipPinnedNotes">@Loc["Skip"]</button>
+                    <button class="button" @onclick="SkipPinnedNotes">@Loc[L.User_PinnedNotesSkip]</button>
                 }
             </div>
             <div class="notes">
@@ -94,7 +94,7 @@
                 <ScrollEnd IntersectionChange="AddPinnedNotes" ManualLoad="AddPinnedNotes" Class="end"/>
             </span>
             <div class="pins-label">
-                <LabeledRuler Label="@Loc["Latest notes"]" LeftRule="false"/>
+                <LabeledRuler Label="@Loc[L.User_LatestNotes]" LeftRule="false"/>
             </div>
         }
         @if (UserNotes.Count > 0)
@@ -111,13 +111,13 @@
 }
 @if (State == State.Loading)
 {
-    <HeadTitle Text="@Loc["Loading"]"/>
+    <HeadTitle Text="@Loc[L.StateButton_Loading]"/>
 
     <div class="loading"><LoadingSpinner Scale="2" /></div>
 }
 @if (State == State.Error)
 {
-    <HeadTitle Text="@Loc["Error"]"/>
+    <HeadTitle Text="@Loc[L.StateButton_Error]"/>
 
     <div>Failure</div>
 }

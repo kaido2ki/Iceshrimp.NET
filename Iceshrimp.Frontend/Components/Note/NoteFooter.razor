@@ -146,7 +146,7 @@
             @if (!string.IsNullOrWhiteSpace(Note.Text))
             {
                 <MenuElement Icon="Icons.Copy" OnSelect="CopyContents">
-                    <Text>@Loc[L.Note_Menu_CopyContents]</Text>
+                    <Text>@Loc[L.Common_CopyContents]</Text>
                 </MenuElement>
             }
             <hr class="rule"/>
@@ -282,7 +282,7 @@
         try
         {
             await NoteActions.BiteAsync(Note);
-            await GlobalComponentSvc.NoticeDialog?.Display(Loc["Bit {0}", Note.User.DisplayName ?? Note.User.Username])!;
+            await GlobalComponentSvc.NoticeDialog?.Display(Loc[L.User_BiteDialog_Notice, Note.User.DisplayName ?? Note.User.Username])!;
         }
         catch (ApiException e)
         {
@@ -296,7 +296,7 @@
     }
 
     private async Task RefetchNote() =>
-        await GlobalComponentSvc.ConfirmDialog?.Confirm(new EventCallback<bool>(this, RefetchNoteCallback), Loc["Refetch note?"])!;
+        await GlobalComponentSvc.ConfirmDialog?.Confirm(new EventCallback<bool>(this, RefetchNoteCallback), Loc[L.Note_RefetchDialog_Question])!;
 
     private async Task RefetchNoteCallback(bool refetch)
     {
