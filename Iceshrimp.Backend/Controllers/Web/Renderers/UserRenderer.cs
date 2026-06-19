@@ -15,7 +15,7 @@ public class UserRenderer(IOptions<Config.InstanceSection> config, DatabaseConte
 	{
 		var instance = user.IsRemoteUser ? data.InstanceData.FirstOrDefault(p => p.Host == user.Host) : null;
 
-		var instanceName  = user.IsLocalUser ? data.LocalInstanceData!.Name : instance?.Name;
+		var instanceName  = user.IsLocalUser ? data.LocalInstanceData!.Name : instance?.Name ?? instance?.Host;
 		var instanceColor = user.IsLocalUser ? data.LocalInstanceData!.ThemeColor : instance?.ThemeColor;
 		var instanceIcon = user.IsLocalUser
 			? data.LocalInstanceData!.FaviconUrl
