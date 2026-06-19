@@ -7,7 +7,7 @@ public class InstanceResponse
     public required string        AccountDomain { get; set; }
     public required string        WebDomain     { get; set; }
     public required Registrations Registration  { get; set; } 
-    public required string?       Name          { get; set; }
+    public required string        Name          { get; set; }
     public required string?       IconUrl       { get; set; }
     public required string?       BannerUrl     { get; set; }
     public required string?       ThemeColor    { get; set; }

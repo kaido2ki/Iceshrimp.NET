@@ -62,7 +62,7 @@ public class InstanceController(
 			AccountDomain = instanceConfig.Value.AccountDomain,
 			WebDomain     = instanceConfig.Value.WebDomain,
 			Registration  = (Registrations)securityConfig.Value.Registrations,
-			Name          = instanceName,
+			Name          = instanceName ?? instanceConfig.Value.AccountDomain,
 			IconUrl       = iconUrl,
 			BannerUrl     = bannerUrl,
 			ThemeColor    = themeColor,
