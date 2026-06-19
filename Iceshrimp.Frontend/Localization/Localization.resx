@@ -1390,12 +1390,6 @@
     <data name="Search_Advanced_MoreFilters" xml:space="preserve">
         <value>More search filters</value>
     </data>
-    <data name="Search_Advanced_UserPlaceholder" xml:space="preserve">
-        <value>user | user@example.org</value>
-    </data>
-    <data name="Search_Advanced_InstancePlaceholder" xml:space="preserve">
-        <value>local | example.org</value>
-    </data>
     <data name="FollowRequests" xml:space="preserve">
         <value>Follow requests</value>
     </data>

@@ -2787,18 +2787,6 @@ namespace Iceshrimp.Frontend.Localization {
             }
         }
         
-        internal static string Search_Advanced_UserPlaceholder {
-            get {
-                return ResourceManager.GetString("Search_Advanced_UserPlaceholder", resourceCulture);
-            }
-        }
-        
-        internal static string Search_Advanced_InstancePlaceholder {
-            get {
-                return ResourceManager.GetString("Search_Advanced_InstancePlaceholder", resourceCulture);
-            }
-        }
-        
         internal static string FollowRequests {
             get {
                 return ResourceManager.GetString("FollowRequests", resourceCulture);
