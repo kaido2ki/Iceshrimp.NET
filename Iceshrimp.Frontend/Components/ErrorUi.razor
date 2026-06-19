@@ -13,12 +13,13 @@
 @inject UpdateService UpdateService;
 
 <div class="error-ui">
-    <h3>@Loc["Unhandled Exception has occured"]</h3>
+    <h3>@Loc[L.ErrorUi_UnhandledExceptionWarning]</h3>
     <div class="body">
         <div class="text">
             <div>
-                @Loc["If this issue happens more than once, please join our support chat at: "]<a href="https://chat.iceshrimp.dev/">https://chat.iceshrimp.dev/</a><br/>
-                @Loc["Providing the below stack trace and version information will aid in debugging."]
+                @Loc[L.ErrorUi_JoinSupportChat]
+                <a href="https://chat.iceshrimp.dev/" target="_blank">https://chat.iceshrimp.dev/</a><br/>
+                @Loc[L.ErrorUi_StackTrace]
             </div>
         </div>
         <div class="log-block">
@@ -30,20 +31,20 @@
             <span class="value">
                 <code>@Version.Version</code>
             </span>
-            <span class="name">Codename</span>
+            <span class="name">@Loc[L.Update_Codename]</span>
             <span class="value">
                 <code>@Version.Codename</code>
             </span>
             @if (Version.CommitHash != null)
             {
-                <span class="name">Commit</span>
+                <span class="name">@Loc[L.Update_Commit]</span>
                 <span class="value">
                     <code>@Version.CommitHash</code>
                 </span>
             }
         </div>
-        @Loc["Logs"]
-        @Loc["These logs may contain sensitive information, please do not post them publicly.\n" + "Providing them to developers upon request may help with debugging."]
+        @Loc[L.ErrorUi_Logs]
+        @Loc[L.ErrorUi_LogsWarning]
         <div class="log-block">
             <pre><code>
                 @foreach (var line in _rawLog)
@@ -53,9 +54,9 @@
             </code></pre>
         </div>
     </div>
-    <button class="button" @onclick="Reload"><Icon Name="Icons.ArrowsClockwise"/>@Loc["Reload Application"]</button>
-    <button class="button" @onclick="DownloadLogs"><Icon Name="Icons.DownloadSimple"/>@Loc["Download Logs"]</button>
-    <button class="button" @onclick="ClearData"><Icon Name="Icons.Warning"/>@Loc["Reset local data"]</button>
+    <button class="button" @onclick="Reload"><Icon Name="Icons.ArrowsClockwise"/>@Loc[L.ErrorUi_Reload]</button>
+    <button class="button" @onclick="DownloadLogs"><Icon Name="Icons.DownloadSimple"/>@Loc[L.ErrorUi_DownloadLogs]</button>
+    <button class="button" @onclick="ClearData"><Icon Name="Icons.Warning"/>@Loc[L.ErrorUi_ClearData]</button>
 
 </div>
 

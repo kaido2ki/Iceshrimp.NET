@@ -5,21 +5,21 @@
 @inject IStringLocalizer<Localization.Localization> Loc;
 @inject NavigationManager                           Nav;
 
-<HeadTitle Text="@Loc["Not found"]"/>
+<HeadTitle Text="@Loc[L.Error_PageNotFound]"/>
 
 <LayoutView Layout="@typeof(MainLayout)">
     <SectionContent SectionName="top-bar">
         <Icon Name="Icons.TriangleDashed"/>
-        @Loc["Not found"]
+        @Loc[L.Error_PageNotFound]
     </SectionContent>
 
     <div class="not-found">
         <Icon Name="Icons.TriangleDashed" Size="3em"/>
-        <h2>@Loc["Not found"]</h2>
-        <p>@Loc["This page does not exist or you cannot access it."]</p>
+        <h2>@Loc[L.Error_PageNotFound]</h2>
+        <p>@Loc[L.Error_NotFound_Notice]</p>
         <button class="button" @onclick="NavHome">
             <Icon Name="Icons.House"/>
-            @Loc["Go home"]
+            @Loc[L.Common_GoHome]
         </button>
     </div>
 </LayoutView>

@@ -12,20 +12,20 @@
 @inject SessionService             SessionService;
 @inject NavigationManager          Navigation;
 
-<HeadTitle Text="@Loc["Register"]"/>
+<HeadTitle Text="@Loc[L.Auth_Register]"/>
 
 @if (State is State.Loaded)
 {
     <div class="body">
         <img class="logo" src="/_content/Iceshrimp.Assets.Branding/splash.png"/>
         <span>
-            <h3>@Loc["Register on {0}", Name ?? "this Iceshrimp.NET Instance."]</h3></span>
+            <h3>@Loc[L.Auth_Register_Header, Name ?? "Iceshrimp.NET"]</h3></span>
         @if (RegistrationAvailability is not Registrations.Closed)
         {
             @if (Rules.Count != 0 && AcceptedRules == false)
             {
                 <div class="rules">
-                    <span>@Loc["To register you must accept the following rules"]</span>
+                    <span>@Loc[L.Auth_Register_RulesNotice]</span>
                     <ol>
                         @foreach (var rule in Rules)
                         {
@@ -39,26 +39,26 @@
                             </li>
                         }
                     </ol>
-                    <button class="button" @onclick="() => { AcceptedRules = true; }">@Loc["Accept"]</button>
+                    <button class="button" @onclick="() => { AcceptedRules = true; }">@Loc[L.Auth_Register_RulesAccept]</button>
                 </div>
             }
             else
             {
                 <div class="register-form">
-                    <input placeholder="@Loc["Username"]" autocomplete="username" name="username" required="required"
+                    <input placeholder="@Loc[L.User_Username]" autocomplete="username" name="username" required="required"
                            @bind="@Username"/>
                     <input type="password" autocomplete="new-password" name="new-password" required="required"
-                           placeholder="@Loc["Password"]"
+                           placeholder="@Loc[L.Auth_Password]"
                            @bind="@Password"/>
                     @if (RegistrationAvailability is Registrations.Invite)
                     {
-                        <input required="required" placeholder="@Loc["Invite"]" @bind="@Invite"/>
+                        <input required="required" placeholder="@Loc[L.Auth_Register_Invite]" @bind="@Invite"/>
                     }
                     <StateButton @ref="@LoginButton" ExtraClasses="button" OnClick="Submit">
-                        <Initial>@Loc["Register"]</Initial>
-                        <Success>@Loc["Success!"]</Success>
-                        <Loading>@Loc["Loading"] <LoadingSpinner /></Loading>
-                        <Failed>@Loc["Try again"]</Failed>
+                        <Initial>@Loc[L.Auth_Register]</Initial>
+                        <Success>@Loc[L.StateButton_Success]</Success>
+                        <Loading>@Loc[L.StateButton_Loading] <LoadingSpinner /></Loading>
+                        <Failed>@Loc[L.StateButton_Retry]</Failed>
                     </StateButton>
                 </div>
             }
@@ -70,9 +70,9 @@
         }
         @if (RegistrationAvailability is Registrations.Closed)
         {
-            <div>@Loc["Registrations for this instance are closed."]</div>
+            <div>@Loc[L.Auth_Registration_ClosedNotice]</div>
         }
-        <a class="login-link" href="/login">@Loc["Login to an existing account"]</a>
+        <a class="login-link" href="/login">@Loc[L.Auth_Register_SwitchToLogin]</a>
     </div>
 }
 
@@ -98,7 +98,7 @@
         {
             Error             = true;
             LoginButton.State = StateButton.StateEnum.Failed;
-            RegistrationError = "Please fill out all fields";
+            RegistrationError = Loc[L.Auth_Registration_Error_FieldsRequired];
             return;
         }
 

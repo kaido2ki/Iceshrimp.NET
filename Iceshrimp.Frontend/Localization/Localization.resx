@@ -589,10 +589,10 @@
     <data name="Settings_About_CurrentVersion" xml:space="preserve">
         <value>Current Version</value>
     </data>
-    <data name="Settings_About_Logs" xml:space="preserve">
+    <data name="ErrorUi_Logs" xml:space="preserve">
         <value>Client Logs</value>
     </data>
-    <data name="Settings_About_LogsWarning" xml:space="preserve">
+    <data name="ErrorUi_LogsWarning" xml:space="preserve">
         <value>These logs may contain sensitive information, please do not post them publicly.\nProviding them to developers upon request may help with debugging.</value>
     </data>
     <data name="Common_Download" xml:space="preserve">
@@ -668,7 +668,7 @@
         <value>Updated</value>
     </data>
     <data name="Settings_Account_2fa" xml:space="preserve">
-        <value>Two-factor Authentication</value>
+        <value>Two-Factor Authentication</value>
     </data>
     <data name="Settings_Account_2fa_Enable" xml:space="preserve">
         <value>Enable two-factor authentication</value>
@@ -913,7 +913,7 @@
     <data name="Announcements" xml:space="preserve">
         <value>Announcements</value>
     </data>
-    <data name="Moderation_Announcements_Empty" xml:space="preserve">
+    <data name="Announcements_Empty" xml:space="preserve">
         <value>No announcements have been made.</value>
     </data>
     <data name="Announcement" xml:space="preserve">
@@ -1083,5 +1083,92 @@
     </data>
     <data name="Moderation_Reports_DeleteDialog_Question" xml:space="preserve">
         <value>Delete report?</value>
+    </data>
+    <data name="Auth_Login" xml:space="preserve">
+        <value>Login</value>
+    </data>
+    <data name="Auth_Login_Header" xml:space="preserve">
+        <value>Login to {0}</value>
+    </data>
+    <data name="Auth_Password" xml:space="preserve">
+        <value>Password</value>
+    </data>
+    <data name="Auth_Login_Sessions" xml:space="preserve">
+        <value>Existing sessions</value>
+    </data>
+    <data name="Preferences_ResetCustomCss" xml:space="preserve">
+        <value>Reset custom CSS</value>
+    </data>
+    <data name="Auth_Login_Error" xml:space="preserve">
+        <value>Failed to login.</value>
+    </data>
+    <data name="Auth_Login_SwitchToRegister" xml:space="preserve">
+        <value>Register a new account</value>
+    </data>
+    <data name="Auth_Register" xml:space="preserve">
+        <value>Register</value>
+    </data>
+    <data name="Auth_Register_Header" xml:space="preserve">
+        <value>Register for {0}</value>
+    </data>
+    <data name="Auth_Register_RulesNotice" xml:space="preserve">
+        <value>To register you must accept the following rules:</value>
+    </data>
+    <data name="Auth_Register_RulesAccept" xml:space="preserve">
+        <value>Accept</value>
+    </data>
+    <data name="Auth_Register_Invite" xml:space="preserve">
+        <value>Invite code</value>
+    </data>
+    <data name="StateButton_Retry" xml:space="preserve">
+        <value>Retry</value>
+    </data>
+    <data name="StateButton_Success" xml:space="preserve">
+        <value>Success</value>
+    </data>
+    <data name="Auth_Registration_ClosedNotice" xml:space="preserve">
+        <value>Registrations for this instance are closed.</value>
+    </data>
+    <data name="Auth_Register_SwitchToLogin" xml:space="preserve">
+        <value>Login to existing account</value>
+    </data>
+    <data name="Auth_Registration_Error_FieldsRequired" xml:space="preserve">
+        <value>Please fill out all fields.</value>
+    </data>
+    <data name="Auth_Logout" xml:space="preserve">
+        <value>Logout</value>
+    </data>
+    <data name="Auth_SwitchAccount" xml:space="preserve">
+        <value>Change account</value>
+    </data>
+    <data name="ErrorUi_UnhandledExceptionWarning" xml:space="preserve">
+        <value>An unhandled Exception has occured</value>
+    </data>
+    <data name="ErrorUi_JoinSupportChat" xml:space="preserve">
+        <value>If this issue happens more than once, please join our support chat at:</value>
+    </data>
+    <data name="ErrorUi_StackTrace" xml:space="preserve">
+        <value>Providing the below stack trace and version information will aid in debugging.</value>
+    </data>
+    <data name="ErrorUi_Reload" xml:space="preserve">
+        <value>Reload client</value>
+    </data>
+    <data name="ErrorUi_DownloadLogs" xml:space="preserve">
+        <value>Download logs</value>
+    </data>
+    <data name="ErrorUi_ClearData" xml:space="preserve">
+        <value>Reset local data</value>
+    </data>
+    <data name="Error_PageNotFound" xml:space="preserve">
+        <value>Page not found</value>
+    </data>
+    <data name="Error_NotFound_Notice" xml:space="preserve">
+        <value>This page does not exist or you cannot access it.</value>
+    </data>
+    <data name="Common_GoHome" xml:space="preserve">
+        <value>Go home</value>
+    </data>
+    <data name="Compose_RemoveAttachmentDialog_Question" xml:space="preserve">
+        <value>Remove attachment?</value>
     </data>
 </root>

@@ -1185,15 +1185,15 @@ namespace Iceshrimp.Frontend.Localization {
             }
         }
         
-        internal static string Settings_About_Logs {
+        internal static string ErrorUi_Logs {
             get {
-                return ResourceManager.GetString("Settings_About_Logs", resourceCulture);
+                return ResourceManager.GetString("ErrorUi_Logs", resourceCulture);
             }
         }
         
-        internal static string Settings_About_LogsWarning {
+        internal static string ErrorUi_LogsWarning {
             get {
-                return ResourceManager.GetString("Settings_About_LogsWarning", resourceCulture);
+                return ResourceManager.GetString("ErrorUi_LogsWarning", resourceCulture);
             }
         }
         
@@ -1833,9 +1833,9 @@ namespace Iceshrimp.Frontend.Localization {
             }
         }
         
-        internal static string Moderation_Announcements_Empty {
+        internal static string Announcements_Empty {
             get {
-                return ResourceManager.GetString("Moderation_Announcements_Empty", resourceCulture);
+                return ResourceManager.GetString("Announcements_Empty", resourceCulture);
             }
         }
         
@@ -2172,6 +2172,180 @@ namespace Iceshrimp.Frontend.Localization {
         internal static string Moderation_Reports_DeleteDialog_Question {
             get {
                 return ResourceManager.GetString("Moderation_Reports_DeleteDialog_Question", resourceCulture);
+            }
+        }
+        
+        internal static string Auth_Login {
+            get {
+                return ResourceManager.GetString("Auth_Login", resourceCulture);
+            }
+        }
+        
+        internal static string Auth_Login_Header {
+            get {
+                return ResourceManager.GetString("Auth_Login_Header", resourceCulture);
+            }
+        }
+        
+        internal static string Auth_Password {
+            get {
+                return ResourceManager.GetString("Auth_Password", resourceCulture);
+            }
+        }
+        
+        internal static string Auth_Login_Sessions {
+            get {
+                return ResourceManager.GetString("Auth_Login_Sessions", resourceCulture);
+            }
+        }
+        
+        internal static string Preferences_ResetCustomCss {
+            get {
+                return ResourceManager.GetString("Preferences_ResetCustomCss", resourceCulture);
+            }
+        }
+        
+        internal static string Auth_Login_Error {
+            get {
+                return ResourceManager.GetString("Auth_Login_Error", resourceCulture);
+            }
+        }
+        
+        internal static string Auth_Login_SwitchToRegister {
+            get {
+                return ResourceManager.GetString("Auth_Login_SwitchToRegister", resourceCulture);
+            }
+        }
+        
+        internal static string Auth_Register {
+            get {
+                return ResourceManager.GetString("Auth_Register", resourceCulture);
+            }
+        }
+        
+        internal static string Auth_Register_Header {
+            get {
+                return ResourceManager.GetString("Auth_Register_Header", resourceCulture);
+            }
+        }
+        
+        internal static string Auth_Register_RulesNotice {
+            get {
+                return ResourceManager.GetString("Auth_Register_RulesNotice", resourceCulture);
+            }
+        }
+        
+        internal static string Auth_Register_RulesAccept {
+            get {
+                return ResourceManager.GetString("Auth_Register_RulesAccept", resourceCulture);
+            }
+        }
+        
+        internal static string Auth_Register_Invite {
+            get {
+                return ResourceManager.GetString("Auth_Register_Invite", resourceCulture);
+            }
+        }
+        
+        internal static string StateButton_Retry {
+            get {
+                return ResourceManager.GetString("StateButton_Retry", resourceCulture);
+            }
+        }
+        
+        internal static string StateButton_Success {
+            get {
+                return ResourceManager.GetString("StateButton_Success", resourceCulture);
+            }
+        }
+        
+        internal static string Auth_Registration_ClosedNotice {
+            get {
+                return ResourceManager.GetString("Auth_Registration_ClosedNotice", resourceCulture);
+            }
+        }
+        
+        internal static string Auth_Register_SwitchToLogin {
+            get {
+                return ResourceManager.GetString("Auth_Register_SwitchToLogin", resourceCulture);
+            }
+        }
+        
+        internal static string Auth_Registration_Error_FieldsRequired {
+            get {
+                return ResourceManager.GetString("Auth_Registration_Error_FieldsRequired", resourceCulture);
+            }
+        }
+        
+        internal static string Auth_Logout {
+            get {
+                return ResourceManager.GetString("Auth_Logout", resourceCulture);
+            }
+        }
+        
+        internal static string Auth_SwitchAccount {
+            get {
+                return ResourceManager.GetString("Auth_SwitchAccount", resourceCulture);
+            }
+        }
+        
+        internal static string ErrorUi_UnhandledExceptionWarning {
+            get {
+                return ResourceManager.GetString("ErrorUi_UnhandledExceptionWarning", resourceCulture);
+            }
+        }
+        
+        internal static string ErrorUi_JoinSupportChat {
+            get {
+                return ResourceManager.GetString("ErrorUi_JoinSupportChat", resourceCulture);
+            }
+        }
+        
+        internal static string ErrorUi_StackTrace {
+            get {
+                return ResourceManager.GetString("ErrorUi_StackTrace", resourceCulture);
+            }
+        }
+        
+        internal static string ErrorUi_Reload {
+            get {
+                return ResourceManager.GetString("ErrorUi_Reload", resourceCulture);
+            }
+        }
+        
+        internal static string ErrorUi_DownloadLogs {
+            get {
+                return ResourceManager.GetString("ErrorUi_DownloadLogs", resourceCulture);
+            }
+        }
+        
+        internal static string ErrorUi_ClearData {
+            get {
+                return ResourceManager.GetString("ErrorUi_ClearData", resourceCulture);
+            }
+        }
+        
+        internal static string Error_PageNotFound {
+            get {
+                return ResourceManager.GetString("Error_PageNotFound", resourceCulture);
+            }
+        }
+        
+        internal static string Error_NotFound_Notice {
+            get {
+                return ResourceManager.GetString("Error_NotFound_Notice", resourceCulture);
+            }
+        }
+        
+        internal static string Common_GoHome {
+            get {
+                return ResourceManager.GetString("Common_GoHome", resourceCulture);
+            }
+        }
+        
+        internal static string Compose_RemoveAttachmentDialog_Question {
+            get {
+                return ResourceManager.GetString("Compose_RemoveAttachmentDialog_Question", resourceCulture);
             }
         }
     }

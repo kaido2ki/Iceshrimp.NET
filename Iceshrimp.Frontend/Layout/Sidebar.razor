@@ -38,7 +38,7 @@
         <NavLink href="/search">
             <div class="sidebar-btn">
                 <Icon Name="Icons.MagnifyingGlass"/>
-                <span class="text">@Loc["Search"]</span>
+                <span class="text">@Loc[L.Search]</span>
             </div>
         </NavLink>
         <NavLink href="/bookmarks">
@@ -72,7 +72,7 @@
         <NavLink href="/settings/">
             <div class="sidebar-btn">
                 <Icon Name="Icons.Gear"></Icon>
-                <span class="text">@Loc["Settings"]</span>
+                <span class="text">@Loc[L.Settings]</span>
             </div>
         </NavLink>
         @if ((Session?.Current?.IsAdmin ?? false) || (Session?.Current?.IsModerator ?? false))
@@ -80,7 +80,7 @@
             <NavLink href="/mod">
                 <div class="sidebar-btn">
                     <Icon Name="Icons.Shield"></Icon>
-                    <span class="text">@Loc["Moderation"]</span>
+                    <span class="text">@Loc[L.Moderation]</span>
                 </div>
             </NavLink>
         }

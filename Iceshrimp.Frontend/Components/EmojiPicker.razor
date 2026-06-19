@@ -80,7 +80,7 @@
             .Where(p => FilterName(p) || p.Tags.Count(a => a.Contains(EmojiFilter.StripLeadingTrailingSpaces())) != 0)
             .Select(p =>
             {
-                p.Category ??= Loc["Other"];
+                p.Category ??= Loc[L.Common_Other];
                 return p;
             })
             .OrderBy(p => p.Name)

@@ -35,16 +35,16 @@
         }
         else
         {
-            <Icon Name="Icons.Warning" title="@Loc["No alt text"]"/>
+            <Icon Name="Icons.Warning" title="@Loc[L.Drive_Entry_NoAlt]"/>
         }
         @if (File.Sensitive)
         {
-            <Icon Name="Icons.EyeSlash" title="@Loc["Sensitive"]"/>
+            <Icon Name="Icons.EyeSlash" title="@Loc[L.Drive_Entry_Sensitive]"/>
         }
     </div>
     <Menu @ref="AttachmentMenu">
         <MenuElement Icon="Icons.ArrowSquareOut" OnSelect="Open">
-            <Text>@Loc["Open"]</Text>
+            <Text>@Loc[L.Common_Open]</Text>
         </MenuElement>
         @* TODO: Uncomment when FE supports media node *@
         @* @if (File.ContentType.StartsWith("image")) *@
@@ -56,20 +56,20 @@
         @if (File.Sensitive)
         {
             <MenuElement Icon="Icons.Eye" OnSelect="MarkNotSensitive">
-                <Text>@Loc["Mark as not sensitive"]</Text>
+                <Text>@Loc[L.Drive_Entry_Menu_Sensitive_Remove]</Text>
             </MenuElement>
         }
         else
         {
             <MenuElement Icon="Icons.EyeSlash" OnSelect="MarkAsSensitive">
-                <Text>@Loc["Mark as sensitive"]</Text>
+                <Text>@Loc[L.Drive_Entry_Menu_Sensitive_Add]</Text>
             </MenuElement>
         }
         <MenuElement Icon="Icons.ClosedCaptioning" OnSelect="SetAltText">
-            <Text>@Loc["Set alt text"]</Text>
+            <Text>@Loc[L.Drive_Entry_Menu_SetAlt]</Text>
         </MenuElement>
         <MenuElement Icon="Icons.Trash" OnSelect="Remove">
-            <Text>@Loc["Remove"]</Text>
+            <Text>@Loc[L.Common_Remove]</Text>
         </MenuElement>
         <ClosingBackdrop OnClose="AttachmentMenu.Close"></ClosingBackdrop>
     </Menu>
@@ -115,7 +115,7 @@
     private async Task MarkAsSensitive() => await MarkSensitive(true);
 
     private async Task SetAltText() =>
-        await Global.PromptDialog?.Prompt(new EventCallback<string?>(this, SetAltTextCallback), Loc["Set alt text"], "", File.Description, true, true)!;
+        await Global.PromptDialog?.Prompt(new EventCallback<string?>(this, SetAltTextCallback), Loc[L.Drive_Entry_Menu_SetAlt], "", File.Description, true, true)!;
 
     private async Task SetAltTextCallback(string? alt)
     {
@@ -137,7 +137,7 @@
     }
 
     private async Task Remove() =>
-        await Global.ConfirmDialog?.Confirm(new EventCallback<bool>(this, RemoveCallback), Loc["Remove attachment?"], buttonText: Loc["Remove"])!;
+        await Global.ConfirmDialog?.Confirm(new EventCallback<bool>(this, RemoveCallback), Loc[L.Compose_RemoveAttachmentDialog_Question])!;
 
     private async Task RemoveCallback(bool remove)
     {

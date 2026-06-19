@@ -16,19 +16,19 @@
 @inject SettingsService                Settings;
 @layout UnauthLayout
 
-<HeadTitle Text="@Loc["Login"]"/>
+<HeadTitle Text="@Loc[L.Auth_Login]"/>
 
 <div class="body">
     <img class="logo" src="/_content/Iceshrimp.Assets.Branding/splash.png"/>
     <span>
-            <h3>@Loc["Login to {0}", Name ?? "this Iceshrimp.NET Instance."]</h3></span>
+            <h3>@Loc[L.Auth_Login_Header, Name ?? "Iceshrimp.NET"]</h3></span>
     <div class="login-form">
-        <input placeholder="@Loc["Username"]" autocomplete="username" name="username" required="required"
+        <input placeholder="@Loc[L.User_Username]" autocomplete="username" name="username" required="required"
                @bind="@Username"/>
-        <input type="password" placeholder="@Loc["Password"]" autocomplete="current-password" name="current-password"
+        <input type="password" placeholder="@Loc[L.Auth_Password]" autocomplete="current-password" name="current-password"
                required="required"
                @bind="@Password"/>
-        <button class="button" @onclick="Submit" disabled="@Loading">@Loc["Login"]</button>
+        <button class="button" @onclick="Submit" disabled="@Loading">@Loc[L.Auth_Login]</button>
     </div>
 
     @if (Loading)
@@ -37,11 +37,11 @@
     }
     @if (Failure)
     {
-        <span>Authentication Failed</span>
+        <span>@Loc[L.Auth_Login_Error]</span>
     }
     @if (SessionService.Users.Count > 0)
     {
-        <h2>@Loc["Existing sessions"]</h2>
+        <h2>@Loc[L.Auth_Login_Sessions]</h2>
         <div class="user-picker">
         @foreach(var user in SessionService.Users.Values)
         {
@@ -54,29 +54,29 @@
     }
     @if (!string.IsNullOrWhiteSpace(Settings.Preferences.CustomCss))
     {
-        <button class="button" @onclick="ResetCustomCss">@Loc["Reset custom CSS"]</button>
+        <button class="button" @onclick="ResetCustomCss">@Loc[L.Preferences_ResetCustomCss]</button>
     }
 
     @if (Registration != Registrations.Closed)
     {
-        <a class="register-link" href="/register">@Loc["Register a new account"]</a>
+        <a class="register-link" href="/register">@Loc[L.Auth_Login_SwitchToRegister]</a>
     }
 
     <dialog class="dialog" @ref="Dialog">
         <div class="dialog-content">
             <div class="header">
-                <h2 class="title">@Loc["Two-Factor Code required"]</h2>
+                <h2 class="title">@Loc[L.Settings_Account_2fa]</h2>
                 <button class="button close" @onclick="() => CloseDialog(Dialog)">
                     <Icon Name="Icons.X"></Icon>
                 </button>
             </div>
             <input class="otp-input" @bind="Otp" autocomplete="one-time-code" autofocus="autofocus"/>
             <StateButton ExtraClasses="button" @ref="OtpButton" OnClick="TwoFactorLogin">
-                <Loading>@Loc["Processing"]</Loading>
-                <Failed>@Loc["2FA Failed"]</Failed>
-                <Success>@Loc["Success!"]</Success>
+                <Loading>@Loc[L.StateButton_Loading]</Loading>
+                <Failed>@Loc[L.StateButton_Retry]</Failed>
+                <Success>@Loc[L.StateButton_Success]</Success>
                 <Initial>
-                    @Loc["Login"]</Initial>
+                    @Loc[L.Auth_Login]</Initial>
             </StateButton>
         </div>
         <div class="backdrop"></div>
