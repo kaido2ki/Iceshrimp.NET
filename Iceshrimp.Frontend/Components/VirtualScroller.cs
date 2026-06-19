@@ -126,7 +126,7 @@ public class VirtualScroller<T> : ComponentBase, IDisposable where T : IIdentifi
 			builder.OpenRegion(2);
 			builder.OpenElement(1, "div");
 			builder.AddAttribute(2, "class", "placeholder");
-			builder.AddContent(3,@Loc["Nothing here, yet!"]);
+			builder.AddContent(3,Loc[Localization.Localization.Timeline_Empty]);
 			builder.CloseElement();
 			builder.CloseRegion();
 		}

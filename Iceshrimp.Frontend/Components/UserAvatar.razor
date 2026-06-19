@@ -27,5 +27,5 @@
     [Parameter]                 public          string?       Role      { get; set; }
     private                                     bool          LoadError { get; set; }
 
-    private string FallbackAlt() => Loc["{0}'s avatar", User.DisplayName ?? User.Username];
+    private string FallbackAlt() => Loc[L.User_AvatarAltFallback, User.DisplayName ?? User.Username];
 }

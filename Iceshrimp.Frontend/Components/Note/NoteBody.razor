@@ -33,7 +33,7 @@
     @if (_overHeight & !_showFull)
     {
         <button class="truncate-btn" @onclick="ToggleTruncate" @onclick:stopPropagation="true">
-            <span>@Loc["Show more"]</span>
+            <span>@Loc[L.Common_ShowMore]</span>
         </button>
     }
     <div
@@ -69,21 +69,21 @@
         {
             <div @onclick="OpenQuote" @onclick:stopPropagation="true" class="quote">
                 <Icon Name="Icons.Quotes"/>
-                @Loc["Click to view quoted note"]
+                @Loc[L.Note_OpenQuote]
             </div>
         }
         else if (NoteBase is NoteWithQuote { QuoteInaccessible: true })
         {
             <div class="quote">
                 <Icon Name="Icons.Quotes"/>
-                @Loc["The quoted note is unavailable"]
+                @Loc[L.Note_QuoteInaccessible]
             </div>
         }
     </div>
     @if (_overHeight & _showFull)
     {
         <button class="truncate-btn show-less" @onclick="ToggleTruncate" @onclick:stopPropagation="true">
-            <span>@Loc["Show less"]</span>
+            <span>@Loc[L.Common_ShowLess]</span>
         </button>
     }
 </div>

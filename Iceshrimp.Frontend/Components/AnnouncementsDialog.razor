@@ -13,11 +13,11 @@
             <Icon Name="Icons.Megaphone" Size="1.3em"/>
             @if (Announcements.Count != 1)
             {
-                <span>@Loc["Announcements ({0}/{1})", Current + 1, Announcements.Count]</span>
+                <span>@Loc[L.Announcements_Count, Current + 1, Announcements.Count]</span>
             }
             else
             {
-                <span>@Loc["Announcement"]</span>
+                <span>@Loc[L.Announcement]</span>
             }
         </div>
         <div class="body">
@@ -34,13 +34,13 @@
 
                 @if (current.ImageUrl != null)
                 {
-                    <img src="@current.ImageUrl" alt="@Loc["announcement image"]"/>
+                    <img src="@current.ImageUrl"/>
                 }
 
                 <span class="date">
                     @if (current.UpdatedAt != null)
                     {
-                        @Loc["Announced {0} - Edited {1}", current.CreatedAt.ToLocalTime().ToString("G"), current.UpdatedAt.Value.ToLocalTime().ToString("G")]
+                        @Loc[L.Announcement_Date_CreatedAt_UpdatedAt, current.CreatedAt.ToLocalTime().ToString("G"), current.UpdatedAt.Value.ToLocalTime().ToString("G")]
                     }
                     else
                     {
@@ -55,23 +55,23 @@
                 <button class="button" @onclick="Previous"
                         disabled="@(Current == 0 && NextButton?.State != StateButton.StateEnum.Loading)">
                 <Icon Name="Icons.CaretLeft"/>
-                    @Loc["Previous"]
+                    @Loc[L.Common_Previous]
                 </button>
             }
             <StateButton OnClick="Next" ExtraClasses="button confirm-btn" @ref="NextButton">
                 <Initial>
-                    <span>@Loc["Next"]</span>
+                    <span>@Loc[L.Common_Next]</span>
                     <Icon Name="Icons.CaretRight"/>
                 </Initial>
                 <Success>
-                    <span>@Loc["Close"]</span>
+                    <span>@Loc[L.Common_Close]</span>
                 </Success>
                 <Loading>
-                    <span>@Loc["Loading"]</span>
+                    <span>@Loc[L.StateButton_Loading]</span>
                     <LoadingSpinner/>
                 </Loading>
                 <Failed>
-                    @Loc["Error"]<Icon Name="Icons.X"/>
+                    @Loc[L.StateButton_Retry]<Icon Name="Icons.X"/>
                 </Failed>
             </StateButton>
         </div>

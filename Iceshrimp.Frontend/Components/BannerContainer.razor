@@ -16,7 +16,7 @@
         }
         @if (Banners.Count > 0 && CurrentBanners.Count >= 5)
         {
-            <div class="more">@Loc["and {0} more", Banners.Count]</div>
+            <div class="more">@Loc[L.Banner_MoreCount, Banners.Count]</div>
         }
     </div>
 }

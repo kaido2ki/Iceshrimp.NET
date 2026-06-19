@@ -357,9 +357,9 @@ namespace Iceshrimp.Frontend.Localization {
             }
         }
         
-        internal static string Common_AboutPage {
+        internal static string AboutPage {
             get {
-                return ResourceManager.GetString("Common_AboutPage", resourceCulture);
+                return ResourceManager.GetString("AboutPage", resourceCulture);
             }
         }
         
@@ -621,9 +621,9 @@ namespace Iceshrimp.Frontend.Localization {
             }
         }
         
-        internal static string Drive_Entry_DeleteDialog_Question {
+        internal static string Drive_DeleteDialog_Question {
             get {
-                return ResourceManager.GetString("Drive_Entry_DeleteDialog_Question", resourceCulture);
+                return ResourceManager.GetString("Drive_DeleteDialog_Question", resourceCulture);
             }
         }
         
@@ -2826,6 +2826,198 @@ namespace Iceshrimp.Frontend.Localization {
         internal static string FollowRequests_Empty {
             get {
                 return ResourceManager.GetString("FollowRequests_Empty", resourceCulture);
+            }
+        }
+        
+        internal static string Settings_Account_Error_ConfirmPassword {
+            get {
+                return ResourceManager.GetString("Settings_Account_Error_ConfirmPassword", resourceCulture);
+            }
+        }
+        
+        internal static string Common_ShowMore {
+            get {
+                return ResourceManager.GetString("Common_ShowMore", resourceCulture);
+            }
+        }
+        
+        internal static string Common_ShowLess {
+            get {
+                return ResourceManager.GetString("Common_ShowLess", resourceCulture);
+            }
+        }
+        
+        internal static string Note_OpenQuote {
+            get {
+                return ResourceManager.GetString("Note_OpenQuote", resourceCulture);
+            }
+        }
+        
+        internal static string Note_QuoteInaccessible {
+            get {
+                return ResourceManager.GetString("Note_QuoteInaccessible", resourceCulture);
+            }
+        }
+        
+        internal static string AboutPage_NoteResponse {
+            get {
+                return ResourceManager.GetString("AboutPage_NoteResponse", resourceCulture);
+            }
+        }
+        
+        internal static string AboutPage_UserResponse {
+            get {
+                return ResourceManager.GetString("AboutPage_UserResponse", resourceCulture);
+            }
+        }
+        
+        internal static string AboutPage_ProfileResponse {
+            get {
+                return ResourceManager.GetString("AboutPage_ProfileResponse", resourceCulture);
+            }
+        }
+        
+        internal static string AboutPage_Activity {
+            get {
+                return ResourceManager.GetString("AboutPage_Activity", resourceCulture);
+            }
+        }
+        
+        internal static string Timeline_Empty {
+            get {
+                return ResourceManager.GetString("Timeline_Empty", resourceCulture);
+            }
+        }
+        
+        internal static string User_RemoteBannerNotice {
+            get {
+                return ResourceManager.GetString("User_RemoteBannerNotice", resourceCulture);
+            }
+        }
+        
+        internal static string FollowRequest_SentAt {
+            get {
+                return ResourceManager.GetString("FollowRequest_SentAt", resourceCulture);
+            }
+        }
+        
+        internal static string FollowRequest_ReceivedAt {
+            get {
+                return ResourceManager.GetString("FollowRequest_ReceivedAt", resourceCulture);
+            }
+        }
+        
+        internal static string FollowRequest_Accept {
+            get {
+                return ResourceManager.GetString("FollowRequest_Accept", resourceCulture);
+            }
+        }
+        
+        internal static string FollowRequest_AcceptFollowBack {
+            get {
+                return ResourceManager.GetString("FollowRequest_AcceptFollowBack", resourceCulture);
+            }
+        }
+        
+        internal static string FollowRequest_Decline {
+            get {
+                return ResourceManager.GetString("FollowRequest_Decline", resourceCulture);
+            }
+        }
+        
+        internal static string Streaming_Connected {
+            get {
+                return ResourceManager.GetString("Streaming_Connected", resourceCulture);
+            }
+        }
+        
+        internal static string Streaming_Disconnected {
+            get {
+                return ResourceManager.GetString("Streaming_Disconnected", resourceCulture);
+            }
+        }
+        
+        internal static string Streaming_Connecting {
+            get {
+                return ResourceManager.GetString("Streaming_Connecting", resourceCulture);
+            }
+        }
+        
+        internal static string Streaming_Reconnecting {
+            get {
+                return ResourceManager.GetString("Streaming_Reconnecting", resourceCulture);
+            }
+        }
+        
+        internal static string Moderation_External_AdminDashboard {
+            get {
+                return ResourceManager.GetString("Moderation_External_AdminDashboard", resourceCulture);
+            }
+        }
+        
+        internal static string Moderation_External_QueueDashboard {
+            get {
+                return ResourceManager.GetString("Moderation_External_QueueDashboard", resourceCulture);
+            }
+        }
+        
+        internal static string User_FollowButton_Follow {
+            get {
+                return ResourceManager.GetString("User_FollowButton_Follow", resourceCulture);
+            }
+        }
+        
+        internal static string User_FollowButton_Unfollow {
+            get {
+                return ResourceManager.GetString("User_FollowButton_Unfollow", resourceCulture);
+            }
+        }
+        
+        internal static string User_FollowButton_FollowBack {
+            get {
+                return ResourceManager.GetString("User_FollowButton_FollowBack", resourceCulture);
+            }
+        }
+        
+        internal static string User_FollowButton_Cancel {
+            get {
+                return ResourceManager.GetString("User_FollowButton_Cancel", resourceCulture);
+            }
+        }
+        
+        internal static string Announcements_Count {
+            get {
+                return ResourceManager.GetString("Announcements_Count", resourceCulture);
+            }
+        }
+        
+        internal static string Common_Previous {
+            get {
+                return ResourceManager.GetString("Common_Previous", resourceCulture);
+            }
+        }
+        
+        internal static string Common_Next {
+            get {
+                return ResourceManager.GetString("Common_Next", resourceCulture);
+            }
+        }
+        
+        internal static string Instance_Rules {
+            get {
+                return ResourceManager.GetString("Instance_Rules", resourceCulture);
+            }
+        }
+        
+        internal static string Settings_Account_ChangePasswordDialog_Notice {
+            get {
+                return ResourceManager.GetString("Settings_Account_ChangePasswordDialog_Notice", resourceCulture);
+            }
+        }
+        
+        internal static string Banner_MoreCount {
+            get {
+                return ResourceManager.GetString("Banner_MoreCount", resourceCulture);
             }
         }
     }

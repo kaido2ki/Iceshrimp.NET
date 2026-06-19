@@ -6,12 +6,12 @@
 
 <div class="follow-request-card">
     <UserProfileCard User="FollowRequest.User" ShowBio="false"></UserProfileCard>
-    <span class="date">@Loc[Outgoing ? "Sent at {0}" : "Received at {0}", FollowRequest.CreatedAt.ToString("G")]</span>
+    <span class="date">@Loc[Outgoing ? L.FollowRequest_SentAt : L.FollowRequest_ReceivedAt, FollowRequest.CreatedAt.ToString("G")]</span>
     <div class="buttons">
         @if (Outgoing)
         {
             <button @onclick="Cancel" class="button decline">
-                <Icon Name="Icons.X"/>@Loc["Cancel"]
+                <Icon Name="Icons.X"/>@Loc[L.Dialog_Cancel]
             </button>
         }
         else
@@ -19,15 +19,15 @@
             @if (_followBack)
             {
                 <button @onclick="AcceptAndFollowBack" class="button accept">
-                    <Icon Name="Icons.ArrowsLeftRight"/>@Loc["Accept and follow back"]
+                    <Icon Name="Icons.ArrowsLeftRight"/>@Loc[L.FollowRequest_AcceptFollowBack]
                 </button>
             }
 
             <button @onclick="Accept" class="button accept">
-                <Icon Name="Icons.Check"/>@Loc["Accept"]
+                <Icon Name="Icons.Check"/>@Loc[L.FollowRequest_Accept]
             </button>
             <button @onclick="Reject" class="button decline">
-                <Icon Name="Icons.X"/>@Loc["Decline"]
+                <Icon Name="Icons.X"/>@Loc[L.FollowRequest_Decline]
             </button>
         }
     </div>

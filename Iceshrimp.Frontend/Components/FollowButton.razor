@@ -12,31 +12,31 @@
         {
             case ButtonType.Follow:
                 <button @onclick="Action" class="btn">
-                    <span class="text">@Loc["Follow"]</span>
+                    <span class="text">@Loc[L.User_FollowButton_Follow]</span>
                     <Icon Name="Icons.Plus" class="icon"/>
                 </button>
                 break;
             case ButtonType.Unfollow:
                 <button @onclick="Action" class="btn inverted">
-                    <span class="text">@Loc["Unfollow"]</span>
+                    <span class="text">@Loc[L.User_FollowButton_Unfollow]</span>
                     <Icon Name="Icons.Minus" class="icon"/>
                 </button>
                 break;
             case ButtonType.FollowBack:
                 <button @onclick="Action" class="btn">
-                    <span class="text">@Loc["Follow back"]</span>
+                    <span class="text">@Loc[L.User_FollowButton_FollowBack]</span>
                     <Icon Name="Icons.Plus" class="icon"/>
                 </button>
                 break;
             case ButtonType.CancelRequest:
                 <button @onclick="Action" class="btn inverted">
-                    <span class="text">@Loc["Cancel request"]</span>
+                    <span class="text">@Loc[L.User_FollowButton_Cancel]</span>
                     <Icon Name="Icons.X" class="icon"/>
                 </button>
                 break;
             case ButtonType.Blocking:
                 <button @onclick="Action" class="btn">
-                    <span class="text">@Loc["Unblock"]</span>
+                    <span class="text">@Loc[L.User_Menu_Block_Remove]</span>
                     <Icon Name="Icons.Prohibit" class="icon"/>
                 </button>
                 break;

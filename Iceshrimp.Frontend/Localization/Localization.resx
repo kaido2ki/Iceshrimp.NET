@@ -175,7 +175,7 @@
     <data name="Note_Menu_MuteThread" xml:space="preserve">
         <value>Mute thread</value>
     </data>
-    <data name="Common_AboutPage" xml:space="preserve">
+    <data name="AboutPage" xml:space="preserve">
         <value>About (debug)</value>
     </data>
     <data name="Common_OpenOriginal" xml:space="preserve">
@@ -307,7 +307,7 @@
     <data name="Drive_Entry_RenameDialog_Submit" xml:space="preserve">
         <value>Rename</value>
     </data>
-    <data name="Drive_Entry_DeleteDialog_Question" xml:space="preserve">
+    <data name="Drive_DeleteDialog_Question" xml:space="preserve">
         <value>Delete {0}?</value>
     </data>
     <data name="Dialog_Confirm" xml:space="preserve">
@@ -1410,5 +1410,101 @@
     </data>
     <data name="FollowRequests_Empty" xml:space="preserve">
         <value>No follow requests were found.</value>
+    </data>
+    <data name="Settings_Account_Error_ConfirmPassword" xml:space="preserve">
+        <value>Confirm password doesn't match new password.</value>
+    </data>
+    <data name="Common_ShowMore" xml:space="preserve">
+        <value>Show more</value>
+    </data>
+    <data name="Common_ShowLess" xml:space="preserve">
+        <value>Show less</value>
+    </data>
+    <data name="Note_OpenQuote" xml:space="preserve">
+        <value>Click to open quoted note</value>
+    </data>
+    <data name="Note_QuoteInaccessible" xml:space="preserve">
+        <value>The quoted note is unavailable</value>
+    </data>
+    <data name="AboutPage_NoteResponse" xml:space="preserve">
+        <value>Note response</value>
+    </data>
+    <data name="AboutPage_UserResponse" xml:space="preserve">
+        <value>User response</value>
+    </data>
+    <data name="AboutPage_ProfileResponse" xml:space="preserve">
+        <value>Profile response</value>
+    </data>
+    <data name="AboutPage_Activity" xml:space="preserve">
+        <value>Activity</value>
+    </data>
+    <data name="Timeline_Empty" xml:space="preserve">
+        <value>Nothing here, yet!</value>
+    </data>
+    <data name="User_RemoteBannerNotice" xml:space="preserve">
+        <value>Information from remote users may be incomplete.</value>
+    </data>
+    <data name="FollowRequest_SentAt" xml:space="preserve">
+        <value>Sent at {0}</value>
+    </data>
+    <data name="FollowRequest_ReceivedAt" xml:space="preserve">
+        <value>Received at {0}</value>
+    </data>
+    <data name="FollowRequest_Accept" xml:space="preserve">
+        <value>Accept</value>
+    </data>
+    <data name="FollowRequest_AcceptFollowBack" xml:space="preserve">
+        <value>Accept and follow back</value>
+    </data>
+    <data name="FollowRequest_Decline" xml:space="preserve">
+        <value>Decline</value>
+    </data>
+    <data name="Streaming_Connected" xml:space="preserve">
+        <value>Connected</value>
+    </data>
+    <data name="Streaming_Disconnected" xml:space="preserve">
+        <value>Disconnected</value>
+    </data>
+    <data name="Streaming_Connecting" xml:space="preserve">
+        <value>Connecting</value>
+    </data>
+    <data name="Streaming_Reconnecting" xml:space="preserve">
+        <value>Reconnecting</value>
+    </data>
+    <data name="Moderation_External_AdminDashboard" xml:space="preserve">
+        <value>Admin Dashboard</value>
+    </data>
+    <data name="Moderation_External_QueueDashboard" xml:space="preserve">
+        <value>Queue Dashboard</value>
+    </data>
+    <data name="User_FollowButton_Follow" xml:space="preserve">
+        <value>Follow</value>
+    </data>
+    <data name="User_FollowButton_Unfollow" xml:space="preserve">
+        <value>Unfollow</value>
+    </data>
+    <data name="User_FollowButton_FollowBack" xml:space="preserve">
+        <value>Follow back</value>
+    </data>
+    <data name="User_FollowButton_Cancel" xml:space="preserve">
+        <value>Cancel request</value>
+    </data>
+    <data name="Announcements_Count" xml:space="preserve">
+        <value>Announcements ({0}/{1})</value>
+    </data>
+    <data name="Common_Previous" xml:space="preserve">
+        <value>Previous</value>
+    </data>
+    <data name="Common_Next" xml:space="preserve">
+        <value>Next</value>
+    </data>
+    <data name="Instance_Rules" xml:space="preserve">
+        <value>Rules</value>
+    </data>
+    <data name="Settings_Account_ChangePasswordDialog_Notice" xml:space="preserve">
+        <value>Password changed successfully</value>
+    </data>
+    <data name="Banner_MoreCount" xml:space="preserve">
+        <value>and {0} more</value>
     </data>
 </root>

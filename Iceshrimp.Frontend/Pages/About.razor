@@ -17,11 +17,11 @@
 @inject NavigationManager              Nav;
 @inject SessionService                 SessionSvc;
 
-<HeadTitle Text="@Loc[L.Common_AboutPage]"/>
+<HeadTitle Text="@Loc[L.AboutPage]"/>
 
 <SectionContent SectionName="top-bar">
     <Icon Name="Icons.Info"></Icon>
-    @Loc[L.Common_AboutPage]
+    @Loc[L.AboutPage]
 </SectionContent>
 
 @if (State == State.Loaded)
@@ -79,14 +79,14 @@
                 return;
             }
 
-            Documents.Add(Loc["Note response"], JsonSerializer.SerializeToDocument(noteResponse, JsonSerialization.Options));
+            Documents.Add(Loc[L.AboutPage_NoteResponse], JsonSerializer.SerializeToDocument(noteResponse, JsonSerialization.Options));
             
             if (SessionSvc.Current?.IsAdmin is true)
             {
                 var activity = noteResponse.User.Host != null ? await Api.Admin.GetActivityAsync(noteResponse.Url, SessionSvc.Current.Id) : await Api.Admin.GetActivityByNoteIdAsync(noteResponse.Id);
 
                 if (activity != null)
-                    Documents.Add(Loc["Activity"], JsonSerializer.SerializeToDocument(activity));
+                    Documents.Add(Loc[L.AboutPage_Activity], JsonSerializer.SerializeToDocument(activity));
             }
 
             State = State.Loaded;
@@ -105,15 +105,15 @@
 
             var profileResponse = await Api.Users.GetUserProfileAsync(userResponse.Id);
 
-            Documents.Add(Loc["User response"], JsonSerializer.SerializeToDocument(userResponse, JsonSerialization.Options));
-            Documents.Add(Loc["Profile response"], JsonSerializer.SerializeToDocument(profileResponse, JsonSerialization.Options));
+            Documents.Add(Loc[L.AboutPage_UserResponse], JsonSerializer.SerializeToDocument(userResponse, JsonSerialization.Options));
+            Documents.Add(Loc[L.AboutPage_ProfileResponse], JsonSerializer.SerializeToDocument(profileResponse, JsonSerialization.Options));
 
             if (SessionSvc.Current?.IsAdmin is true)
             {
                 var activity = userResponse.Host != null && profileResponse?.Url != null ? await Api.Admin.GetActivityAsync(profileResponse.Url, SessionSvc.Current.Id) : await Api.Admin.GetActivityByUserIdAsync(userResponse.Id);
 
                 if (activity != null)
-                    Documents.Add(Loc["Activity"], JsonSerializer.SerializeToDocument(activity));
+                    Documents.Add(Loc[L.AboutPage_Activity], JsonSerializer.SerializeToDocument(activity));
             }
 
             State = State.Loaded;

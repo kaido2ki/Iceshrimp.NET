@@ -8,22 +8,22 @@
     {
         case HubConnectionState.Connected:
             <div class="state">
-                @Loc["Connected"]
+                @Loc[L.Streaming_Connected]
             </div>
             break;
         case HubConnectionState.Connecting:
             <div class="state">
-                <LoadingSpinner/> @Loc["Connecting"]
+                <LoadingSpinner/> @Loc[L.Streaming_Connecting]
             </div>
             break;
         case HubConnectionState.Disconnected:
             <div @onclick="Reconnect" class="state disconnected">
-                @Loc["Disconnected"]
+                @Loc[L.Streaming_Disconnected]
             </div>
             break;
         case HubConnectionState.Reconnecting:
             <div class="state">
-                <LoadingSpinner /> @Loc["Reconnecting"]
+                <LoadingSpinner /> @Loc[L.Streaming_Reconnecting]
             </div>
             break;
     }

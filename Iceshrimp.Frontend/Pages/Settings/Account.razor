@@ -228,7 +228,7 @@
 
         if (!PasswordForm.NewPassword.Equals(ConfirmPassword, StringComparison.Ordinal))
         {
-            await Global.NoticeDialog?.Display(Loc["Confirm password doesn't match new password"], NoticeDialog.NoticeType.Error)!;
+            await Global.NoticeDialog?.Display(Loc[L.Settings_Account_Error_ConfirmPassword], NoticeDialog.NoticeType.Error)!;
             PasswordButton.State = StateButton.StateEnum.Failed;
             return;
         }
@@ -246,7 +246,7 @@
             PasswordForm.NewPassword = "";
             ConfirmPassword          = "";
 
-            await Global.NoticeDialog?.Display(Loc["Password changed successfully"], NoticeDialog.NoticeType.Error)!;
+            await Global.NoticeDialog?.Display(Loc[L.Settings_Account_ChangePasswordDialog_Notice], NoticeDialog.NoticeType.Error)!;
         }
         catch (ApiException e)
         {

@@ -204,7 +204,7 @@
     private async Task DeleteFolder()
     {
         if (Folder is not { Id: not null, Files: [], Folders: [] }) return;
-        await Global.ConfirmDialog?.Confirm(new EventCallback<bool>(this, DeleteFolderCallback), Loc["Delete {0}?", Folder.Name ?? ""], Icons.Trash, Loc["Delete"])!;
+        await Global.ConfirmDialog?.Confirm(new EventCallback<bool>(this, DeleteFolderCallback), Loc[L.Drive_DeleteDialog_Question, Folder.Name ?? ""], Icons.Trash)!;
     }
 
     private async Task DeleteFolderCallback(bool delete)

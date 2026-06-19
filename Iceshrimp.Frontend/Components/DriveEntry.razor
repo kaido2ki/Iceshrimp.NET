@@ -232,7 +232,7 @@
     private void CopyFileLink() => Js.InvokeVoidAsync("navigator.clipboard.writeText", File!.Url);
 
     private async Task DeleteFile() =>
-        await Global.ConfirmDialog?.Confirm(new EventCallback<bool>(this, DeleteFileCallback), Loc[L.Drive_Entry_DeleteDialog_Question, File!.Filename], Icons.Trash, Loc[L.Common_Delete])!;
+        await Global.ConfirmDialog?.Confirm(new EventCallback<bool>(this, DeleteFileCallback), Loc[L.Drive_DeleteDialog_Question, File!.Filename], Icons.Trash, Loc[L.Common_Delete])!;
 
     private async Task DeleteFileCallback(bool delete)
     {
