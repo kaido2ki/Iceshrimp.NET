@@ -57,6 +57,12 @@
                     @Loc[L.User_Badge_IsLocked]
                 </span>
             }
+            @if (UserProfile.Relations.HasFlag(Relations.FollowedBy))
+            {
+                <span class="badge">
+                    @Loc[L.User_Badge_FollowedBy]
+                </span>
+            }
         </div>
         <div class="profile-buttons">
             <FollowButton User="User" UserProfile="UserProfile"/>

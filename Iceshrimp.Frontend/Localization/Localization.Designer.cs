@@ -3020,5 +3020,11 @@ namespace Iceshrimp.Frontend.Localization {
                 return ResourceManager.GetString("Moderation_Emojis_Uncategorized", resourceCulture);
             }
         }
+        
+        internal static string User_Badge_FollowedBy {
+            get {
+                return ResourceManager.GetString("User_Badge_FollowedBy", resourceCulture);
+            }
+        }
     }
 }

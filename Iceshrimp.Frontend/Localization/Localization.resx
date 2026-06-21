@@ -1507,4 +1507,7 @@
     <data name="Moderation_Emojis_Uncategorized" xml:space="preserve">
         <value>Uncategorized</value>
     </data>
+    <data name="User_Badge_FollowedBy" xml:space="preserve">
+        <value>Follows you</value>
+    </data>
 </root>
