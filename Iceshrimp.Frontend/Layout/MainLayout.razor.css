@@ -70,11 +70,11 @@
 }
 
 .top-bar ::deep .action,
-.widget-panel ::deep .action {
+.widget-panel ::deep .widget-panel-header .action {
     display: flex;
     column-gap: 0.25em;
     align-items: center;
-    padding: 0.2rem 0.4rem;
+    padding: 0.4rem;
     border-radius: 0.5rem;
     background-color: var(--foreground-color);
     color: var(--notice-color);
@@ -87,12 +87,12 @@
 }
 
 .top-bar ::deep .action:hover,
-.widget-panel ::deep .action:hover {
+.widget-panel ::deep .widget-panel-header .action:hover {
     background-color: var(--hover-color);
 }
 
 .top-bar ::deep .action[disabled],
-.widget-panel ::deep .action[disabled] {
+.widget-panel ::deep .widget-panel-header .action[disabled] {
     opacity: 40%;
     cursor: not-allowed;
 }
