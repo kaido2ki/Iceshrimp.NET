@@ -1,6 +1,9 @@
 .renote-info {
     display: flex;
     margin-bottom: 0.5rem;
+    align-items: center;
+    column-gap: 0.25rem;
+    color: var(--notice-color);
 }
 
 .renote-info .user {
@@ -19,17 +22,8 @@
     text-decoration-line: underline;
 }
 
-.renote-info .user ::deep .icon-wrapper:last-of-type {
-    margin-right: 0.25em;
-}
-
 .metadata {
     margin-left: auto;
-}
-
-
-.user {
-    color: var(--notice-color);
 }
 
 .filter-name {
