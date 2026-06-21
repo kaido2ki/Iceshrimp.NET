@@ -212,7 +212,7 @@ public class PushService(
 						Id           = notification.Id,
 						NotifieeId   = notification.NotifieeId,
 						NotifieeName = notification.Notifiee.DisplayName ?? notification.Notifiee.Username,
-						InstanceName = instanceName ?? "Iceshrimp.NET",
+						InstanceName = instanceName ?? config.Value.AccountDomain,
 						Type         = (NotificationType)notification.Type,
 						IconUrl =
 							notification.Notifier?.GetAvatarUrl(config.Value)
