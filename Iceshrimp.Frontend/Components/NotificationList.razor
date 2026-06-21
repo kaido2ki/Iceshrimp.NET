@@ -7,11 +7,9 @@
     <div class="scroller">
         @foreach (var el in Notifications)
         {
-            <div class="wrapper">
-                <CascadingValue Value="NotificationStore" TValue="NoteMessageProvider" Name="Provider">
-                    <NotificationComponent NotificationResponse="el" @key="el.Id"/>
-                </CascadingValue>
-            </div>
+            <CascadingValue Value="NotificationStore" TValue="NoteMessageProvider" Name="Provider">
+                <NotificationComponent NotificationResponse="el" @key="el.Id"/>
+            </CascadingValue>
         }
         <ScrollEnd ManualLoad="LoadMore" IntersectionChange="LoadMore" Class="scroll-end"></ScrollEnd>
     </div>

@@ -5,10 +5,8 @@
     background-color: var(--foreground-color);
     border-radius: 0.75rem;
     padding: 1rem 1rem 1rem; /* top, left-right, bottom*/
-    margin-bottom: 1rem;
     max-width: 45rem;
     width: 100%;
-    overflow: hidden;
 }
 
 .notification.read {
