@@ -50,21 +50,17 @@
         <div class="profile-card">
             <div class="header">
                 <div class="subheader">
-                    <div>
-                        <UserAvatar User="@UserResponse" Size="5em" Title="@true"/>
-                    </div>
+                    <UserAvatar User="@UserResponse" Size="5em" Title="@true"/>
                     <div class="name-section">
                         <div class="name">
                             <UserDisplayName User="@UserResponse"/>
                         </div>
-                        <div>
-                            <span class="identifier">
-                                @@@UserResponse.Username
-                                @if (UserResponse.Host != null)
-                                {
-                                    <span class="host">@@@UserResponse.Host</span>
-                                }
-                            </span>
+                        <div class="identifier">
+                            @@@UserResponse.Username
+                            @if (UserResponse.Host != null)
+                            {
+                                <span class="host">@@@UserResponse.Host</span>
+                            }
                         </div>
                     </div>
                 </div>
