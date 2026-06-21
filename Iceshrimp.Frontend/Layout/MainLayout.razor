@@ -74,7 +74,7 @@
         }
         catch (ApiException e)
         {
-            Console.WriteLine($"Failed to subscribe to push notifications: {e.Response.Message ?? e.Response.StatusCode.ToString()}");
+            Console.WriteLine($"Failed to subscribe to push notifications: {e.Response?.Message ?? e.Response?.StatusCode.ToString() ?? "HTTP error"}");
         }
     }
 }
