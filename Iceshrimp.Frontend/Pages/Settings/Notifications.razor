@@ -15,11 +15,11 @@
 @inject IStringLocalizer<Localization> Loc;
 @inject SettingsService                Settings;
 
-<HeadTitle Text="@Loc["Notification"]"/>
+<HeadTitle Text="@Loc[L.Notifications]"/>
 
 <SectionContent SectionName="top-bar">
     <Icon Name="Icons.BellRinging"/>
-    @Loc["Notification"]
+    @Loc[L.Notifications]
 </SectionContent>
 
 <div class="body">
@@ -50,9 +50,9 @@
 </div>
 
 @code {
-    private StateButton       SaveButton  { get; set; } = null!;
-    private ClientPreferences Preferences { get; set; } = null!;
-    private List<string>      FilterTypes { get; set; } = [];
+    private StateButton                    SaveButton  { get; set; } = null!;
+    private Core.Schemas.ClientPreferences Preferences { get; set; } = null!;
+    private List<string>                   FilterTypes { get; set; } = [];
 
     protected override void OnInitialized()
     {
