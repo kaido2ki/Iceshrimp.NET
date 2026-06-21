@@ -7,13 +7,16 @@
 @inject IStringLocalizer<Localization> Loc;
 
 <HeadTitle Text="@Loc[L.FollowRequests_Outgoing]"/>
-
+<SectionContent SectionName="top-bar-icon">
+    <Icon Name="Icons.HandWaving"/>
+</SectionContent>
 <SectionContent SectionName="top-bar">
-    <Icon Name="Icons.HandWaving"></Icon>
     @Loc[L.FollowRequests_Outgoing]
-    <a class="action btn" href="/follow-requests">
+</SectionContent>
+<SectionContent SectionName="top-bar-actions">
+    <a class="action" href="/follow-requests">
         <Icon Name="Icons.ArrowSquareIn"/>
-        <span>@Loc[L.FollowRequests_SwitchToIncoming]</span>
+        <span class="label">@Loc[L.FollowRequests_SwitchToIncoming]</span>
     </a>
 </SectionContent>
 

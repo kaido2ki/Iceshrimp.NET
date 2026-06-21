@@ -16,9 +16,10 @@
 @inject SessionService                 Session;
 
 <HeadTitle Text="@(Report != null ? Loc[L.Moderation_Report_From, Report.Reporter.DisplayName ?? Report.Reporter.Username] : Loc[L.Moderation_Reports])"/>
-
+<SectionContent SectionName="top-bar-icon">
+    <Icon Name="Icons.WarningCircle"/>
+</SectionContent>
 <SectionContent SectionName="top-bar">
-    <Icon Name="Icons.WarningCircle"></Icon>
     @if (Report != null)
     {
         <MfmText Text="@Loc[L.Moderation_Report_From, Report.Reporter.DisplayName ?? Report.Reporter.Username]"

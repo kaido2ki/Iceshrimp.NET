@@ -12,15 +12,18 @@
 @inject IStringLocalizer<Localization> Loc;
 
 <HeadTitle Text="@Loc[L.Moderation_Emojis_Remote]"/>
-
+<SectionContent SectionName="top-bar-icon">
+    <Icon Name="Icons.Smiley"/>
+</SectionContent>
 <SectionContent SectionName="top-bar">
-    <Icon Name="Icons.Smiley"></Icon>
     @Loc[L.Moderation_Emojis_Remote]
+</SectionContent>
+<SectionContent SectionName="top-bar-actions">
     @if (State is not State.Loading)
     {
-        <a class="action btn" href="/mod/emojis">
+        <a class="action" href="/mod/emojis">
             <Icon Name="Icons.ArrowSquareIn"/>
-            <span>@Loc[L.Timeline_Local]</span>
+            <span class="label">@Loc[L.Timeline_Local]</span>
         </a>
     }
 </SectionContent>

@@ -16,15 +16,19 @@
 
 <HeadTitle Text="@Loc[L.Moderation_Announcements]"/>
 
+<SectionContent SectionName="top-bar-icon">
+    <Icon Name="Icons.Megaphone"/>
+</SectionContent>
 <SectionContent SectionName="top-bar">
-    <Icon Name="Icons.Megaphone"></Icon>
     @Loc[L.Moderation_Announcements]
+</SectionContent>
+<SectionContent SectionName="top-bar-actions">
     @if (State is State.Empty or State.Loaded)
     {
-        <span class="action btn" @onclick="NewAnnouncement">
+        <button class="action btn" @onclick="NewAnnouncement">
             <Icon Name="Icons.Plus"/>
-            <span>@Loc[L.Common_New]</span>
-        </span>
+            <span class="label">@Loc[L.Common_New]</span>
+        </button>
     }
 </SectionContent>
 

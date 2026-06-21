@@ -17,42 +17,46 @@
 @inject SessionService                 Session;
 
 <HeadTitle Text="@Loc[L.Drive]"/>
-
-<SectionContent SectionName="top-bar">
+<SectionContent SectionName="top-bar-icon">
     @if (State == State.Loaded && Folder is { Id: not null, Name: not null })
     {
-        <span class="btn" @onclick="NavigateToParent">
+        <button class="action" @onclick="NavigateToParent">
             <Icon Name="Icons.ArrowLeft"/>
-        </span>
+        </button>
     }
     else
     {
         <Icon Name="Icons.Cloud"/>
     }
+</SectionContent>
+<SectionContent SectionName="top-bar">
     @Loc[L.Drive]
+</SectionContent>
+<SectionContent SectionName="top-bar-actions">
     @if (State == State.Loaded && Folder is not null)
     {
         @if (Status != null)
         {
-            <span class="action btn" @onclick="ShowStatus" title="@Loc[L.Drive_Status]">
+            <button class="action" @onclick="ShowStatus" title="@Loc[L.Drive_Status]">
                 <Icon Name="Icons.Info"/>
-                <span>@Loc[L.Drive_Status]</span>
-            </span>
+                <span class="label">@Loc[L.Drive_Status]</span>
+            </button>
         }
-        <span class="action btn" @onclick="CreateFolder" title="@Loc[L.Drive_Folder_Create]">
+
+        <button class="action btn" @onclick="CreateFolder" title="@Loc[L.Drive_Folder_Create]">
             <Icon Name="Icons.FolderPlus"/>
-            <span>@Loc[L.Drive_Folder_Create]</span>
-        </span>
-        <span class="action btn" @onclick="OpenUpload" title="@Loc[L.Drive_UploadFile]">
+            <span class="label">@Loc[L.Drive_Folder_Create]</span>
+        </button>
+        <button class="action" @onclick="OpenUpload" title="@Loc[L.Drive_UploadFile]">
             <Icon Name="Icons.Upload"/>
-            <span>@Loc[L.Drive_UploadFile]</span>
-        </span>
+            <span class="label">@Loc[L.Drive_UploadFile]</span>
+        </button>
         @if (Folder is { Id: not null, Files: [], Folders: [] })
         {
-            <span class="action btn" @onclick="DeleteFolder" title="@Loc[L.Drive_Folder_Delete]">
+            <button class="action" @onclick="DeleteFolder" title="@Loc[L.Drive_Folder_Delete]">
                 <Icon Name="Icons.FolderMinus"/>
-                <span>@Loc[L.Drive_Folder_Delete]</span>
-            </span>
+                <span class="label">@Loc[L.Drive_Folder_Delete]</span>
+            </button>
         }
     }
 </SectionContent>

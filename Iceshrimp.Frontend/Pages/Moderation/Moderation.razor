@@ -7,11 +7,13 @@
 @inject IStringLocalizer<Localization> Loc;
 
 <HeadTitle Text="@Loc[L.Moderation]"/>
-
+<SectionContent SectionName="top-bar-icon">
+    <Icon Name="Icons.Shield"/>
+</SectionContent>
 <SectionContent SectionName="top-bar">
-    <Icon Name="Icons.Shield"></Icon>
     @Loc[L.Moderation]
 </SectionContent>
+
 <div class="layout">
     <div class="sidebar">
         <ModerationMenu/>

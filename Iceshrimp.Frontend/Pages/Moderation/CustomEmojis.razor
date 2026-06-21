@@ -14,52 +14,55 @@
 @inject IStringLocalizer<Localization> Loc;
 
 <HeadTitle Text="@Loc[L.Moderation_Emojis]"/>
-
+<SectionContent SectionName="top-bar-icon">
+    <Icon Name="Icons.Smiley"/>
+</SectionContent>
 <SectionContent SectionName="top-bar">
-    <Icon Name="Icons.Smiley"></Icon>
     @Loc[L.Moderation_Emojis]
+</SectionContent>
+<SectionContent SectionName="top-bar-actions">
     @if (State is State.Empty or State.Loaded)
     {
         @if (BatchSelection)
         {
-            <span class="action btn" @onclick="BatchSetCategory" disabled="@(Selected.Count == 0)">
+            <button class="action" @onclick="BatchSetCategory" disabled="@(Selected.Count == 0)">
                 <Icon Name="Icons.Folder"/>
-                <span>@Loc[L.Moderation_Emojis_SetCategory]</span>
-            </span>
-            <span class="action btn" @onclick="BatchSetLicense" disabled="@(Selected.Count == 0)">
+                <span class="label">@Loc[L.Moderation_Emojis_SetCategory]</span>
+            </button>
+            <button class="action" @onclick="BatchSetLicense" disabled="@(Selected.Count == 0)">
                 <Icon Name="Icons.Article"/>
-                <span>@Loc[L.Moderation_Emojis_SetLicense]</span>
-            </span>
-            <span class="action btn" @onclick="BatchDelete" disabled="@(Selected.Count == 0)">
+                <span class="label">@Loc[L.Moderation_Emojis_SetLicense]</span>
+            </button>
+            <button class="action" @onclick="BatchDelete" disabled="@(Selected.Count == 0)">
                 <Icon Name="Icons.Trash"/>
-                <span>@Loc[L.Common_Delete]</span>
-            </span>
-            <span class="action btn" @onclick="ToggleBatchSelection">
+                <span class="label">@Loc[L.Common_Delete]</span>
+            </button>
+            <button class="action" @onclick="ToggleBatchSelection">
                 <Icon Name="Icons.Selection"/>
-                <span>@Loc[L.Moderation_Emojis_Select_Single]</span>
-            </span>
+                <span class="label">@Loc[L.Moderation_Emojis_Select_Single]</span>
+            </button>
         }
         else
         {
-            <span class="action btn" @onclick="OpenUpload">
+            <button class="action" @onclick="OpenUpload">
                 <Icon Name="Icons.Upload"/>
-                <span>@Loc[L.Drive_UploadFile]</span>
-            </span>
-            <span class="action btn" @onclick="OpenImport">
+                <span class="label">@Loc[L.Drive_UploadFile]</span>
+            </button>
+            <button class="action" @onclick="OpenImport">
                 <Icon Name="Icons.FileArrowUp"/>
-                <span>@Loc[L.Moderation_Emojis_ImportPack]</span>
-            </span>
-            <span class="action btn" @onclick="ToggleBatchSelection">
+                <span class="label">@Loc[L.Moderation_Emojis_ImportPack]</span>
+            </button>
+            <button class="action" @onclick="ToggleBatchSelection">
                 <Icon Name="Icons.SelectionPlus"/>
-                <span>@Loc[L.Moderation_Emojis_Select_Multiple]</span>
-            </span>
+                <span class="label">@Loc[L.Moderation_Emojis_Select_Multiple]</span>
+            </button>
         }
     }
     @if (State is not State.Loading && !BatchSelection)
     {
-        <a class="action btn" href="/mod/emojis/remote">
+        <a class="action" href="/mod/emojis/remote">
             <Icon Name="Icons.ArrowSquareOut"/>
-            <span>@Loc[L.Timeline_Remote]</span>
+            <span class="label">@Loc[L.Timeline_Remote]</span>
         </a>
     }
 </SectionContent>

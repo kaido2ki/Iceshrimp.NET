@@ -13,8 +13,11 @@
 @inject IStringLocalizer<Localization> Loc;
 @inject NavigationManager              Nav;
 
-<SectionContent SectionName="top-bar">
+<HeadTitle Text="@(State == State.Loaded ? UserResponse.DisplayName ?? UserResponse.Username : Loc[L.Settings_Profile])"/>
+<SectionContent SectionName="top-bar-icon">
     <Icon Name="Icons.User"/>
+</SectionContent>
+<SectionContent SectionName="top-bar">
     @if (State == State.Loaded)
     {
         <UserDisplayName User="@UserResponse"/>

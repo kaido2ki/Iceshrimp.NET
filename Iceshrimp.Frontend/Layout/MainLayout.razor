@@ -22,7 +22,13 @@
 
     <div class="main" role="main">
         <div class="top-bar">
-            <SectionOutlet SectionName="top-bar"/>
+            <SectionOutlet SectionName="top-bar-icon"/>
+            <span class="title">
+                <SectionOutlet SectionName="top-bar"/>
+            </span>
+            <section class="actions">
+                <SectionOutlet SectionName="top-bar-actions"/>
+            </section>
         </div>
         @Body
     </div>

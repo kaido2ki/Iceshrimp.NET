@@ -12,8 +12,11 @@
 @inject IStringLocalizer<Localization> Loc;
 @inject NavigationManager              Nav;
 
-<SectionContent SectionName="top-bar">
+<HeadTitle>@Loc[L.Common_Share]</HeadTitle>
+<SectionContent SectionName="top-bar-icon">
     <Icon Name="Icons.Share"/>
+</SectionContent>
+<SectionContent SectionName="top-bar">
     @Loc[L.Common_Share]
 </SectionContent>
 

@@ -13,16 +13,19 @@
 @inject IStringLocalizer<Localization> Loc;
 
 <HeadTitle Text="@Loc[L.Moderation_Reports]"/>
-
+<SectionContent SectionName="top-bar-icon">
+    <Icon Name="Icons.WarningCircle"/>
+</SectionContent>
 <SectionContent SectionName="top-bar">
-    <Icon Name="Icons.WarningCircle"></Icon>
     @Loc[L.Moderation_Reports]
+</SectionContent>
+<SectionContent SectionName="top-bar-actions">
     @if (State is State.Empty or State.Loaded)
     {
-        <span class="action btn" @onclick="ToggleResolved">
+        <button class="action" @onclick="ToggleResolved">
             <Icon Name="@(Resolved ? Icons.XCircle : Icons.CheckCircle)"/>
-            <span>@Loc[Resolved ? L.Moderation_Reports_Unresolved : L.Moderation_Reports_Resolved]</span>
-        </span>
+            <span class="label">@Loc[Resolved ? L.Moderation_Reports_Unresolved : L.Moderation_Reports_Resolved]</span>
+        </button>
     }
 </SectionContent>
 

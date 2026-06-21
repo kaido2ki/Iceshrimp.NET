@@ -40,16 +40,21 @@
     border-bottom: 0.05rem var(--border-color) solid;
     height: 3rem;
     display: flex;
+    column-gap: 0.5rem;
     align-items: center;
     padding-left: 1rem;
     padding-right: 1rem;
     position: sticky;
     top: 0;
     z-index: +24;
+}
 
-    .icon-wrapper {
-        padding-right: 0.5rem;
-    }
+.top-bar .title {
+    flex-grow: 1;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    text-wrap: nowrap;
+    white-space: nowrap;
 }
 
 .top-bar {
@@ -58,70 +63,42 @@
     }
 }
 
-.top-bar {
-    .btn {
-        margin-right: 0.5rem;
-        padding: 0.2rem 0.4rem;
-        border-radius: 0.5rem;
-        background-color: var(--foreground-color);
-        cursor: pointer;
-    }
+.actions {
+    display: flex;
+    column-gap: 0.25rem;
+    align-items: center;
 }
 
-.top-bar {
-    .btn:hover {
-        background-color: var(--hover-color);
-    }
-}
+.top-bar ::deep .action,
+.widget-panel ::deep .action {
+    display: flex;
+    column-gap: 0.25em;
+    align-items: center;
+    padding: 0.2rem 0.4rem;
+    border-radius: 0.5rem;
+    background-color: var(--foreground-color);
+    color: var(--notice-color);
+    text-decoration: none;
+    cursor: pointer;
 
-.top-bar {
-    .btn {
-        .icon-wrapper {
-            display: inline-block;
-            padding-right: 0;
-            vertical-align: middle;
-        }
-    }
-    
-}
-
-.top-bar {
-    .btn span {
+    .label {
         font-size: 0.9em;
     }
 }
 
-.top-bar {
-    .action {
-        margin-left: auto;
-        color: var(--notice-color);
-        text-decoration: none;
-    }
+.top-bar ::deep .action:hover,
+.widget-panel ::deep .action:hover {
+    background-color: var(--hover-color);
 }
 
-.top-bar {
-    .action[disabled] {
-        opacity: 40%;
-        cursor: not-allowed;
-    }
-}
-
-.top-bar {
-    .action + .action {
-        margin-left: 0;
-    }
-}
-
-.top-bar {
-    .action:last-child {
-        margin-right: 0;
-    }
+.top-bar ::deep .action[disabled],
+.widget-panel ::deep .action[disabled] {
+    opacity: 40%;
+    cursor: not-allowed;
 }
 
 @media (max-width: 1000px) {
-    .top-bar {
-        .btn span {
-            display: none;
-        }
+    .top-bar ::deep .action .label {
+        display: none;
     }
 }

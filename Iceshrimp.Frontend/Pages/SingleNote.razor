@@ -21,13 +21,16 @@
 @using Microsoft.AspNetCore.Components.Sections
 @implements IAsyncDisposable
 
+<SectionContent SectionName="top-bar-icon">
+    <Icon Name="Icons.Signpost"/>
+</SectionContent>
+
 @if (_componentState == State.Loaded)
 {
     <HeadTitle Text="@Loc[L.Note_ByLabel, RootNote?.User.DisplayName ?? RootNote?.User.Username ?? ""]"/>
 
     <SectionContent SectionName="top-bar">
-        <Icon Name="Icons.Signpost"></Icon>
-        @if (RootNote is { User.DisplayName: not null } && RootNote.User.Emojis.Count != 0)
+        @if (RootNote is { User: { DisplayName: not null, Emojis.Count: > 0 } })
         {
             <MfmText Text="@Loc[L.Note_ByLabel, RootNote.User.DisplayName]" Emoji="@RootNote.User.Emojis"
                      Simple="@true"/>
@@ -36,16 +39,14 @@
         {
             @Loc[L.Note_ByLabel, (RootNote?.User.DisplayName ?? RootNote?.User.Username) ?? string.Empty]
         }
-        <button class="cw-button button" @onclick="ToggleCw">@if (_cwState)
-            {
-                <Icon Name="Icons.EyeClosed"/>
-            }
-            else
-            {
-                <Icon Name="Icons.Eye"/>
-            }
+    </SectionContent>
+    <SectionContent SectionName="top-bar-actions">
+        <button class="action cw-button" @onclick="ToggleCw">
+            <Icon Name="@(_cwState ? Icons.EyeClosed : Icons.Eye)"/>
+            <span class="label">@Loc[_cwState ? L.Note_CwHide : L.Note_CwShow]</span>
         </button>
     </SectionContent>
+
     @if (RootNote?.User.Host != null)
     {
         <RemoteUserBanner OriginalPageUrl="@RootNote.Url"/>
