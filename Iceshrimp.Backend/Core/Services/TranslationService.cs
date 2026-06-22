@@ -2,7 +2,7 @@ namespace Iceshrimp.Backend.Core.Services;
 
 public interface ITranslationService
 {
-	Task<Translation> TranslateAsync(string text);
+	Task<Translation> TranslateAsync(string text, string targetLanguage);
 	
 	public class Translation
 	{
