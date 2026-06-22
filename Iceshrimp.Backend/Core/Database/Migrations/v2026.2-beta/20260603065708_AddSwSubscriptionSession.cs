@@ -13,6 +13,9 @@ namespace Iceshrimp.Backend.Core.Database.Migrations
         /// <inheritdoc />
         protected override void Up(MigrationBuilder migrationBuilder)
         {
+            // Clear old sw_subscriptios from migrated Iceshrimp-js databases
+            migrationBuilder.Sql("DELETE FROM \"sw_subscription\";");
+
             migrationBuilder.AddColumn<string>(
                 name: "sessionId",
                 table: "sw_subscription",
