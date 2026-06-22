@@ -18,6 +18,7 @@ namespace Iceshrimp.Backend.Core.Database.Tables;
 [Index(nameof(NoteId))]
 public class Notification : IIdentifiable
 {
+	// Make sure values and order are the same as Iceshrimp.Shared/Schemas/Web/NotificationType.cs
 	[PgName("notification_type_enum")]
 	public enum NotificationType
 	{

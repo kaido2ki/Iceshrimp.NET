@@ -2,7 +2,7 @@ using System.Text.Json.Serialization;
 
 namespace Iceshrimp.Shared.Schemas.Web;
 
-// Keep in sync with Iceshrimp.Backend.Core.Database.Tables.Notification.NotificationType
+// Make sure values and order are the same as Iceshrimp.Backend.Core.Database.Tables.Notification.NotificationType
 public enum NotificationType
 {
     Follow,
