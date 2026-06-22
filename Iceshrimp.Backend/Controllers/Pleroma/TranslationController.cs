@@ -40,6 +40,18 @@ public class TranslationController(
 		                   .PrecomputeVisibilities(user)
 		                   .FirstOrDefaultAsync() ??
 		           throw GracefulException.RecordNotFound();
+
+		var existing = await db.NoteTranslations
+		                       .Where(p => p.NoteId == id
+		                                   && p.TargetLanguage == lang.ToLowerInvariant()
+		                                   && p.NoteEditId != null)
+		                       .Select(p => new AkkomaTranslationEntity
+		                       {
+			                       Text             = p.Text ?? "",
+			                       DetectedLanguage = p.OriginalLanguage
+		                       })
+		                       .FirstOrDefaultAsync();
+		if (existing != null) return existing;
 		
 		var translationSvc = provider.GetService<ITranslationService>()
 			?? throw GracefulException.UnprocessableEntity("No translation plugins have been set up");
