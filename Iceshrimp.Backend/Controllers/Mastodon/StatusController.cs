@@ -1,4 +1,5 @@
 using System.ComponentModel.DataAnnotations;
+using System.Globalization;
 using System.Net;
 using System.Net.Mime;
 using AsyncKeyedLock;
@@ -12,6 +13,7 @@ using Iceshrimp.Backend.Core.Database;
 using Iceshrimp.Backend.Core.Database.Tables;
 using Iceshrimp.Backend.Core.Extensions;
 using Iceshrimp.Backend.Core.Helpers;
+using Iceshrimp.Backend.Core.Helpers.LibMfm.Conversion;
 using Iceshrimp.Backend.Core.Middleware;
 using Iceshrimp.Backend.Core.Services;
 using Iceshrimp.MfmSharp;
@@ -38,7 +40,9 @@ public class StatusController(
 	IOptions<Config.InstanceSection> config,
 	IOptionsSnapshot<Config.SecuritySection> security,
 	UserRenderer userRenderer,
-    ScheduledStatusController scheduledStatusController
+    ScheduledStatusController scheduledStatusController,
+	MfmConverter mfmConverter,
+	IServiceProvider provider
 ) : ControllerBase
 {
 	private static readonly AsyncKeyedLocker<string> KeyedLocker = new(o =>
@@ -147,6 +151,68 @@ public class StatusController(
 		return new StatusContext
 		{
 			Ancestors = ancestors.OrderAncestors(), Descendants = descendants.OrderDescendants()
+		};
+	}
+
+	[HttpPost("{id}/translate")]
+	[Authenticate("read:statuses")]
+	public async Task<StatusTranslation> GetStatusTranslation(string id, [FromHybrid] StatusSchemas.StatusTranslationRequest request)
+	{
+		var user = HttpContext.GetUser();
+		var note = await db.Notes
+		                   .Where(p => p.Id == id)
+		                   .IncludeCommonProperties()
+		                   .FilterHidden(user, db, false, false,
+		                                 filterMentions: false)
+		                   .EnsureVisibleFor(user)
+		                   .PrecomputeVisibilities(user)
+		                   .FirstOrDefaultAsync() ??
+		           throw GracefulException.RecordNotFound();
+
+		var lang = request.Lang ?? "en";
+
+		request.Lang = CultureInfo.GetCultureInfo(lang).ToString();
+		
+		var existing = await db.NoteTranslations
+		                       .Where(p => p.NoteId == id
+		                                   && p.TargetLanguage == lang
+		                                   && p.NoteEditId != null)
+		                       .Select(p => new StatusTranslation
+		                       {
+			                       Content                = mfmConverter.ToHtml(p.Text ?? "", note.MentionedRemoteUsers, note.UserHost).ToString(),
+			                       ContentWarning         = p.Cw,
+			                       DetectedSourceLanguage = p.OriginalLanguage,
+			                       Language               = p.TargetLanguage,
+			                       Poll                   = p.PollChoices != null ? new TranslatedPollEntity
+			                       {
+				                       Id      = p.NoteId,
+				                       Options = p.PollChoices.Select(m => new TranslatedPollOptionEntity {
+					                       Title = m
+				                       }).ToList()
+			                       } : null
+		                       })
+		                       .FirstOrDefaultAsync();
+		if (existing != null) return existing;
+		
+		var translationSvc = provider.GetService<ITranslationService>()
+		                     ?? throw GracefulException.UnprocessableEntity("No translation plugins have been set up");
+
+		var translation = await translationSvc.TranslateAsync(note, lang)
+		                  ?? throw GracefulException.UnprocessableEntity("There was an issue translating this note");
+
+		return new StatusTranslation
+		{
+			Content                = mfmConverter.ToHtml(translation.TranslatedText ?? "", note.MentionedRemoteUsers, note.UserHost).ToString(),
+			ContentWarning         = translation.TranslatedCw,
+			DetectedSourceLanguage = translation.OriginalLanguage,
+			Language               = lang,
+			Poll                   = translation.TranslatedPoll != null ? new TranslatedPollEntity
+			{
+				Id = id,
+				Options = translation.TranslatedPoll.Select(m => new TranslatedPollOptionEntity {
+					Title = m
+				}).ToList()
+			} : null
 		};
 	}
 

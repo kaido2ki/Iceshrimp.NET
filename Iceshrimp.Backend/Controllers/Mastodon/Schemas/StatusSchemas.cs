@@ -92,6 +92,11 @@ public abstract class StatusSchemas
 		[B(Name = "poll")] [J("poll")] public PostStatusRequest.PollData? Poll { get; set; }
 	}
 
+	public class StatusTranslationRequest
+	{
+		[B(Name = "lang")] [J("lang")] public string? Lang { get; set; }
+	}
+
 	public class MediaAttributesEntry : MediaSchemas.UpdateMediaRequest
 	{
 		[JR] [J("id")] [B(Name = "id")] public required string Id { get; set; }

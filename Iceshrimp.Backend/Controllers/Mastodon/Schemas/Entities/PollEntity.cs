@@ -23,3 +23,14 @@ public class PollOptionEntity
 	[J("title")]       public required string Title      { get; set; }
 	[J("votes_count")] public required int    VotesCount { get; set; }
 }
+
+public class TranslatedPollEntity
+{
+	[J("id")]      public required string                           Id      { get; set; }
+	[J("options")] public required List<TranslatedPollOptionEntity> Options { get; set; }
+}
+
+public class TranslatedPollOptionEntity
+{
+	[J("title")] public required string Title { get; set; }
+}
