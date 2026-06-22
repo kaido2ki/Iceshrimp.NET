@@ -1,7 +1,7 @@
+using System.Globalization;
 using System.Net;
 using System.Net.Mime;
 using Iceshrimp.Backend.Controllers.Mastodon.Attributes;
-using Iceshrimp.Backend.Controllers.Pleroma.Schemas;
 using Iceshrimp.Backend.Controllers.Pleroma.Schemas.Entities;
 using Iceshrimp.Backend.Controllers.Shared.Attributes;
 using Iceshrimp.Backend.Core.Database;
@@ -41,9 +41,11 @@ public class TranslationController(
 		                   .FirstOrDefaultAsync() ??
 		           throw GracefulException.RecordNotFound();
 
+		lang = CultureInfo.GetCultureInfo(lang).ToString();
+
 		var existing = await db.NoteTranslations
 		                       .Where(p => p.NoteId == id
-		                                   && p.TargetLanguage == lang.ToLowerInvariant()
+		                                   && p.TargetLanguage == lang
 		                                   && p.NoteEditId != null)
 		                       .Select(p => new AkkomaTranslationEntity
 		                       {
@@ -56,7 +58,7 @@ public class TranslationController(
 		var translationSvc = provider.GetService<ITranslationService>()
 			?? throw GracefulException.UnprocessableEntity("No translation plugins have been set up");
 
-		var translation = await translationSvc.TranslateAsync(note.Text ?? "", lang)
+		var translation = await translationSvc.TranslateAsync(note, lang)
 		                  ?? throw GracefulException.UnprocessableEntity("There was an issue translating this note");
 
 		return new AkkomaTranslationEntity
