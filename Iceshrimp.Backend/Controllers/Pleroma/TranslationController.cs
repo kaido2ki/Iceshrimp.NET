@@ -62,7 +62,7 @@ public class TranslationController(
 		return new AkkomaTranslationEntity
 		{
 			Text             = translation.TranslatedText,
-			DetectedLanguage = translation.DetectedLanguage
+			DetectedLanguage = translation.OriginalLanguage
 		};
 	}
 }
