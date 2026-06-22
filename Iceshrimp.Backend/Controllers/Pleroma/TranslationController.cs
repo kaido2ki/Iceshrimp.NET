@@ -46,7 +46,7 @@ public class TranslationController(
 		var existing = await db.NoteTranslations
 		                       .Where(p => p.NoteId == id
 		                                   && p.TargetLanguage == lang
-		                                   && p.NoteEditId != null)
+		                                   && p.NoteEditId == null)
 		                       .Select(p => new AkkomaTranslationEntity
 		                       {
 			                       Text             = p.Text ?? "",
