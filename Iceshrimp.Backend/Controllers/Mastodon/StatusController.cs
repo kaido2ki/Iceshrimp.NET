@@ -179,7 +179,7 @@ public class StatusController(
 		                                   && p.NoteEditId == null)
 		                       .Select(p => new StatusTranslation
 		                       {
-			                       Content                = mfmConverter.ToHtml(p.Text ?? "", note.MentionedRemoteUsers, note.UserHost).ToString(),
+			                       Content                = mfmConverter.ToHtml(p.Text ?? "", note.MentionedRemoteUsers, note.UserHost).Html,
 			                       ContentWarning         = p.Cw,
 			                       DetectedSourceLanguage = p.OriginalLanguage,
 			                       Language               = p.TargetLanguage,
@@ -202,7 +202,7 @@ public class StatusController(
 
 		return new StatusTranslation
 		{
-			Content                = mfmConverter.ToHtml(translation.TranslatedText ?? "", note.MentionedRemoteUsers, note.UserHost).ToString(),
+			Content                = mfmConverter.ToHtml(translation.TranslatedText, note.MentionedRemoteUsers, note.UserHost).Html,
 			ContentWarning         = translation.TranslatedCw,
 			DetectedSourceLanguage = translation.OriginalLanguage,
 			Language               = lang,

@@ -6,6 +6,7 @@ using Iceshrimp.Backend.Controllers.Pleroma.Schemas.Entities;
 using Iceshrimp.Backend.Controllers.Shared.Attributes;
 using Iceshrimp.Backend.Core.Database;
 using Iceshrimp.Backend.Core.Extensions;
+using Iceshrimp.Backend.Core.Helpers.LibMfm.Conversion;
 using Iceshrimp.Backend.Core.Middleware;
 using Iceshrimp.Backend.Core.Services;
 using Microsoft.AspNetCore.Cors;
@@ -22,6 +23,7 @@ namespace Iceshrimp.Backend.Controllers.Pleroma;
 [Produces(MediaTypeNames.Application.Json)]
 public class TranslationController(
 	DatabaseContext db,
+	MfmConverter mfmConverter,
 	IServiceProvider provider
 ) : ControllerBase
 {
@@ -49,7 +51,7 @@ public class TranslationController(
 		                                   && p.NoteEditId == null)
 		                       .Select(p => new AkkomaTranslationEntity
 		                       {
-			                       Text             = p.Text ?? "",
+			                       Text             = mfmConverter.ToHtml(p.Text ?? "", note.MentionedRemoteUsers, note.UserHost).Html,
 			                       DetectedLanguage = p.OriginalLanguage
 		                       })
 		                       .FirstOrDefaultAsync();
@@ -63,7 +65,7 @@ public class TranslationController(
 
 		return new AkkomaTranslationEntity
 		{
-			Text             = translation.TranslatedText,
+			Text             = mfmConverter.ToHtml(translation.TranslatedText, note.MentionedRemoteUsers, note.UserHost).Html,
 			DetectedLanguage = translation.OriginalLanguage
 		};
 	}
