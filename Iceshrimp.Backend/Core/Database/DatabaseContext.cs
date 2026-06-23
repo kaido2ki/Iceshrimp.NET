@@ -50,6 +50,7 @@ public class DatabaseContext(DbContextOptions<DatabaseContext> options)
 	public virtual DbSet<NoteLike>             NoteLikes             { get; init; } = null!;
 	public virtual DbSet<NoteReaction>         NoteReactions         { get; init; } = null!;
 	public virtual DbSet<NoteThreadMuting>     NoteThreadMutings     { get; init; } = null!;
+	public virtual DbSet<NoteTranslation>      NoteTranslations      { get; init; } = null!;
 	public virtual DbSet<NoteUnread>           NoteUnreads           { get; init; } = null!;
 	public virtual DbSet<NoteWatching>         NoteWatchings         { get; init; } = null!;
 	public virtual DbSet<Notification>         Notifications         { get; init; } = null!;

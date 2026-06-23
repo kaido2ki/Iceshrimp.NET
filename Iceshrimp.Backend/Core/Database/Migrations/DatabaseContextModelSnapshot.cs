@@ -2899,6 +2899,44 @@ namespace Iceshrimp.Backend.Core.Database.Migrations
                     b.ToTable("note_thread_muting");
                 });
 
+            modelBuilder.Entity("Iceshrimp.Backend.Core.Database.Tables.NoteTranslation", b =>
+                {
+                    b.Property<string>("NoteId")
+                        .HasMaxLength(32)
+                        .HasColumnType("character varying(32)")
+                        .HasColumnName("noteId");
+
+                    b.Property<string>("TargetLanguage")
+                        .HasColumnType("text")
+                        .HasColumnName("targetLanguage");
+
+                    b.Property<string>("Cw")
+                        .HasColumnType("text")
+                        .HasColumnName("cw");
+
+                    b.Property<string>("NoteEditId")
+                        .HasMaxLength(32)
+                        .HasColumnType("character varying(32)")
+                        .HasColumnName("noteEditId");
+
+                    b.Property<string>("OriginalLanguage")
+                        .IsRequired()
+                        .HasColumnType("text")
+                        .HasColumnName("originalLanguage");
+
+                    b.PrimitiveCollection<List<string>>("PollChoices")
+                        .HasColumnType("character varying(256)[]")
+                        .HasColumnName("pollChoices");
+
+                    b.Property<string>("Text")
+                        .HasColumnType("text")
+                        .HasColumnName("text");
+
+                    b.HasKey("NoteId", "TargetLanguage");
+
+                    b.ToTable("note_translation");
+                });
+
             modelBuilder.Entity("Iceshrimp.Backend.Core.Database.Tables.NoteUnread", b =>
                 {
                     b.Property<string>("Id")
