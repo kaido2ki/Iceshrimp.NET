@@ -109,6 +109,7 @@ public class StatusTranslation
 	[J("language")]                 public required string        Language               { get; set; }
 	[J("detected_source_language")] public required string        DetectedSourceLanguage { get; set; }
 	[J("poll")]                     public required object?       Poll                   { get; set; }
+	[J("provider")]                 public required string        Provider               { get; set; }
 	[J("media_attachments")]        public          List<object>? MediaAttachments       { get; set; } = []; //TODO
 }
 

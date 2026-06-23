@@ -2928,6 +2928,11 @@ namespace Iceshrimp.Backend.Core.Database.Migrations
                         .HasColumnType("character varying(256)[]")
                         .HasColumnName("pollChoices");
 
+                    b.Property<string>("Provider")
+                        .IsRequired()
+                        .HasColumnType("text")
+                        .HasColumnName("provider");
+
                     b.Property<string>("Text")
                         .HasColumnType("text")
                         .HasColumnName("text");

@@ -32,4 +32,7 @@ public class NoteTranslation
     
     [Column("pollChoices", TypeName = "character varying(256)[]")]
     public List<string>? PollChoices { get; set; }
+
+    [Column("provider")]
+    public string Provider { get; set; } = null!;
 }

@@ -189,7 +189,8 @@ public class StatusController(
 				                       Options = p.PollChoices.Select(m => new TranslatedPollOptionEntity {
 					                       Title = m
 				                       }).ToList()
-			                       } : null
+			                       } : null,
+			                       Provider               = p.Provider
 		                       })
 		                       .FirstOrDefaultAsync();
 		if (existing != null) return existing;
@@ -212,7 +213,8 @@ public class StatusController(
 				Options = translation.TranslatedPoll.Select(m => new TranslatedPollOptionEntity {
 					Title = m
 				}).ToList()
-			} : null
+			} : null,
+			Provider               = translationSvc.GetProviderName()
 		};
 	}
 
