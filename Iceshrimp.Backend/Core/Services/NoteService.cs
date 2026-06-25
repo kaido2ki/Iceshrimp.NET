@@ -36,6 +36,7 @@ public class NoteService(
 	ActivityPub.ActivityRenderer activityRenderer,
 	EmojiService emojiSvc,
 	FollowupTaskService followupTaskSvc,
+	TranslationService translationSvc,
 	ActivityPub.ObjectResolver objectResolver,
 	QueueService queueSvc,
 	PollService pollSvc,
@@ -904,6 +905,8 @@ public class NoteService(
 
 		await db.SaveChangesAsync();
 		eventSvc.RaiseNoteUpdated(note);
+
+		await translationSvc.RemoveTranslationsAsync(note);
 
         if (!note.Published || !isEdit) return note;
 

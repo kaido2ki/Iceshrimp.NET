@@ -36,6 +36,13 @@ public class TranslationService(
 		return (await translationProvider.TranslateAsync(note, lang)
 		                  ?? throw GracefulException.UnprocessableEntity("There was an issue translating this note"), lang);
 	}
+	
+	public async Task RemoveTranslationsAsync(Note note)
+	{
+		await db.NoteTranslations
+		        .Where(p => p.NoteId == note.Id)
+		        .ExecuteDeleteAsync();
+	}
 
 	public string GetProviderName()
 	{
