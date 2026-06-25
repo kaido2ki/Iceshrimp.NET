@@ -1,4 +1,3 @@
-using System.Globalization;
 using System.Net;
 using System.Net.Mime;
 using Iceshrimp.Backend.Controllers.Mastodon.Attributes;
@@ -24,7 +23,7 @@ namespace Iceshrimp.Backend.Controllers.Pleroma;
 public class TranslationController(
 	DatabaseContext db,
 	MfmConverter mfmConverter,
-	IServiceProvider provider
+	TranslationService translationSvc
 ) : ControllerBase
 {
 	[HttpGet("/api/v1/statuses/{id}/translations/{lang}")]
@@ -43,25 +42,7 @@ public class TranslationController(
 		                   .FirstOrDefaultAsync() ??
 		           throw GracefulException.RecordNotFound();
 
-		lang = CultureInfo.GetCultureInfo(lang).ToString();
-
-		var existing = await db.NoteTranslations
-		                       .Where(p => p.NoteId == id
-		                                   && p.TargetLanguage == lang
-		                                   && p.NoteEditId == null)
-		                       .Select(p => new AkkomaTranslationEntity
-		                       {
-			                       Text             = mfmConverter.ToHtml(p.Text ?? "", note.MentionedRemoteUsers, note.UserHost).Html,
-			                       DetectedLanguage = p.OriginalLanguage
-		                       })
-		                       .FirstOrDefaultAsync();
-		if (existing != null) return existing;
-		
-		var translationSvc = provider.GetService<ITranslationService>()
-			?? throw GracefulException.UnprocessableEntity("No translation plugins have been set up");
-
-		var translation = await translationSvc.TranslateAsync(note, lang)
-		                  ?? throw GracefulException.UnprocessableEntity("There was an issue translating this note");
+		var (translation, _) = await translationSvc.TranslateAsync(note, lang);
 
 		return new AkkomaTranslationEntity
 		{

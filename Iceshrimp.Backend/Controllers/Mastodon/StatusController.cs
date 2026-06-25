@@ -1,5 +1,4 @@
 using System.ComponentModel.DataAnnotations;
-using System.Globalization;
 using System.Net;
 using System.Net.Mime;
 using AsyncKeyedLock;
@@ -36,13 +35,13 @@ public class StatusController(
 	DatabaseContext db,
 	NoteRenderer noteRenderer,
 	NoteService noteSvc,
+	TranslationService translationSvc,
 	CacheService cache,
 	IOptions<Config.InstanceSection> config,
 	IOptionsSnapshot<Config.SecuritySection> security,
 	UserRenderer userRenderer,
     ScheduledStatusController scheduledStatusController,
-	MfmConverter mfmConverter,
-	IServiceProvider provider
+	MfmConverter mfmConverter
 ) : ControllerBase
 {
 	private static readonly AsyncKeyedLocker<string> KeyedLocker = new(o =>
@@ -169,37 +168,7 @@ public class StatusController(
 		                   .FirstOrDefaultAsync() ??
 		           throw GracefulException.RecordNotFound();
 
-		var lang = request.Lang ?? "en";
-
-		request.Lang = CultureInfo.GetCultureInfo(lang).ToString();
-		
-		var existing = await db.NoteTranslations
-		                       .Where(p => p.NoteId == id
-		                                   && p.TargetLanguage == lang
-		                                   && p.NoteEditId == null)
-		                       .Select(p => new StatusTranslation
-		                       {
-			                       Content                = mfmConverter.ToHtml(p.Text ?? "", note.MentionedRemoteUsers, note.UserHost).Html,
-			                       ContentWarning         = p.Cw,
-			                       DetectedSourceLanguage = p.OriginalLanguage,
-			                       Language               = p.TargetLanguage,
-			                       Poll                   = p.PollChoices != null ? new TranslatedPollEntity
-			                       {
-				                       Id      = p.NoteId,
-				                       Options = p.PollChoices.Select(m => new TranslatedPollOptionEntity {
-					                       Title = m
-				                       }).ToList()
-			                       } : null,
-			                       Provider               = p.Provider
-		                       })
-		                       .FirstOrDefaultAsync();
-		if (existing != null) return existing;
-		
-		var translationSvc = provider.GetService<ITranslationService>()
-		                     ?? throw GracefulException.UnprocessableEntity("No translation plugins have been set up");
-
-		var translation = await translationSvc.TranslateAsync(note, lang)
-		                  ?? throw GracefulException.UnprocessableEntity("There was an issue translating this note");
+		var (translation, lang) = await translationSvc.TranslateAsync(note, request.Lang);
 
 		return new StatusTranslation
 		{
