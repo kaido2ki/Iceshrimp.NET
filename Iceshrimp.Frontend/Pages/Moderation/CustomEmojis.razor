@@ -83,7 +83,7 @@
             {
                 <Icon Name="Icons.Question"/>
             }
-            @(category.Category ?? Loc[L.Moderation_Emojis_Uncategorized])
+            @(category.Category ?? Loc[L.Emojis_Uncategorized])
         </span>
         <div class="emoji-list">
             @foreach (var emoji in category.Emojis)
@@ -97,7 +97,7 @@
 }
 @if (State is State.Empty || (State is State.Loaded && Categories.Count == 0))
 {
-    @Loc[L.Moderation_Emojis_Empty]
+    @Loc[L.Emojis_Empty]
 }
 @if (State is State.Loading)
 {

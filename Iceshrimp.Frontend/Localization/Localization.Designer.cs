@@ -1947,9 +1947,9 @@ namespace Iceshrimp.Frontend.Localization {
             }
         }
         
-        internal static string Moderation_Emojis_Empty {
+        internal static string Emojis_Empty {
             get {
-                return ResourceManager.GetString("Moderation_Emojis_Empty", resourceCulture);
+                return ResourceManager.GetString("Emojis_Empty", resourceCulture);
             }
         }
         
@@ -3015,9 +3015,9 @@ namespace Iceshrimp.Frontend.Localization {
             }
         }
         
-        internal static string Moderation_Emojis_Uncategorized {
+        internal static string Emojis_Uncategorized {
             get {
-                return ResourceManager.GetString("Moderation_Emojis_Uncategorized", resourceCulture);
+                return ResourceManager.GetString("Emojis_Uncategorized", resourceCulture);
             }
         }
         

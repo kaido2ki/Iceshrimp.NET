@@ -66,7 +66,7 @@
     }
     @if (CustomCategories.Count == 0 && UnicodeCategories.Count == 0)
     {
-        <p>No emojis found</p>
+        <i>@Loc[L.Emojis_Empty]</i>
     }
 </div>
 
@@ -143,7 +143,7 @@
                            .GroupBy(p => p.Category)
                            .OrderBy(p => p.Key == null)
                            .ThenBy(p => p.Key)
-                           .Select(p => new EmojiCategory(p.Key ?? Loc[L.Common_Other], p.ToList()))
+                           .Select(p => new EmojiCategory(p.Key ?? Loc[L.Emojis_Uncategorized], p.ToList()))
                            .ToList() ?? [];
 
         UnicodeCategories = EmojiList.Emojis
