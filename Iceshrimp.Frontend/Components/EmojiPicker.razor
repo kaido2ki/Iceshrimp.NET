@@ -1,3 +1,4 @@
+@using Blazored.LocalStorage
 @using Iceshrimp.Assets.Emoji
 @using Iceshrimp.Assets.PhosphorIcons
 @using Iceshrimp.Frontend.Core.Services
@@ -5,6 +6,7 @@
 @inject EmojiService                   EmojiService
 @inject JsService                      Js
 @inject IStringLocalizer<Localization> Loc;
+@inject ISyncLocalStorageService       LocalStorage;
 @inject MetadataService                Meta;
 
 <div @ref="Popover" class="emoji-picker" popover="auto">
@@ -13,6 +15,24 @@
         <input @bind="EmojiFilter" @bind:event="oninput" @bind:after="FilterEmojis" class="search" type="text" placeholder="Search" aria-label="search"/>
     </div>
     <div class="scroller">
+        <div class="header">
+            <Icon Name="Icons.Clock"/>
+            @Loc[L.Emojis_Recent]
+        </div>
+        @if (Preferences.RecentEmojis.Count != 0 && string.IsNullOrWhiteSpace(EmojiFilter))
+        {
+            <div class="emoji-list">
+                @foreach (var emoji in Preferences.RecentEmojis)
+                {
+                    <div @onclick="() => emoji.Slug != null ? Select(emoji.Name, emoji.Slug) : Select(emoji)"
+                         class="emoji" title="@(emoji.Slug ?? emoji.Name)">
+                    <InlineEmoji Name="@emoji.Name"
+                                     Url="@(string.IsNullOrEmpty(emoji.PublicUrl) ? null : emoji.PublicUrl)"
+                                     Size="2rem"/>
+                    </div>
+                }
+            </div>
+        }
         <div class="header">@InstanceName</div>
         @foreach (var category in CustomCategories)
         {
@@ -46,7 +66,7 @@
             {
                 <div class="header skin-tone-picker">
                     <button @onclick="() => { ShowSkinTonePicker = true; }">
-                        @("👋" + SkinTone)
+                        @("👋" + Preferences.SkinTone)
                     </button>
                     Unicode
                 </div>
@@ -59,7 +79,7 @@
                 <div class="emoji-list">
                     @foreach (var emoji in category.Emojis)
                     {
-                        <div @onclick="() => Select(emoji.Name)" class="emoji" title="@emoji.License">
+                        <div @onclick="() => Select(emoji.Name, emoji.Slug)" class="emoji" title="@emoji.License">
                             <InlineEmoji Name="@emoji.Name" Url="@null" Size="2rem"/>
                         </div>
                     }
@@ -79,10 +99,10 @@
     private ElementReference             Popover       { get; set; }
     private string                       InstanceName  { get; set; } = null!;
 
+    private EmojiPreferences    Preferences        { get; set; } = null!;
     private string              EmojiFilter        { get; set; } = "";
     private List<EmojiCategory> CustomCategories   { get; set; } = [];
     private List<EmojiCategory> UnicodeCategories  { get; set; } = [];
-    private string?             SkinTone           { get; set; }
     private bool                ShowSkinTonePicker { get; set; }
 
     private record EmojiCategory(string Name, List<EmojiResponse> Emojis);
@@ -93,25 +113,60 @@
 
     public sealed record SelectedUnicodeEmoji(string Value) : SelectedEmoji;
 
+    private class EmojiPreferences
+    {
+        public string?             SkinTone     { get; set; }
+        public List<EmojiResponse> RecentEmojis { get; set; } = [];
+    }
+
     protected override async Task OnInitializedAsync()
     {
+        Preferences  = LocalStorage.GetItem<EmojiPreferences>(nameof(EmojiPreferences)) ?? new EmojiPreferences();
         InstanceName = (await Meta.Instance.Value).Name;
+    }
+
+    private void UpdateRecents(EmojiResponse emoji)
+    {
+        if (Preferences.RecentEmojis.Find(p => (emoji.Slug != null && p.Slug == emoji.Slug) || p.Name == emoji.Name) is { } r)
+        {
+            Preferences.RecentEmojis.Remove(r);
+        }
+        else if (Preferences.RecentEmojis.Count >= 10)
+        {
+            Preferences.RecentEmojis.RemoveAt(Preferences.RecentEmojis.Count - 1);
+        }
+
+        Preferences.RecentEmojis.Insert(0, emoji);
     }
 
     private async Task Select(EmojiResponse emoji)
     {
+        UpdateRecents(emoji);
         await OnEmojiSelect.InvokeAsync(new SelectedEmojiResponse(emoji));
         await Close();
     }
 
-    private async Task Select(string emoji)
+    private async Task Select(string emoji, string slug)
     {
+        UpdateRecents(new EmojiResponse
+        {
+            Id        = "",
+            Name      = emoji,
+            Uri       = null,
+            Tags      = [],
+            Category  = null,
+            PublicUrl = "",
+            License   = null,
+            Sensitive = false,
+            Slug      = slug
+        });
         await OnEmojiSelect.InvokeAsync(new SelectedUnicodeEmoji(emoji));
         await Close();
     }
 
     private async Task Close()
     {
+        LocalStorage.SetItem(nameof(EmojiPreferences), Preferences);
         await Js.HidePopoverAsync(Popover);
     }
 
@@ -150,7 +205,7 @@
                            .ToList() ?? [];
 
         UnicodeCategories = EmojiList.Emojis
-                                     .Where(p => FilterName(p.Slug) && (!p.SkinToneSupport || SkinTone == null || (SkinTone != null && p.Value.Contains(SkinTone))))
+                                     .Where(p => FilterName(p.Slug) && (!p.SkinToneSupport || Preferences.SkinTone == null || (Preferences.SkinTone != null && p.Value.Contains(Preferences.SkinTone))))
                                      .GroupBy(p => p.Group)
                                      .Select(p => new EmojiCategory(p.Key, p.Select(e => new EmojiResponse
                                                                             {
@@ -158,10 +213,11 @@
                                                                                 Name      = e.Value,
                                                                                 Uri       = null,
                                                                                 Tags      = [],
-                                                                                Category  = e.Group,
+                                                                                Category  = null,
                                                                                 PublicUrl = "",
-                                                                                License   = e.Slug,
-                                                                                Sensitive = false
+                                                                                License   = null,
+                                                                                Sensitive = false,
+                                                                                Slug      = e.Slug
                                                                             })
                                                                             .ToList()))
                                      .ToList();
@@ -169,8 +225,8 @@
 
     private void SetSkinTone(string? skinTone)
     {
-        SkinTone           = skinTone;
-        ShowSkinTonePicker = false;
+        Preferences.SkinTone = skinTone;
+        ShowSkinTonePicker   = false;
         FilterEmojis();
         StateHasChanged();
     }

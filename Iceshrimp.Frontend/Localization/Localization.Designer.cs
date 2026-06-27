@@ -3158,5 +3158,11 @@ namespace Iceshrimp.Frontend.Localization {
                 return ResourceManager.GetString("Common_LoadMore", resourceCulture);
             }
         }
+        
+        internal static string Emojis_Recent {
+            get {
+                return ResourceManager.GetString("Emojis_Recent", resourceCulture);
+            }
+        }
     }
 }

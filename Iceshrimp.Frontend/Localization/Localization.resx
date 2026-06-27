@@ -1576,4 +1576,7 @@
     <data name="Common_LoadMore" xml:space="preserve">
         <value>Load more</value>
     </data>
+    <data name="Emojis_Recent" xml:space="preserve">
+        <value>Recently used</value>
+    </data>
 </root>

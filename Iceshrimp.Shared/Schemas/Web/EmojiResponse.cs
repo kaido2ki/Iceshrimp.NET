@@ -1,3 +1,4 @@
+using System.Text.Json.Serialization;
 using Iceshrimp.Shared.Helpers;
 
 namespace Iceshrimp.Shared.Schemas.Web;
@@ -29,4 +30,9 @@ public class EmojiResponse : IIdentifiable
     /// Whether the emoji should be blurred
     /// </summary>
     public required bool Sensitive { get; set; }
+
+    /// <summary>
+    /// Value used internally by the frontend for Unicode emojis. Do not set in the backend.
+    /// </summary>
+    public string? Slug { get; set; }
 }
