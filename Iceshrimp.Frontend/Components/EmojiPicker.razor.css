@@ -33,6 +33,17 @@ summary {
     width: 100%;
 }
 
+.skin-tone-picker {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 0.25rem;
+}
+
+.skin-tone-picker button {
+    margin: 0;
+}
+
 @media (max-width: 1000px) {
     .emoji-picker {
         position-area: none;

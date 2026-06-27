@@ -1,4 +1,3 @@
-@using AngleSharp.Text
 @using Iceshrimp.Assets.Emoji
 @using Iceshrimp.Frontend.Core.Services
 @using Iceshrimp.Shared.Schemas.Web
@@ -29,7 +28,27 @@
     }
     @if (UnicodeCategories.Count != 0)
     {
-        <p>Unicode</p>
+        @if (ShowSkinTonePicker)
+        {
+            <div class="skin-tone-picker">
+                <button @onclick="() => SetSkinTone(null)">👋</button>
+                @foreach (var skinTone in Emoji.SkinTones)
+                {
+                    <button @onclick="() => SetSkinTone(skinTone)">
+                        @("👋" + skinTone)
+                    </button>
+                }
+            </div>
+        }
+        else
+        {
+            <div class="skin-tone-picker">
+                <button @onclick="() => { ShowSkinTonePicker = true; }">
+                    @("👋" + SkinTone)
+                </button>
+                Unicode
+            </div>
+        }
     }
     @foreach (var category in UnicodeCategories)
     {
@@ -57,9 +76,11 @@
     private ElementReference             Popover       { get; set; }
     private string                       InstanceName  { get; set; } = null!;
 
-    private string              EmojiFilter       { get; set; } = "";
-    private List<EmojiCategory> CustomCategories  { get; set; } = [];
-    private List<EmojiCategory> UnicodeCategories { get; set; } = [];
+    private string              EmojiFilter        { get; set; } = "";
+    private List<EmojiCategory> CustomCategories   { get; set; } = [];
+    private List<EmojiCategory> UnicodeCategories  { get; set; } = [];
+    private string?             SkinTone           { get; set; }
+    private bool                ShowSkinTonePicker { get; set; }
 
     private record EmojiCategory(string Name, List<EmojiResponse> Emojis);
 
@@ -126,7 +147,7 @@
                            .ToList() ?? [];
 
         UnicodeCategories = EmojiList.Emojis
-                                     .Where(p => FilterName(p.Slug))
+                                     .Where(p => FilterName(p.Slug) && (!p.SkinToneSupport || SkinTone == null || (SkinTone != null && p.Value.Contains(SkinTone))))
                                      .GroupBy(p => p.Group)
                                      .Select(p => new EmojiCategory(p.Key, p.Select(e => new EmojiResponse
                                                                             {
@@ -141,5 +162,13 @@
                                                                             })
                                                                             .ToList()))
                                      .ToList();
+    }
+
+    private void SetSkinTone(string? skinTone)
+    {
+        SkinTone           = skinTone;
+        ShowSkinTonePicker = false;
+        FilterEmojis();
+        StateHasChanged();
     }
 }
