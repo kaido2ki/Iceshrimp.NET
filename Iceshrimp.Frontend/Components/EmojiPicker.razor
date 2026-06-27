@@ -1,12 +1,18 @@
 @using AngleSharp.Text
+@using Iceshrimp.Assets.Emoji
 @using Iceshrimp.Frontend.Core.Services
 @using Iceshrimp.Shared.Schemas.Web
-@inject EmojiService       EmojiService
-@inject JsService          Js
+@inject EmojiService                   EmojiService
+@inject JsService                      Js
 @inject IStringLocalizer<Localization> Loc;
+@inject MetadataService                Meta;
 
 <div @ref="Popover" class="emoji-picker" popover="auto">
     <input @bind="EmojiFilter" @bind:event="oninput" @bind:after="FilterEmojis" class="search" type="text" placeholder="Search" aria-label="search"/>
+    @if (CustomCategories.Count != 0)
+    {
+        <p>@InstanceName</p>
+    }
     @foreach (var category in CustomCategories)
     {
         <details open>
@@ -21,17 +27,46 @@
             </div>
         </details>
     }
+    @if (UnicodeCategories.Count != 0)
+    {
+        <p>Unicode</p>
+    }
+    @foreach (var category in UnicodeCategories)
+    {
+        <details open>
+            <summary aria-label="category">@category.Name</summary>
+            <div class="emoji-list">
+                @foreach (var emoji in category.Emojis)
+                {
+                    <div @onclick="() => Select(emoji)" class="emoji" title="@emoji.License">
+                        <InlineEmoji Name="@emoji.Name" Url="@null" Size="2rem"/>
+                    </div>
+                }
+            </div>
+        </details>
+    }
+    @if (CustomCategories.Count == 0 && UnicodeCategories.Count == 0)
+    {
+        <p>No emojis found</p>
+    }
 </div>
 
 
 @code {
     private EventCallback<EmojiResponse> OnEmojiSelect { get; set; }
     private ElementReference             Popover       { get; set; }
+    private string                       InstanceName  { get; set; } = null!;
 
-    private string              EmojiFilter      { get; set; } = "";
-    private List<EmojiCategory> CustomCategories { get; set; } = [];
+    private string              EmojiFilter       { get; set; } = "";
+    private List<EmojiCategory> CustomCategories  { get; set; } = [];
+    private List<EmojiCategory> UnicodeCategories { get; set; } = [];
 
     private record EmojiCategory(string Name, List<EmojiResponse> Emojis);
+
+    protected override async Task OnInitializedAsync()
+    {
+        InstanceName = (await Meta.Instance.Value).Name;
+    }
 
     private async Task Select(EmojiResponse emoji)
     {
@@ -56,14 +91,20 @@
 
     private bool FilterName(EmojiResponse emoji)
     {
-        var split = EmojiFilter.StripLeadingTrailingSpaces().SplitSpaces();
-        return split.All(x => emoji.Name.Contains(x));
+        var split = EmojiFilter.Split(' ', StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries);
+        return split.All(x => emoji.Name.Contains(x, StringComparison.InvariantCultureIgnoreCase));
+    }
+
+    private bool FilterName(string emojiName)
+    {
+        var split = EmojiFilter.Split(' ', StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries);
+        return split.All(x => emojiName.Contains(x, StringComparison.InvariantCultureIgnoreCase));
     }
 
     private void FilterEmojis()
     {
         CustomCategories = EmojiService.Emojis?
-                           .Where(p => FilterName(p) || p.Tags.Count(a => a.Contains(EmojiFilter.StripLeadingTrailingSpaces())) != 0)
+                           .Where(p => FilterName(p) || p.Tags.Any(FilterName))
                            .OrderBy(p => p.Name)
                            .ThenBy(p => p.Id)
                            .GroupBy(p => p.Category)
@@ -71,5 +112,22 @@
                            .ThenBy(p => p.Key)
                            .Select(p => new EmojiCategory(p.Key ?? Loc[L.Common_Other], p.ToList()))
                            .ToList() ?? [];
+
+        UnicodeCategories = EmojiList.Emojis
+                                     .Where(p => FilterName(p.Slug))
+                                     .GroupBy(p => p.Group)
+                                     .Select(p => new EmojiCategory(p.Key, p.Select(e => new EmojiResponse
+                                                                            {
+                                                                                Id        = "",
+                                                                                Name      = e.Value,
+                                                                                Uri       = null,
+                                                                                Tags      = [],
+                                                                                Category  = e.Group,
+                                                                                PublicUrl = "",
+                                                                                License   = e.Slug,
+                                                                                Sensitive = false
+                                                                            })
+                                                                            .ToList()))
+                                     .ToList();
     }
 }
