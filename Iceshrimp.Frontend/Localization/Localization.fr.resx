@@ -5,47 +5,47 @@
     <resheader name="version">
         <value>1.3</value>
     </resheader>
-    <data name="Compose_PublishNote" xml:space="preserve">
-        <value>Publier</value>
+    <data name="Timestamp_Day_X" xml:space="preserve">
+        <value>{0} j</value>
+    </data>
+    <data name="Timestamp_Hour_X" xml:space="preserve">
+        <value>{0} h</value>
+    </data>
+    <data name="Timestamp_Minute_X" xml:space="preserve">
+        <value>{0} m</value>
+    </data>
+    <data name="Timestamp_Month_X" xml:space="preserve">
+        <value>{0} mois</value>
+    </data>
+    <data name="Timestamp_Week_X" xml:space="preserve">
+        <value>{0} sem</value>
+    </data>
+    <data name="Timestamp_Year_X" xml:space="preserve">
+        <value>{0} ans</value>
     </data>
     <data name="Timestamp_JustNow" xml:space="preserve">
-        <value>À l'instant</value>
+        <value>À l'instant</value>
     </data>
-    <data name="Common_Note" xml:space="preserve">
-        <value>Note</value>
+    <data name="Timestamp_Second_X" xml:space="preserve">
+        <value>{0} s</value>
     </data>
-    <data name="Notifications" xml:space="preserve">
-        <value>Notifications</value>
-    </data>
-    <data name="Compose_SaveEdit" xml:space="preserve">
-        <value>Éditer</value>
+    <data name="Timestamp_Now" xml:space="preserve">
+        <value>maintenant</value>
     </data>
     <data name="Common_Timeline" xml:space="preserve">
         <value>Fil d'actualité</value>
     </data>
-    <data name="Timestamp_Day_X" xml:space="preserve">
-        <value>{0} j</value>
+    <data name="Notifications" xml:space="preserve">
+        <value>Notifications</value>
     </data>
-    <data name="Timestamp_Hour_X" xml:space="preserve">
-        <value>{0} h</value>
+    <data name="Common_Note" xml:space="preserve">
+        <value>Note</value>
     </data>
-    <data name="Timestamp_Minute_X" xml:space="preserve">
-        <value>{0} min</value>
+    <data name="Compose_PublishNote" xml:space="preserve">
+        <value>Note</value>
     </data>
-    <data name="Timestamp_Month_X" xml:space="preserve">
-        <value>{0} mois</value>
-    </data>
-    <data name="Timestamp_Week_X" xml:space="preserve">
-        <value>{0} sem</value>
-    </data>
-    <data name="Timestamp_Year_X" xml:space="preserve">
-        <value>{0} an</value>
-    </data>
-    <data name="Timestamp_Second_X" xml:space="preserve">
-        <value>{0} s</value>
-    </data>
-    <data name="Timestamp_Now" xml:space="preserve">
-        <value>à l'instant</value>
+    <data name="Compose_SaveEdit" xml:space="preserve">
+        <value>Modifier la note</value>
     </data>
     <data name="Common_Close" xml:space="preserve">
         <value>Fermer</value>
@@ -54,7 +54,7 @@
         <value>Préférences</value>
     </data>
     <data name="Preferences_UILanguage" xml:space="preserve">
-        <value>Langue de l'interface</value>
+        <value>Langue de l'interface (nécessite un redémarrage)</value>
     </data>
     <data name="StateButton_SaveChanges" xml:space="preserve">
         <value>Enregistrer les modifications</value>
@@ -74,8 +74,11 @@
     <data name="StateButton_Error" xml:space="preserve">
         <value>Erreur</value>
     </data>
-    <data name="Preferences_ThemeSystem" xml:space="preserve">
-        <value>Système</value>
+    <data name="Preferences_Theme" xml:space="preserve">
+        <value>Thème (nécessite un redémarrage)</value>
+    </data>
+    <data name="Preferences_CustomCSS" xml:space="preserve">
+        <value>CSS personnalisé</value>
     </data>
     <data name="Preferences_ThemeLight" xml:space="preserve">
         <value>Clair</value>
@@ -83,13 +86,1415 @@
     <data name="Preferences_ThemeDark" xml:space="preserve">
         <value>Sombre</value>
     </data>
-    <data name="Preferences_Theme" xml:space="preserve">
-        <value>Thème</value>
-    </data>
-    <data name="Preferences_CustomCSS" xml:space="preserve">
-        <value>CSS personnalisé</value>
+    <data name="Preferences_ThemeSystem" xml:space="preserve">
+        <value>Système</value>
     </data>
     <data name="Preferences_CustomCSS_Warning" xml:space="preserve">
         <value>Le CSS personnalisé peut potentiellement casser le client. Vous pouvez réinitialiser le CSS personnalisé depuis la page de connexion/changement de compte.</value>
+    </data>
+    <data name="Error_Api_Unknown" xml:space="preserve">
+        <value>Une erreur API inconnue s'est produite.</value>
+    </data>
+    <data name="Error_Api_Timeout" xml:space="preserve">
+        <value>La requête API a expiré.</value>
+    </data>
+    <data name="Error_Api_Json_Message" xml:space="preserve">
+        <value>L'API a répondu avec des données inattendues : {0}</value>
+    </data>
+    <data name="Error_Api_Json_Path_Message" xml:space="preserve">
+        <value>L'API a répondu avec des données inattendues : {0} {1}</value>
+    </data>
+    <data name="Error_Api_Http_Request" xml:space="preserve">
+        <value>La requête API a échoué : {0}</value>
+    </data>
+    <data name="Error_Api_Http_Status" xml:space="preserve">
+        <value>La requête API a échoué avec le code d'état {0}.</value>
+    </data>
+    <data name="Note_RenotedLabel" xml:space="preserve">
+        <value>Boosté par</value>
+    </data>
+    <data name="Note_HiddenByFilter" xml:space="preserve">
+        <value>Cette note est masquée par votre filtre</value>
+    </data>
+    <data name="Common_Show" xml:space="preserve">
+        <value>Afficher</value>
+    </data>
+    <data name="Common_Hide" xml:space="preserve">
+        <value>Masquer</value>
+    </data>
+    <data name="Note_CwShow" xml:space="preserve">
+        <value>Afficher le contenu</value>
+    </data>
+    <data name="Note_CwHide" xml:space="preserve">
+        <value>Masquer le contenu</value>
+    </data>
+    <data name="Note_CwShow_Characters" xml:space="preserve">
+        <value>Afficher le contenu ({0} caractères)</value>
+    </data>
+    <data name="Note_Renote" xml:space="preserve">
+        <value>Booster</value>
+    </data>
+    <data name="Note_Renote_Unlisted" xml:space="preserve">
+        <value>Booster (Non listé)</value>
+    </data>
+    <data name="Note_Renote_Followers" xml:space="preserve">
+        <value>Booster (Abonnés uniquement)</value>
+    </data>
+    <data name="Note_Unrenote" xml:space="preserve">
+        <value>Annuler le boost</value>
+    </data>
+    <data name="Common_Refetch" xml:space="preserve">
+        <value>Recharger</value>
+    </data>
+    <data name="Note_Menu_Bookmark_Add" xml:space="preserve">
+        <value>Ajouter aux favoris</value>
+    </data>
+    <data name="Note_Menu_Bookmark_Remove" xml:space="preserve">
+        <value>Retirer des favoris</value>
+    </data>
+    <data name="Note_Menu_Pin" xml:space="preserve">
+        <value>Épingler au profil</value>
+    </data>
+    <data name="Note_Menu_Unpin" xml:space="preserve">
+        <value>Désépingler du profil</value>
+    </data>
+    <data name="Note_Menu_MuteThread" xml:space="preserve">
+        <value>Ignorer le fil</value>
+    </data>
+    <data name="AboutPage" xml:space="preserve">
+        <value>À propos (déboguage)</value>
+    </data>
+    <data name="Common_OpenOriginal" xml:space="preserve">
+        <value>Ouvrir la page originale</value>
+    </data>
+    <data name="Common_Bite" xml:space="preserve">
+        <value>Mordre</value>
+    </data>
+    <data name="Common_Share" xml:space="preserve">
+        <value>Partager</value>
+    </data>
+    <data name="Common_CopyLink" xml:space="preserve">
+        <value>Copier le lien</value>
+    </data>
+    <data name="Common_CopyLink_Remote" xml:space="preserve">
+        <value>Copier le lien (distant)</value>
+    </data>
+    <data name="Common_CopyContents" xml:space="preserve">
+        <value>Copier le contenu</value>
+    </data>
+    <data name="Common_Edit" xml:space="preserve">
+        <value>Modifier</value>
+    </data>
+    <data name="Common_Delete" xml:space="preserve">
+        <value>Supprimer</value>
+    </data>
+    <data name="Note_Menu_Redraft" xml:space="preserve">
+        <value>Supprimer &amp; reformuler</value>
+    </data>
+    <data name="Report_Note" xml:space="preserve">
+        <value>Signaler la note</value>
+    </data>
+    <data name="Note_Visibility_Public" xml:space="preserve">
+        <value>Public</value>
+    </data>
+    <data name="Note_Visibility_Unlisted" xml:space="preserve">
+        <value>Non listé</value>
+    </data>
+    <data name="Note_Visibility_Followers" xml:space="preserve">
+        <value>Abonnés uniquement</value>
+    </data>
+    <data name="Note_Visibility_Specified" xml:space="preserve">
+        <value>Direct</value>
+    </data>
+    <data name="Note_Poll_Vote" xml:space="preserve">
+        <value>Voter</value>
+    </data>
+    <data name="Note_Poll_VoteCount_Choice" xml:space="preserve">
+        <value>{0} votes</value>
+    </data>
+    <data name="Note_Poll_MultipleChoice" xml:space="preserve">
+        <value>Choix multiple</value>
+    </data>
+    <data name="Note_Poll_VoteCount_Total" xml:space="preserve">
+        <value>{0} utilisateurs ont voté</value>
+    </data>
+    <data name="Note_Poll_Expired" xml:space="preserve">
+        <value>Terminé</value>
+    </data>
+    <data name="Note_Poll_ExpiresAt_DateTime" xml:space="preserve">
+        <value>Se termine le {0}</value>
+    </data>
+    <data name="Drive_Entry_Sensitive" xml:space="preserve">
+        <value>Média sensible</value>
+    </data>
+    <data name="Drive_Entry_NoAlt" xml:space="preserve">
+        <value>Pas de texte alternatif</value>
+    </data>
+    <data name="Drive" xml:space="preserve">
+        <value>Espace de stockage</value>
+    </data>
+    <data name="Drive_Status" xml:space="preserve">
+        <value>Statut</value>
+    </data>
+    <data name="Drive_Folder_Create" xml:space="preserve">
+        <value>Créer un dossier</value>
+    </data>
+    <data name="Drive_Folder_Delete" xml:space="preserve">
+        <value>Supprimer le dossier</value>
+    </data>
+    <data name="Drive_UploadFile" xml:space="preserve">
+        <value>Téléverser un fichier</value>
+    </data>
+    <data name="Drive_Count_Folders_Files" xml:space="preserve">
+        <value>({0} dossiers, {1} fichiers)</value>
+    </data>
+    <data name="Drive_Status_FileCount" xml:space="preserve">
+        <value>Fichiers au total : {0}</value>
+    </data>
+    <data name="Drive_Status_Usage_Size" xml:space="preserve">
+        <value>Espace utilisé : {0}</value>
+    </data>
+    <data name="Drive_CreateFolderDialog_Placeholder" xml:space="preserve">
+        <value>Nom du dossier</value>
+    </data>
+    <data name="Drive_CreateFolderDialog_Submit" xml:space="preserve">
+        <value>Créer</value>
+    </data>
+    <data name="User_Avatar" xml:space="preserve">
+        <value>Avatar</value>
+    </data>
+    <data name="User_Banner" xml:space="preserve">
+        <value>Bannière</value>
+    </data>
+    <data name="Common_Open" xml:space="preserve">
+        <value>Ouvrir</value>
+    </data>
+    <data name="Drive_Entry_Menu_Move" xml:space="preserve">
+        <value>Déplacer</value>
+    </data>
+    <data name="Drive_Entry_Menu_SetAlt" xml:space="preserve">
+        <value>Définir le texte alternatif</value>
+    </data>
+    <data name="Drive_Entry_Menu_Sensitive_Add" xml:space="preserve">
+        <value>Marquer comme sensible</value>
+    </data>
+    <data name="Drive_Entry_Menu_Sensitive_Remove" xml:space="preserve">
+        <value>Retirer le marquage sensible</value>
+    </data>
+    <data name="Common_Rename" xml:space="preserve">
+        <value>Renommer</value>
+    </data>
+    <data name="Drive_Entry_RenameDialog_FilePlaceholder" xml:space="preserve">
+        <value>Nouveau nom de fichier</value>
+    </data>
+    <data name="Drive_Entry_RenameDialog_FolderPlaceholder" xml:space="preserve">
+        <value>Nouveau nom de dossier</value>
+    </data>
+    <data name="Drive_Entry_RenameDialog_Submit" xml:space="preserve">
+        <value>Renommer</value>
+    </data>
+    <data name="Drive_DeleteDialog_Question" xml:space="preserve">
+        <value>Supprimer {0} ?</value>
+    </data>
+    <data name="Dialog_Confirm" xml:space="preserve">
+        <value>OK</value>
+    </data>
+    <data name="Dialog_Cancel" xml:space="preserve">
+        <value>Annuler</value>
+    </data>
+    <data name="Dialog_Submit" xml:space="preserve">
+        <value>Soumettre</value>
+    </data>
+    <data name="User_Username" xml:space="preserve">
+        <value>Nom d'utilisateur</value>
+    </data>
+    <data name="User_Host" xml:space="preserve">
+        <value>Hôte</value>
+    </data>
+    <data name="Report_User" xml:space="preserve">
+        <value>Signaler l'utilisateur</value>
+    </data>
+    <data name="Common_Notes" xml:space="preserve">
+        <value>Notes</value>
+    </data>
+    <data name="Report_Dialog_AddNote" xml:space="preserve">
+        <value>Ajouter une note</value>
+    </data>
+    <data name="Report_Dialog_AddPlaceholder" xml:space="preserve">
+        <value>ID de note ou URL</value>
+    </data>
+    <data name="Report_Dialog_Rules" xml:space="preserve">
+        <value>Règles enfreintes par cet utilisateur</value>
+    </data>
+    <data name="Report_Dialog_DetailsPlaceholder" xml:space="preserve">
+        <value>Détails supplémentaires</value>
+    </data>
+    <data name="Report_Dialog_Forward_Host" xml:space="preserve">
+        <value>Transférer à {0}</value>
+    </data>
+    <data name="Error_NoteNotFound" xml:space="preserve">
+        <value>Note introuvable</value>
+    </data>
+    <data name="Report_Dialog_Error_NoteOwner" xml:space="preserve">
+        <value>La note n'appartient pas à l'utilisateur signalé.</value>
+    </data>
+    <data name="Compose_Sending" xml:space="preserve">
+        <value>Envoi en cours</value>
+    </data>
+    <data name="Note_Poll" xml:space="preserve">
+        <value>Sondage</value>
+    </data>
+    <data name="Note_Cw" xml:space="preserve">
+        <value>Avertissement de contenu</value>
+    </data>
+    <data name="User_AddMention" xml:space="preserve">
+        <value>Mentionner l'utilisateur</value>
+    </data>
+    <data name="Common_Emojis" xml:space="preserve">
+        <value>Emojis</value>
+    </data>
+    <data name="Compose_Quote_Add" xml:space="preserve">
+        <value>Ajouter une citation</value>
+    </data>
+    <data name="Compose_CharacterLimit" xml:space="preserve">
+        <value>Limite de caractères</value>
+    </data>
+    <data name="Compose_TogglePreview" xml:space="preserve">
+        <value>Voir l'aperçu</value>
+    </data>
+    <data name="Compose_Quote" xml:space="preserve">
+        <value>Citation jointe</value>
+    </data>
+    <data name="Compose_Quote_Remove" xml:space="preserve">
+        <value>Retirer la citation</value>
+    </data>
+    <data name="Drive_Uploading" xml:space="preserve">
+        <value>Téléversement du fichier</value>
+    </data>
+    <data name="Drive_Uploading_Count" xml:space="preserve">
+        <value>Téléversement de {0} fichiers</value>
+    </data>
+    <data name="Compose_Poll_ChoicePlaceholder" xml:space="preserve">
+        <value>Choix</value>
+    </data>
+    <data name="Common_Add" xml:space="preserve">
+        <value>Ajouter</value>
+    </data>
+    <data name="Compose_Poll_ExpiresAt" xml:space="preserve">
+        <value>Fin du sondage</value>
+    </data>
+    <data name="Compose_Poll_ExpiresAt_Never" xml:space="preserve">
+        <value>Jamais</value>
+    </data>
+    <data name="Compose_Poll_ExpiresAt_AfterDuration" xml:space="preserve">
+        <value>Terminer après</value>
+    </data>
+    <data name="Compose_Poll_ExpiresAt_DateTime" xml:space="preserve">
+        <value>Terminer le</value>
+    </data>
+    <data name="Compose_Poll_Duration" xml:space="preserve">
+        <value>Durée</value>
+    </data>
+    <data name="Duration_Minutes" xml:space="preserve">
+        <value>Heures</value>
+    </data>
+    <data name="Duration_Hours" xml:space="preserve">
+        <value>Minutes</value>
+    </data>
+    <data name="Duration_Days" xml:space="preserve">
+        <value>Jours</value>
+    </data>
+    <data name="Compose_NoPreview" xml:space="preserve">
+        <value>Rien à prévisualiser</value>
+    </data>
+    <data name="Compose_Error_AttachmentSize" xml:space="preserve">
+        <value>La pièce jointe est trop volumineuse.</value>
+    </data>
+    <data name="Compose_Error_AttachmentSize_Bytes" xml:space="preserve">
+        <value>La pièce jointe est trop volumineuse. Le serveur a fixé cette limite à {0} octets.</value>
+    </data>
+    <data name="Compose_AttachQuoteDialog_Question" xml:space="preserve">
+        <value>Joindre comme citation ?</value>
+    </data>
+    <data name="Compose_AddMentionDialog_Submit" xml:space="preserve">
+        <value>Mentionner l'utilisateur</value>
+    </data>
+    <data name="Compose_AttachQuoteDialog_Placeholder" xml:space="preserve">
+        <value>URL de la note</value>
+    </data>
+    <data name="Compose_Error_AttachQuote" xml:space="preserve">
+        <value>La citation doit être une URL de note valide.</value>
+    </data>
+    <data name="Compose_BodyPlaceholder_Note" xml:space="preserve">
+        <value>Quoi de neuf ?</value>
+    </data>
+    <data name="Compose_BodyPlaceholder_Reply" xml:space="preserve">
+        <value>Votre réponse ici !</value>
+    </data>
+    <data name="Compose_BodyPlaceholder_Quote" xml:space="preserve">
+        <value>Citez cette note !</value>
+    </data>
+    <data name="Update_Notice" xml:space="preserve">
+        <value>Mise à jour requise !</value>
+    </data>
+    <data name="Update_Codename" xml:space="preserve">
+        <value>Nom de code</value>
+    </data>
+    <data name="Update_Commit" xml:space="preserve">
+        <value>Commit</value>
+    </data>
+    <data name="Update_ReleaseNotes" xml:space="preserve">
+        <value>Notes de version</value>
+    </data>
+    <data name="Update_StateButton_Success" xml:space="preserve">
+        <value>Rechargement</value>
+    </data>
+    <data name="Update_StateButton_Initial" xml:space="preserve">
+        <value>Passer à la nouvelle version</value>
+    </data>
+    <data name="Update_StateButton_Error" xml:space="preserve">
+        <value>Échec de l'installation de la mise à jour</value>
+    </data>
+    <data name="Notifications_MarkAllRead" xml:space="preserve">
+        <value>Tout marquer comme lu</value>
+    </data>
+    <data name="Notification_Body_like" xml:space="preserve">
+        <value>a aimé votre note</value>
+    </data>
+    <data name="Notification_Body_reaction" xml:space="preserve">
+        <value>a réagi à votre note</value>
+    </data>
+    <data name="Notification_Body_follow" xml:space="preserve">
+        <value>vous suit</value>
+    </data>
+    <data name="Notification_Body_follow_request_received" xml:space="preserve">
+        <value>a demandé à vous suivre</value>
+    </data>
+    <data name="Notification_Body_follow_request_accepted" xml:space="preserve">
+        <value>a accepté votre demande d'abonnement</value>
+    </data>
+    <data name="Notification_Body_renote" xml:space="preserve">
+        <value>a boosté votre note</value>
+    </data>
+    <data name="Notification_Body_quote" xml:space="preserve">
+        <value>a cité votre note</value>
+    </data>
+    <data name="Notification_Body_bite" xml:space="preserve">
+        <value>vous a mordu</value>
+    </data>
+    <data name="Notification_Body_bite_Back" xml:space="preserve">
+        <value>vous a mordu en retour</value>
+    </data>
+    <data name="Notification_Body_bite_Note" xml:space="preserve">
+        <value>a mordu votre note</value>
+    </data>
+    <data name="Notification_Body_edit" xml:space="preserve">
+        <value>a modifié sa note</value>
+    </data>
+    <data name="Notification_Body_poll_vote" xml:space="preserve">
+        <value>a voté dans votre sondage</value>
+    </data>
+    <data name="Notification_Body_poll_ended" xml:space="preserve">
+        <value>le sondage est terminé</value>
+    </data>
+    <data name="Notification_Body_report" xml:space="preserve">
+        <value>a signalé un utilisateur</value>
+    </data>
+    <data name="Notification_Unsupported" xml:space="preserve">
+        <value>type de notification non pris en charge</value>
+    </data>
+    <data name="Notification_Unsupported_ToggleDetails" xml:space="preserve">
+        <value>Données de notification</value>
+    </data>
+    <data name="Notification_Unsupported_Details_Id" xml:space="preserve">
+        <value>ID : {0}</value>
+    </data>
+    <data name="Notification_Unsupported_Details_Type" xml:space="preserve">
+        <value>Type : {0}</value>
+    </data>
+    <data name="Notification_MarkRead" xml:space="preserve">
+        <value>Marquer comme lu</value>
+    </data>
+    <data name="Notification_Action_Bite_BiteBack" xml:space="preserve">
+        <value>Mordre en retour</value>
+    </data>
+    <data name="Notification_Action_Bite_BiteBack_Notice" xml:space="preserve">
+        <value>A mordu {0} en retour</value>
+    </data>
+    <data name="Settings_About" xml:space="preserve">
+        <value>À propos</value>
+    </data>
+    <data name="Settings_About_CurrentInstance" xml:space="preserve">
+        <value>Instance actuelle</value>
+    </data>
+    <data name="Instance_AdminEmail" xml:space="preserve">
+        <value>Adresse mail de l'administrateur</value>
+    </data>
+    <data name="Instance_NoInfoProvided" xml:space="preserve">
+        <value>Aucune information fournie.</value>
+    </data>
+    <data name="Common_Description" xml:space="preserve">
+        <value>Description</value>
+    </data>
+    <data name="Instance_Admins" xml:space="preserve">
+        <value>Administrateurs</value>
+    </data>
+    <data name="Instance_Moderators" xml:space="preserve">
+        <value>Modérateurs</value>
+    </data>
+    <data name="Instance_Limits" xml:space="preserve">
+        <value>Limitations</value>
+    </data>
+    <data name="Instance_Limits_Regs" xml:space="preserve">
+        <value>Inscriptions des utilisateurs</value>
+    </data>
+    <data name="Instance_Limits_Regs_Closed" xml:space="preserve">
+        <value>Fermées</value>
+    </data>
+    <data name="Instance_Limits_Regs_Invite" xml:space="preserve">
+        <value>Sur invitation uniquement</value>
+    </data>
+    <data name="Instance_Limits_Regs_Open" xml:space="preserve">
+        <value>Ouvertes</value>
+    </data>
+    <data name="Instance_Limits_NoteCharacterCount" xml:space="preserve">
+        <value>Nombre de caractères par note</value>
+    </data>
+    <data name="Instance_Limits_BioCharacterCount" xml:space="preserve">
+        <value>Nombre de caractères de la biographie des profils</value>
+    </data>
+    <data name="Instance_Limits_FieldCount" xml:space="preserve">
+        <value>Nombre de champs des profils</value>
+    </data>
+    <data name="Instance_Limits_FieldNameCharacterCount" xml:space="preserve">
+        <value>Nombre de caractères du nom de champ des profils</value>
+    </data>
+    <data name="Instance_Limits_FieldValueCharacterCount" xml:space="preserve">
+        <value>Nombre de caractères de la valeur de champ des profils</value>
+    </data>
+    <data name="Settings_About_CurrentVersion" xml:space="preserve">
+        <value>Version actuelle</value>
+    </data>
+    <data name="ErrorUi_Logs" xml:space="preserve">
+        <value>Journaux du client</value>
+    </data>
+    <data name="ErrorUi_LogsWarning" xml:space="preserve">
+        <value>Ces journaux peuvent contenir des informations sensibles, veuillez ne pas les publier.
+Fournir ces journaux aux développeurs sur demande peut aider au débogage.</value>
+    </data>
+    <data name="Common_Download" xml:space="preserve">
+        <value>Télécharger</value>
+    </data>
+    <data name="Settings_Account" xml:space="preserve">
+        <value>Compte</value>
+    </data>
+    <data name="Settings" xml:space="preserve">
+        <value>Paramètres</value>
+    </data>
+    <data name="Settings_Account_DefaultNoteVisibility" xml:space="preserve">
+        <value>Visibilité par défaut des notes</value>
+    </data>
+    <data name="Settings_Account_DefaultRenoteVisibility" xml:space="preserve">
+        <value>Visibilité par défaut des boosts</value>
+    </data>
+    <data name="Settings_Account_AllowBites" xml:space="preserve">
+        <value>Autoriser les morsures de</value>
+    </data>
+    <data name="Settings_Account_AllowBites_Public" xml:space="preserve">
+        <value>Tout le monde</value>
+    </data>
+    <data name="Settings_Account_AllowBites_Followers" xml:space="preserve">
+        <value>Abonnés</value>
+    </data>
+    <data name="Settings_Account_AllowBites_None" xml:space="preserve">
+        <value>Personne</value>
+    </data>
+    <data name="Settings_Account_PrivateMode" xml:space="preserve">
+        <value>Mode privé (Force toutes les notes de tous les clients en abonnés uniquement)</value>
+    </data>
+    <data name="Settings_Account_FilterInaccessible" xml:space="preserve">
+        <value>Filtrer les réponses aux notes inaccessibles</value>
+    </data>
+    <data name="Settings_Account_FilterNotFollowing" xml:space="preserve">
+        <value>Filtrer les réponses des utilisateurs que vous ne suivez pas</value>
+    </data>
+    <data name="Settings_Account_ManuallyAcceptFollows" xml:space="preserve">
+        <value>Accepter manuellement les demandes d'abonnement</value>
+    </data>
+    <data name="Settings_Account_AutoAcceptFollowed" xml:space="preserve">
+        <value>Accepter automatiquement les demandes d'abonnement des utilisateurs que vous suivez</value>
+    </data>
+    <data name="Settings_Account_AlwaysMarkSensitive" xml:space="preserve">
+        <value>Marquer toutes les notes comme sensibles</value>
+    </data>
+    <data name="Settings_Account_MarkExplorable" xml:space="preserve">
+        <value>Marquer le compte comme Explorable/Découvrable</value>
+    </data>
+    <data name="Settings_Account_AttributionDomains" xml:space="preserve">
+        <value>Domaines hébergeant du contenu pouvant vous être attribué</value>
+    </data>
+    <data name="Common_MoreInfo" xml:space="preserve">
+        <value>Plus d'informations</value>
+    </data>
+    <data name="Settings_Account_Password" xml:space="preserve">
+        <value>Mettre à jour le mot de passe</value>
+    </data>
+    <data name="Settings_Account_Password_Old" xml:space="preserve">
+        <value>Ancien mot de passe</value>
+    </data>
+    <data name="Settings_Account_Password_New" xml:space="preserve">
+        <value>Nouveau mot de passe</value>
+    </data>
+    <data name="Settings_Account_Password_NewConfirm" xml:space="preserve">
+        <value>Confirmer le nouveau mot de passe</value>
+    </data>
+    <data name="Settings_Account_Password_StateButton_Initial" xml:space="preserve">
+        <value>Mettre à jour le mot de passe</value>
+    </data>
+    <data name="Settings_Account_Password_StateButton_Success" xml:space="preserve">
+        <value>Mis à jour</value>
+    </data>
+    <data name="Settings_Account_2fa" xml:space="preserve">
+        <value>Authentification à deux facteurs</value>
+    </data>
+    <data name="Settings_Account_2fa_Enable" xml:space="preserve">
+        <value>Activer l'authentification à deux facteurs</value>
+    </data>
+    <data name="Settings_Account_2fa_Disable" xml:space="preserve">
+        <value>Désactiver l'authentification à deux facteurs</value>
+    </data>
+    <data name="Settings_Account_2fa_Secret" xml:space="preserve">
+        <value>Secret</value>
+    </data>
+    <data name="Common_Url" xml:space="preserve">
+        <value>URL</value>
+    </data>
+    <data name="Settings_Account_2fa_StateButton_EnableError" xml:space="preserve">
+        <value>Échec de l'inscription</value>
+    </data>
+    <data name="Settings_Account_2fa_StateButton_EnableSuccess" xml:space="preserve">
+        <value>Authentification à deux facteurs activée !</value>
+    </data>
+    <data name="Settings_Account_2fa_StateButton_DisableSuccess" xml:space="preserve">
+        <value>Authentification à deux facteurs désactivée !</value>
+    </data>
+    <data name="Settings_Account_2fa_StateButton_DisableError" xml:space="preserve">
+        <value>Échec de la désactivation de l'authentification à deux facteurs</value>
+    </data>
+    <data name="Common_Enable" xml:space="preserve">
+        <value>Activer</value>
+    </data>
+    <data name="Common_Disable" xml:space="preserve">
+        <value>Désactiver</value>
+    </data>
+    <data name="Common_Disabled" xml:space="preserve">
+        <value>Désactivé</value>
+    </data>
+    <data name="Common_Enabled" xml:space="preserve">
+        <value>Activé</value>
+    </data>
+    <data name="Settings_Account_2fa_CodePlaceholder" xml:space="preserve">
+        <value>Code de l'application d'authentification</value>
+    </data>
+    <data name="Settings_Account_2fa_EnrolInfo" xml:space="preserve">
+        <value>Utilisez le QR code, le secret ou l'URL suivants pour ajouter votre compte à votre application d'authentification. Ensuite, saisissez le code fourni par votre application d'authentification pour terminer l'inscription.</value>
+    </data>
+    <data name="Settings_Debug" xml:space="preserve">
+        <value>Débogage</value>
+    </data>
+    <data name="Settings_Debug_Crash" xml:space="preserve">
+        <value>Forcer le plantage du client</value>
+    </data>
+    <data name="Settings_Filters" xml:space="preserve">
+        <value>Filtres</value>
+    </data>
+    <data name="Common_Name" xml:space="preserve">
+        <value>Nom</value>
+    </data>
+    <data name="Settings_Filters_ExpiresAt" xml:space="preserve">
+        <value>Expire le</value>
+    </data>
+    <data name="Settings_Filters_Keywords" xml:space="preserve">
+        <value>Mots-clés</value>
+    </data>
+    <data name="Settings_Filters_Action" xml:space="preserve">
+        <value>Action</value>
+    </data>
+    <data name="Settings_Filters_Contexts" xml:space="preserve">
+        <value>Contextes</value>
+    </data>
+    <data name="Settings_Filters_Error_NameRequired" xml:space="preserve">
+        <value>Le nom du filtre est requis.</value>
+    </data>
+    <data name="Settings_Filters_Error_KeywordsRequired" xml:space="preserve">
+        <value>Au moins 1 mot-clé est requis.</value>
+    </data>
+    <data name="Settings_Filters_KeywordInfo" xml:space="preserve">
+        <value>Entourez le mot-clé de " pour une correspondance exacte. Entourez le mot-clé de / pour une correspondance par expression régulière.</value>
+    </data>
+    <data name="Settings_Filters_RegexInfo" xml:space="preserve">
+        <value>Les mots-clés d'expression régulière complexes ralentiront votre fil. Votre filtre ne s'appliquera pas s'il prend plus de 1,5 ms à correspondre.</value>
+    </data>
+    <data name="Settings_Filters_Action_Warn" xml:space="preserve">
+        <value>Avertir</value>
+    </data>
+    <data name="Settings_Filters_Error_ContextRequired" xml:space="preserve">
+        <value>Au moins 1 contexte est requis.</value>
+    </data>
+    <data name="Settings_Filters_Context_Profiles" xml:space="preserve">
+        <value>Profils d'utilisateurs</value>
+    </data>
+    <data name="Settings_Filters_Context_Threads" xml:space="preserve">
+        <value>Fils de notes</value>
+    </data>
+    <data name="Settings_Filters_Context_Lists" xml:space="preserve">
+        <value>Listes</value>
+    </data>
+    <data name="Timeline_Home" xml:space="preserve">
+        <value>Accueil</value>
+    </data>
+    <data name="Timeline_Local" xml:space="preserve">
+        <value>Local</value>
+    </data>
+    <data name="Timeline_Social" xml:space="preserve">
+        <value>Social</value>
+    </data>
+    <data name="Timeline_Bubble" xml:space="preserve">
+        <value>Bulle</value>
+    </data>
+    <data name="Timeline_Global" xml:space="preserve">
+        <value>Global</value>
+    </data>
+    <data name="Timeline_Remote" xml:space="preserve">
+        <value>Instance distante</value>
+    </data>
+    <data name="Timeline_Tag" xml:space="preserve">
+        <value>Tag</value>
+    </data>
+    <data name="Settings_Filters_ExpiresAt_Enable" xml:space="preserve">
+        <value>Activer l'expiration du filtre</value>
+    </data>
+    <data name="Settings_Data" xml:space="preserve">
+        <value>Importer/Exporter des données</value>
+    </data>
+    <data name="Settings_Data_Blocking" xml:space="preserve">
+        <value>Utilisateurs que vous bloquez</value>
+    </data>
+    <data name="Settings_Data_Import" xml:space="preserve">
+        <value>Importer</value>
+    </data>
+    <data name="Settings_Data_Export" xml:space="preserve">
+        <value>Exporter</value>
+    </data>
+    <data name="Settings_Data_Muting" xml:space="preserve">
+        <value>Utilisateurs que vous avez ignorés</value>
+    </data>
+    <data name="Settings_Data_Following" xml:space="preserve">
+        <value>Utilisateurs que vous suivez</value>
+    </data>
+    <data name="Settings_Migration" xml:space="preserve">
+        <value>Migration</value>
+    </data>
+    <data name="Settings_Migration_MigratedNotice" xml:space="preserve">
+        <value>Ce compte a été migré vers un autre compte.</value>
+    </data>
+    <data name="Settings_Migration_GotoMigrated" xml:space="preserve">
+        <value>Aller au compte</value>
+    </data>
+    <data name="Settings_Migration_UndoWarning" xml:space="preserve">
+        <value>Annuler une migration ne transfère pas vos abonnés vers ce compte. Pour les rapatrier, vous devrez migrer manuellement vers ce compte.</value>
+    </data>
+    <data name="Settings_Migration_Undo" xml:space="preserve">
+        <value>Annuler la migration</value>
+    </data>
+    <data name="Settings_Migration_Warning" xml:space="preserve">
+        <value>La migration de votre compte ne déplacera que vos abonnés de l'ancien compte vers le nouveau. Aucune autre donnée utilisateur telle que les notes ou les favoris ne sera déplacée.</value>
+    </data>
+    <data name="Settings_Migration_MigrateToHeader" xml:space="preserve">
+        <value>Migrer le compte actuel vers un nouveau compte</value>
+    </data>
+    <data name="Settings_Migration_MigrateToWarning" xml:space="preserve">
+        <value>Assurez-vous d'avoir configuré un alias pour ce compte sur votre nouveau compte avant de migrer.</value>
+    </data>
+    <data name="Settings_Migration_StateButton_Initial" xml:space="preserve">
+        <value>Migrer</value>
+    </data>
+    <data name="Settings_Migration_AliasHeader" xml:space="preserve">
+        <value>Migrer vers ce compte depuis un ancien compte</value>
+    </data>
+    <data name="Settings_Migration_AliasWarning" xml:space="preserve">
+        <value>Ceci définira un alias de votre ancien compte afin que vous puissiez migrer depuis cet ancien compte vers celui-ci. Faites cela AVANT de migrer depuis votre ancien compte.</value>
+    </data>
+    <data name="Common_Remove" xml:space="preserve">
+        <value>Retirer</value>
+    </data>
+    <data name="Settings_Profile" xml:space="preserve">
+        <value>Profil</value>
+    </data>
+    <data name="Settings_Profile_BannerAlt" xml:space="preserve">
+        <value>Définir le texte alternatif de votre bannière</value>
+    </data>
+    <data name="Settings_Profile_NewBannerAlt" xml:space="preserve">
+        <value>Définir le texte alternatif de votre nouvelle bannière</value>
+    </data>
+    <data name="Common_AltText" xml:space="preserve">
+        <value>Texte alternatif</value>
+    </data>
+    <data name="Settings_Profile_NewAvatarAlt" xml:space="preserve">
+        <value>Définir le texte alternatif de votre nouvel avatar</value>
+    </data>
+    <data name="Settings_Profile_AvatarAlt" xml:space="preserve">
+        <value>Définir le texte alternatif de votre avatar</value>
+    </data>
+    <data name="User_DisplayName" xml:space="preserve">
+        <value>Nom d'affichage</value>
+    </data>
+    <data name="User_Birthday" xml:space="preserve">
+        <value>Date de naissance</value>
+    </data>
+    <data name="User_Location" xml:space="preserve">
+        <value>Localisation</value>
+    </data>
+    <data name="User_Pronouns" xml:space="preserve">
+        <value>Pronoms</value>
+    </data>
+    <data name="Settings_Profile_Fields" xml:space="preserve">
+        <value>Champs du profil</value>
+    </data>
+    <data name="Common_Value" xml:space="preserve">
+        <value>Valeur</value>
+    </data>
+    <data name="Common_Other" xml:space="preserve">
+        <value>Autre</value>
+    </data>
+    <data name="Settings_Profile_IsBot" xml:space="preserve">
+        <value>Marquer comme compte automatisé (bot)</value>
+    </data>
+    <data name="Settings_Profile_IsCat" xml:space="preserve">
+        <value>Marquer comme chat</value>
+    </data>
+    <data name="Settings_Profile_SpeakAsCat" xml:space="preserve">
+        <value>Parler comme un chat</value>
+    </data>
+    <data name="User_Bio" xml:space="preserve">
+        <value>Biographie</value>
+    </data>
+    <data name="Settings_Profile_IsBotWarning" xml:space="preserve">
+        <value>Marquer votre compte comme automatisé est une fonctionnalité d'accessibilité. L'activer pour des comptes non automatisés peut compromettre votre capacité à interagir avec des comptes automatisés ou masquer vos notes pour certains utilisateurs.</value>
+    </data>
+    <data name="User" xml:space="preserve">
+        <value>Utilisateur</value>
+    </data>
+    <data name="Settings_External_ApiReference" xml:space="preserve">
+        <value>Référence API</value>
+    </data>
+    <data name="Moderation" xml:space="preserve">
+        <value>Modération</value>
+    </data>
+    <data name="Moderation_Announcements" xml:space="preserve">
+        <value>Gérer les annonces</value>
+    </data>
+    <data name="Common_New" xml:space="preserve">
+        <value>Nouveau</value>
+    </data>
+    <data name="Announcements" xml:space="preserve">
+        <value>Annonces</value>
+    </data>
+    <data name="Announcements_Empty" xml:space="preserve">
+        <value>Aucune annonce n'a été faite.</value>
+    </data>
+    <data name="Announcement" xml:space="preserve">
+        <value>Annonce</value>
+    </data>
+    <data name="Moderation_Announcements_StateButton_Initial" xml:space="preserve">
+        <value>Annoncer</value>
+    </data>
+    <data name="Moderation_Announcements_Title" xml:space="preserve">
+        <value>Titre</value>
+    </data>
+    <data name="Moderation_Announcements_Image_Add" xml:space="preserve">
+        <value>Téléverser une image</value>
+    </data>
+    <data name="Moderation_Announcements_Image_Remove" xml:space="preserve">
+        <value>Retirer l'image</value>
+    </data>
+    <data name="Moderation_Announcements_Popup" xml:space="preserve">
+        <value>Afficher une fenêtre contextuelle</value>
+    </data>
+    <data name="Moderation_Announcements_TogglePreview" xml:space="preserve">
+        <value>Voir l'aperçu</value>
+    </data>
+    <data name="Announcement_Date_CreatedAt_UpdatedAt" xml:space="preserve">
+        <value>Annoncé le {0} - Modifié le {1}</value>
+    </data>
+    <data name="Moderation_Announcements_ReadCount" xml:space="preserve">
+        <value>Utilisateurs ayant lu : {0}/{1}</value>
+    </data>
+    <data name="Moderation_Announcements_DeleteDialog_Question" xml:space="preserve">
+        <value>Supprimer l'annonce ?</value>
+    </data>
+    <data name="Moderation_Overview" xml:space="preserve">
+        <value>Vue d'ensemble</value>
+    </data>
+    <data name="Moderation_Emojis" xml:space="preserve">
+        <value>Emojis personnalisés</value>
+    </data>
+    <data name="Moderation_Emojis_SetCategory" xml:space="preserve">
+        <value>Définir la catégorie</value>
+    </data>
+    <data name="Moderation_Emojis_SetLicense" xml:space="preserve">
+        <value>Définir la licence</value>
+    </data>
+    <data name="Moderation_Emojis_Select_Single" xml:space="preserve">
+        <value>Sélection unique</value>
+    </data>
+    <data name="Moderation_Emojis_Select_Multiple" xml:space="preserve">
+        <value>Sélection multiple</value>
+    </data>
+    <data name="Moderation_Emojis_ImportPack" xml:space="preserve">
+        <value>Importer un pack</value>
+    </data>
+    <data name="Search" xml:space="preserve">
+        <value>Rechercher</value>
+    </data>
+    <data name="Moderation_Emojis_Empty" xml:space="preserve">
+        <value>Aucun emoji trouvé.</value>
+    </data>
+    <data name="Moderation_Emojis_MultiCategoryDialog_Text" xml:space="preserve">
+        <value>Définir la catégorie pour {0} emojis</value>
+    </data>
+    <data name="Moderation_Emojis_MultiLicenseDialog_Text" xml:space="preserve">
+        <value>Définir la licence pour {0} emojis</value>
+    </data>
+    <data name="Moderation_Emojis_MultiDeleteDialog_Question" xml:space="preserve">
+        <value>Supprimer {0} emojis ?</value>
+    </data>
+    <data name="Moderation_Emojis_UploadDialog_Prompt" xml:space="preserve">
+        <value>Définir le nom de l'emoji</value>
+    </data>
+    <data name="Moderation_Emojis_UploadDialog_SuccessNotice" xml:space="preserve">
+        <value>{0} téléversé avec succès</value>
+    </data>
+    <data name="Moderation_Emojis_ImportDialog_Question" xml:space="preserve">
+        <value>Importer {0} ?</value>
+    </data>
+    <data name="Moderation_Emojis_ImportDialog_SuccessNotice" xml:space="preserve">
+        <value>Pack d'emojis importé avec succès</value>
+    </data>
+    <data name="Moderation_Emojis_Remote" xml:space="preserve">
+        <value>Emojis distants</value>
+    </data>
+    <data name="Moderation_Emojis_Clone" xml:space="preserve">
+        <value>Cloner</value>
+    </data>
+    <data name="Moderation_Emojis_SetTags" xml:space="preserve">
+        <value>Définir les tags</value>
+    </data>
+    <data name="Moderation_Emojis_CloneDialog_Question_Name_Host" xml:space="preserve">
+        <value>Cloner {0} depuis {1} ?</value>
+    </data>
+    <data name="Moderation_Emojis_CloneDialog_SuccessNotice_Name_Host" xml:space="preserve">
+        <value>{0} cloné depuis {1}</value>
+    </data>
+    <data name="Moderation_Emojis_TagsDialog_Prompt" xml:space="preserve">
+        <value>Définir les tags (séparés par une nouvelle ligne)</value>
+    </data>
+    <data name="Moderation_Emojis_SingleDeleteDialog_Question" xml:space="preserve">
+        <value>Supprimer {0} ?</value>
+    </data>
+    <data name="Moderation_Reports" xml:space="preserve">
+        <value>Signalements</value>
+    </data>
+    <data name="Moderation_Reports_Resolved" xml:space="preserve">
+        <value>Résolu</value>
+    </data>
+    <data name="Moderation_Reports_Unresolved" xml:space="preserve">
+        <value>Non résolu</value>
+    </data>
+    <data name="Moderation_Reports_ByLabel" xml:space="preserve">
+        <value>Signalé par {0}</value>
+    </data>
+    <data name="Moderation_Reports_Forwarded_Host" xml:space="preserve">
+        <value>Transféré à {0}</value>
+    </data>
+    <data name="Moderation_Reports_NoteCount" xml:space="preserve">
+        <value>{0} notes</value>
+    </data>
+    <data name="Moderation_Reports_RuleCount" xml:space="preserve">
+        <value>{0} règles enfreintes</value>
+    </data>
+    <data name="Moderation_Reports_Empty" xml:space="preserve">
+        <value>Aucun signalement trouvé.</value>
+    </data>
+    <data name="Moderation_Report_From" xml:space="preserve">
+        <value>Signalement de {0}</value>
+    </data>
+    <data name="Moderation_Reports_InstanceName" xml:space="preserve">
+        <value>Nom de l'instance</value>
+    </data>
+    <data name="Moderation_Reports_InstanceName_Host" xml:space="preserve">
+        <value>{0} ({1})</value>
+    </data>
+    <data name="Moderation_Reports_TargetCreatedAt" xml:space="preserve">
+        <value>Compte créé le</value>
+    </data>
+    <data name="Moderation_Reports_TargetActiveAt" xml:space="preserve">
+        <value>Dernière activité le</value>
+    </data>
+    <data name="Moderation_Reports_FromRemote" xml:space="preserve">
+        <value>Signalement depuis une instance distante ({0})</value>
+    </data>
+    <data name="Moderation_Reports_Actions" xml:space="preserve">
+        <value>Actions</value>
+    </data>
+    <data name="Moderation_Reports_TargetSuspended" xml:space="preserve">
+        <value>{0} est suspendu</value>
+    </data>
+    <data name="Moderation_Reports_ResolvedBy_Username" xml:space="preserve">
+        <value>Résolu par {0}</value>
+    </data>
+    <data name="Moderation_Reports_MarkResolved" xml:space="preserve">
+        <value>Marquer comme résolu</value>
+    </data>
+    <data name="Moderation_Reports_SuspendTarget" xml:space="preserve">
+        <value>Suspendre l'utilisateur</value>
+    </data>
+    <data name="Moderation_Reports_ForwardDialog_Question" xml:space="preserve">
+        <value>Transférer le signalement ?</value>
+    </data>
+    <data name="Moderation_Reports_ResolveDialog_Question" xml:space="preserve">
+        <value>Résoudre le signalement ?</value>
+    </data>
+    <data name="Moderation_Reports_SuspendDialog_Question" xml:space="preserve">
+        <value>Suspendre {0} ?</value>
+    </data>
+    <data name="Moderation_Reports_DeleteDialog_Question" xml:space="preserve">
+        <value>Supprimer le signalement ?</value>
+    </data>
+    <data name="Auth_Login" xml:space="preserve">
+        <value>Connexion</value>
+    </data>
+    <data name="Auth_Login_Header" xml:space="preserve">
+        <value>Connexion à {0}</value>
+    </data>
+    <data name="Auth_Password" xml:space="preserve">
+        <value>Mot de passe</value>
+    </data>
+    <data name="Auth_Login_Sessions" xml:space="preserve">
+        <value>Sessions existantes</value>
+    </data>
+    <data name="Preferences_ResetCustomCss" xml:space="preserve">
+        <value>Réinitialiser le CSS personnalisé</value>
+    </data>
+    <data name="Auth_Login_Error" xml:space="preserve">
+        <value>Échec de la connexion.</value>
+    </data>
+    <data name="Auth_Login_SwitchToRegister" xml:space="preserve">
+        <value>Créer un nouveau compte</value>
+    </data>
+    <data name="Auth_Register" xml:space="preserve">
+        <value>S'inscrire</value>
+    </data>
+    <data name="Auth_Register_Header" xml:space="preserve">
+        <value>Inscription sur {0}</value>
+    </data>
+    <data name="Auth_Register_RulesNotice" xml:space="preserve">
+        <value>Pour vous inscrire, vous devez accepter les règles suivantes :</value>
+    </data>
+    <data name="Auth_Register_RulesAccept" xml:space="preserve">
+        <value>Accepter</value>
+    </data>
+    <data name="Auth_Register_Invite" xml:space="preserve">
+        <value>Code d'invitation</value>
+    </data>
+    <data name="StateButton_Retry" xml:space="preserve">
+        <value>Réessayer</value>
+    </data>
+    <data name="StateButton_Success" xml:space="preserve">
+        <value>Succès</value>
+    </data>
+    <data name="Auth_Registration_ClosedNotice" xml:space="preserve">
+        <value>Les inscriptions pour cette instance sont fermées.</value>
+    </data>
+    <data name="Auth_Register_SwitchToLogin" xml:space="preserve">
+        <value>Se connecter à un compte existant</value>
+    </data>
+    <data name="Auth_Registration_Error_FieldsRequired" xml:space="preserve">
+        <value>Veuillez remplir tous les champs.</value>
+    </data>
+    <data name="Auth_Logout" xml:space="preserve">
+        <value>Déconnexion</value>
+    </data>
+    <data name="Auth_SwitchAccount" xml:space="preserve">
+        <value>Changer de compte</value>
+    </data>
+    <data name="ErrorUi_UnhandledExceptionWarning" xml:space="preserve">
+        <value>Une exception non gérée s'est produite</value>
+    </data>
+    <data name="ErrorUi_JoinSupportChat" xml:space="preserve">
+        <value>Si ce problème survient plus d'une fois, rejoignez notre salon d'assistance à :</value>
+    </data>
+    <data name="ErrorUi_StackTrace" xml:space="preserve">
+        <value>Fournir la trace de pile et les informations de version ci-dessous facilitera le débogage.</value>
+    </data>
+    <data name="ErrorUi_Reload" xml:space="preserve">
+        <value>Recharger le client</value>
+    </data>
+    <data name="ErrorUi_DownloadLogs" xml:space="preserve">
+        <value>Télécharger les journaux</value>
+    </data>
+    <data name="ErrorUi_ClearData" xml:space="preserve">
+        <value>Réinitialiser les données locales</value>
+    </data>
+    <data name="Error_PageNotFound" xml:space="preserve">
+        <value>Page introuvable</value>
+    </data>
+    <data name="Error_NotFound_Notice" xml:space="preserve">
+        <value>Cette page n'existe pas ou vous n'y avez pas accès.</value>
+    </data>
+    <data name="Common_GoHome" xml:space="preserve">
+        <value>Retour à l'accueil</value>
+    </data>
+    <data name="Compose_RemoveAttachmentDialog_Question" xml:space="preserve">
+        <value>Retirer la pièce jointe ?</value>
+    </data>
+    <data name="User_BannerAltFallback" xml:space="preserve">
+        <value>Bannière de {0}</value>
+    </data>
+    <data name="User_AvatarAltFallback" xml:space="preserve">
+        <value>Avatar de {0}</value>
+    </data>
+    <data name="User_PinnedNotes" xml:space="preserve">
+        <value>Notes épinglées</value>
+    </data>
+    <data name="User_PinnedNotesSkip" xml:space="preserve">
+        <value>Passer</value>
+    </data>
+    <data name="User_LatestNotes" xml:space="preserve">
+        <value>Dernières notes</value>
+    </data>
+    <data name="User_Badge_ModeratorRole" xml:space="preserve">
+        <value>Modérateur</value>
+    </data>
+    <data name="User_Badge_AdminRole" xml:space="preserve">
+        <value>Administrateur</value>
+    </data>
+    <data name="User_Badge_IsBot" xml:space="preserve">
+        <value>Automatisé</value>
+    </data>
+    <data name="User_Badge_IsLocked" xml:space="preserve">
+        <value>Verrouillé</value>
+    </data>
+    <data name="User_Menu_EditProfile" xml:space="preserve">
+        <value>Modifier le profil</value>
+    </data>
+    <data name="User_Menu_CopyUsername" xml:space="preserve">
+        <value>Copier le nom d'utilisateur</value>
+    </data>
+    <data name="User_Menu_CopyFeed_Atom" xml:space="preserve">
+        <value>Copier le lien du flux Atom</value>
+    </data>
+    <data name="User_Menu_CopyFeed_Json" xml:space="preserve">
+        <value>Copier le lien du flux JSON</value>
+    </data>
+    <data name="User_Menu_CopyFeed_Rss" xml:space="preserve">
+        <value>Copier le lien du flux RSS</value>
+    </data>
+    <data name="User_Menu_Mute_Add" xml:space="preserve">
+        <value>Ignorer</value>
+    </data>
+    <data name="User_Menu_Mute_Remove" xml:space="preserve">
+        <value>Ne plus ignorer</value>
+    </data>
+    <data name="User_Menu_Mute_AddTemporary" xml:space="preserve">
+        <value>Ignorer temporairement</value>
+    </data>
+    <data name="User_Menu_MuteRenotes_Add" xml:space="preserve">
+        <value>Ignorer les boosts</value>
+    </data>
+    <data name="User_Menu_MuteRenotes_Remove" xml:space="preserve">
+        <value>Ne plus ignorer les boosts</value>
+    </data>
+    <data name="User_Menu_RemoveFollower" xml:space="preserve">
+        <value>Retirer l'abonné</value>
+    </data>
+    <data name="User_Menu_Block_Add" xml:space="preserve">
+        <value>Bloquer</value>
+    </data>
+    <data name="User_Menu_Block_Remove" xml:space="preserve">
+        <value>Débloquer</value>
+    </data>
+    <data name="User_Memo" xml:space="preserve">
+        <value>Mémo privé</value>
+    </data>
+    <data name="User_Following" xml:space="preserve">
+        <value>Abonnements</value>
+    </data>
+    <data name="User_Followers" xml:space="preserve">
+        <value>Abonnés</value>
+    </data>
+    <data name="User_BiteDialog_Notice" xml:space="preserve">
+        <value>A mordu {0}</value>
+    </data>
+    <data name="User_RemoveFollowerDialog_Notice" xml:space="preserve">
+        <value>{0} retiré des abonnés</value>
+    </data>
+    <data name="User_RemoveFollowerDialog_Question" xml:space="preserve">
+        <value>Retirer {0} des abonnés ?</value>
+    </data>
+    <data name="User_MuteDialog_Question" xml:space="preserve">
+        <value>Ignorer {0} ?</value>
+    </data>
+    <data name="User_MuteDialog_Notice" xml:space="preserve">
+        <value>{0} ignoré</value>
+    </data>
+    <data name="User_UnmuteDialog_Question" xml:space="preserve">
+        <value>Ne plus ignorer {0} ?</value>
+    </data>
+    <data name="User_UnmuteDialog_Notice" xml:space="preserve">
+        <value>{0} n'est plus ignoré</value>
+    </data>
+    <data name="User_MuteRenotesDialog_Question" xml:space="preserve">
+        <value>Ignorer les boosts de {0} ?</value>
+    </data>
+    <data name="User_MuteRenotesDialog_Notice" xml:space="preserve">
+        <value>Boosts de {0} ignorés</value>
+    </data>
+    <data name="User_UnmuteRenotesDialog_Question" xml:space="preserve">
+        <value>Ne plus ignorer les boosts de {0} ?</value>
+    </data>
+    <data name="User_UnmuteRenotesDialog_Notice" xml:space="preserve">
+        <value>Boosts de {0} non ignorés</value>
+    </data>
+    <data name="User_BlockDialog_Question" xml:space="preserve">
+        <value>Bloquer {0} ?</value>
+    </data>
+    <data name="User_BlockDialog_Notice" xml:space="preserve">
+        <value>{0} bloqué</value>
+    </data>
+    <data name="User_UnblockDialog_Question" xml:space="preserve">
+        <value>Débloquer {0} ?</value>
+    </data>
+    <data name="User_UnblockDialog_Notice" xml:space="preserve">
+        <value>{0} débloqué</value>
+    </data>
+    <data name="User_RefetchDialog_Question" xml:space="preserve">
+        <value>Recharger le profil de {0} ?</value>
+    </data>
+    <data name="User_RefetchDialog_Notice" xml:space="preserve">
+        <value>Profil de {0} rechargé avec succès</value>
+    </data>
+    <data name="Note_RefetchDialog_Question" xml:space="preserve">
+        <value>Recharger la note ?</value>
+    </data>
+    <data name="Note_ByLabel" xml:space="preserve">
+        <value>Note de {0}</value>
+    </data>
+    <data name="Note_ReplyCount" xml:space="preserve">
+        <value>Réponses ({0})</value>
+    </data>
+    <data name="Note_LikeCount" xml:space="preserve">
+        <value>J'aime ({0})</value>
+    </data>
+    <data name="Note_RenoteCount" xml:space="preserve">
+        <value>Boosts ({0})</value>
+    </data>
+    <data name="Note_ReactionCount" xml:space="preserve">
+        <value>Réactions ({0})</value>
+    </data>
+    <data name="Note_Quotes" xml:space="preserve">
+        <value>Citations</value>
+    </data>
+    <data name="Note_Empty" xml:space="preserve">
+        <value>Cette note a été supprimée ou vous n'avez pas la permission de la voir.</value>
+    </data>
+    <data name="Note_Error" xml:space="preserve">
+        <value>Une erreur s'est produite lors du chargement des notes. Veuillez consulter les journaux.</value>
+    </data>
+    <data name="Timeline_Remote_Host" xml:space="preserve">
+        <value>Distant : {0}</value>
+    </data>
+    <data name="Timeline_Tag_Name" xml:space="preserve">
+        <value>Tag : #{0}</value>
+    </data>
+    <data name="Common_Bookmarks" xml:space="preserve">
+        <value>Favoris</value>
+    </data>
+    <data name="Search_Advanced" xml:space="preserve">
+        <value>Recherche avancée</value>
+    </data>
+    <data name="Common_Likes" xml:space="preserve">
+        <value>J'aime</value>
+    </data>
+    <data name="Common_Reactions" xml:space="preserve">
+        <value>Réactions</value>
+    </data>
+    <data name="Common_Interactions" xml:space="preserve">
+        <value>Interactions</value>
+    </data>
+    <data name="Drive_Entry_Media" xml:space="preserve">
+        <value>Média</value>
+    </data>
+    <data name="Drive_Entry_Audio" xml:space="preserve">
+        <value>Audio</value>
+    </data>
+    <data name="Drive_Entry_Image" xml:space="preserve">
+        <value>Image</value>
+    </data>
+    <data name="Drive_Entry_Video" xml:space="preserve">
+        <value>Vidéo</value>
+    </data>
+    <data name="Search_Advanced_Filter_In" xml:space="preserve">
+        <value>Note dans</value>
+    </data>
+    <data name="Search_Advanced_Filter_Has" xml:space="preserve">
+        <value>La note contient</value>
+    </data>
+    <data name="Drive_Entry_File" xml:space="preserve">
+        <value>Fichier</value>
+    </data>
+    <data name="Drive_Entry_Folder" xml:space="preserve">
+        <value>Dossier</value>
+    </data>
+    <data name="Search_Advanced_Filter_From" xml:space="preserve">
+        <value>De l'utilisateur</value>
+    </data>
+    <data name="Search_Advanced_Filter_Instance" xml:space="preserve">
+        <value>Depuis l'instance</value>
+    </data>
+    <data name="Search_Advanced_Filter_Mentions" xml:space="preserve">
+        <value>Mentions</value>
+    </data>
+    <data name="Search_Advanced_Filter_Reply" xml:space="preserve">
+        <value>En réponse à</value>
+    </data>
+    <data name="Search_Advanced_Filter_Before" xml:space="preserve">
+        <value>Publié avant - inclus</value>
+    </data>
+    <data name="Search_Advanced_Filter_After" xml:space="preserve">
+        <value>Publié après - exclusif</value>
+    </data>
+    <data name="Search_Advanced_MoreFilters" xml:space="preserve">
+        <value>Plus de filtres de recherche</value>
+    </data>
+    <data name="FollowRequests" xml:space="preserve">
+        <value>Demandes d'abonnement</value>
+    </data>
+    <data name="FollowRequests_Outgoing" xml:space="preserve">
+        <value>Demandes d'abonnement envoyées</value>
+    </data>
+    <data name="FollowRequests_SwitchToOutgoing" xml:space="preserve">
+        <value>Envoyées</value>
+    </data>
+    <data name="FollowRequests_SwitchToIncoming" xml:space="preserve">
+        <value>Reçues</value>
+    </data>
+    <data name="FollowRequests_Empty" xml:space="preserve">
+        <value>Aucune demande d'abonnement trouvée.</value>
+    </data>
+    <data name="Settings_Account_Error_ConfirmPassword" xml:space="preserve">
+        <value>La confirmation du mot de passe ne correspond pas au nouveau mot de passe.</value>
+    </data>
+    <data name="Common_ShowMore" xml:space="preserve">
+        <value>Afficher plus</value>
+    </data>
+    <data name="Common_ShowLess" xml:space="preserve">
+        <value>Afficher moins</value>
+    </data>
+    <data name="Note_OpenQuote" xml:space="preserve">
+        <value>Cliquer pour ouvrir la note citée</value>
+    </data>
+    <data name="Note_QuoteInaccessible" xml:space="preserve">
+        <value>La note citée est indisponible</value>
+    </data>
+    <data name="AboutPage_NoteResponse" xml:space="preserve">
+        <value>Réponse de la note</value>
+    </data>
+    <data name="AboutPage_UserResponse" xml:space="preserve">
+        <value>Réponse de l'utilisateur</value>
+    </data>
+    <data name="AboutPage_ProfileResponse" xml:space="preserve">
+        <value>Réponse du profil</value>
+    </data>
+    <data name="AboutPage_Activity" xml:space="preserve">
+        <value>Activité</value>
+    </data>
+    <data name="Timeline_Empty" xml:space="preserve">
+        <value>Rien ici pour l'instant !</value>
+    </data>
+    <data name="User_RemoteBannerNotice" xml:space="preserve">
+        <value>Les informations des utilisateurs distants peuvent être incomplètes.</value>
+    </data>
+    <data name="FollowRequest_SentAt" xml:space="preserve">
+        <value>Envoyée le {0}</value>
+    </data>
+    <data name="FollowRequest_ReceivedAt" xml:space="preserve">
+        <value>Reçue le {0}</value>
+    </data>
+    <data name="FollowRequest_Accept" xml:space="preserve">
+        <value>Accepter</value>
+    </data>
+    <data name="FollowRequest_AcceptFollowBack" xml:space="preserve">
+        <value>Accepter et s'abonner en retour</value>
+    </data>
+    <data name="FollowRequest_Decline" xml:space="preserve">
+        <value>Refuser</value>
+    </data>
+    <data name="Streaming_Connected" xml:space="preserve">
+        <value>Connecté</value>
+    </data>
+    <data name="Streaming_Disconnected" xml:space="preserve">
+        <value>Déconnecté</value>
+    </data>
+    <data name="Streaming_Connecting" xml:space="preserve">
+        <value>Connexion en cours</value>
+    </data>
+    <data name="Streaming_Reconnecting" xml:space="preserve">
+        <value>Reconnexion en cours</value>
+    </data>
+    <data name="Moderation_External_AdminDashboard" xml:space="preserve">
+        <value>Tableau de bord administrateur</value>
+    </data>
+    <data name="Moderation_External_QueueDashboard" xml:space="preserve">
+        <value>Tableau de bord des files d'attente</value>
+    </data>
+    <data name="User_FollowButton_Follow" xml:space="preserve">
+        <value>Suivre</value>
+    </data>
+    <data name="User_FollowButton_Unfollow" xml:space="preserve">
+        <value>Ne plus suivre</value>
+    </data>
+    <data name="User_FollowButton_FollowBack" xml:space="preserve">
+        <value>Suivre en retour</value>
+    </data>
+    <data name="User_FollowButton_Cancel" xml:space="preserve">
+        <value>Annuler la demande</value>
+    </data>
+    <data name="Announcements_Count" xml:space="preserve">
+        <value>Annonces ({0}/{1})</value>
+    </data>
+    <data name="Common_Previous" xml:space="preserve">
+        <value>Précédent</value>
+    </data>
+    <data name="Common_Next" xml:space="preserve">
+        <value>Suivant</value>
+    </data>
+    <data name="Instance_Rules" xml:space="preserve">
+        <value>Règles</value>
+    </data>
+    <data name="Settings_Account_ChangePasswordDialog_Notice" xml:space="preserve">
+        <value>Mot de passe modifié avec succès</value>
+    </data>
+    <data name="Banner_MoreCount" xml:space="preserve">
+        <value>et {0} de plus</value>
+    </data>
+    <data name="Common_ScrollTop" xml:space="preserve">
+        <value>Haut de page</value>
+    </data>
+    <data name="Moderation_Emojis_Uncategorized" xml:space="preserve">
+        <value>Non catégorisé</value>
+    </data>
+    <data name="User_Badge_FollowedBy" xml:space="preserve">
+        <value>Vous suit</value>
     </data>
 </root>
