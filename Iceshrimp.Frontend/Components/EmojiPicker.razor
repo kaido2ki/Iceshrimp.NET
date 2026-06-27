@@ -7,10 +7,10 @@
 
 <div @ref="Popover" class="emoji-picker" popover="auto">
     <input @bind="EmojiFilter" @bind:event="oninput" @bind:after="FilterEmojis" class="search" type="text" placeholder="Search" aria-label="search"/>
-    @foreach (var category in Categories)
+    @foreach (var category in CustomCategories)
     {
         <details open>
-            <summary aria-label="category">@category.Category</summary>
+            <summary aria-label="category">@category.Name</summary>
             <div class="emoji-list">
                 @foreach (var emoji in category.Emojis)
                 {
@@ -28,8 +28,10 @@
     private EventCallback<EmojiResponse> OnEmojiSelect { get; set; }
     private ElementReference             Popover       { get; set; }
 
-    private string                               EmojiFilter { get; set; } = "";
-    private List<(string Category, List<EmojiResponse> Emojis)> Categories  { get; set; } = [];
+    private string              EmojiFilter      { get; set; } = "";
+    private List<EmojiCategory> CustomCategories { get; set; } = [];
+
+    private record EmojiCategory(string Name, List<EmojiResponse> Emojis);
 
     private async Task Select(EmojiResponse emoji)
     {
@@ -60,14 +62,14 @@
 
     private void FilterEmojis()
     {
-        Categories = EmojiService.Emojis?
-            .Where(p => FilterName(p) || p.Tags.Count(a => a.Contains(EmojiFilter.StripLeadingTrailingSpaces())) != 0)
-            .OrderBy(p => p.Name)
-            .ThenBy(p => p.Id)
-            .GroupBy(p => p.Category)
-            .OrderBy(p => p.Key == null)
-            .ThenBy(p => p.Key)
-            .Select(p => (p.Key ?? Loc[L.Common_Other], p.ToList()))
-            .ToList() ?? [];
+        CustomCategories = EmojiService.Emojis?
+                           .Where(p => FilterName(p) || p.Tags.Count(a => a.Contains(EmojiFilter.StripLeadingTrailingSpaces())) != 0)
+                           .OrderBy(p => p.Name)
+                           .ThenBy(p => p.Id)
+                           .GroupBy(p => p.Category)
+                           .OrderBy(p => p.Key == null)
+                           .ThenBy(p => p.Key)
+                           .Select(p => new EmojiCategory(p.Key ?? Loc[L.Common_Other], p.ToList()))
+                           .ToList() ?? [];
     }
 }
