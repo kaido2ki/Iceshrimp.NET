@@ -1,4 +1,5 @@
 @using Iceshrimp.Assets.Emoji
+@using Iceshrimp.Assets.PhosphorIcons
 @using Iceshrimp.Frontend.Core.Services
 @using Iceshrimp.Shared.Schemas.Web
 @inject EmojiService                   EmojiService
@@ -7,67 +8,69 @@
 @inject MetadataService                Meta;
 
 <div @ref="Popover" class="emoji-picker" popover="auto">
-    <input @bind="EmojiFilter" @bind:event="oninput" @bind:after="FilterEmojis" class="search" type="text" placeholder="Search" aria-label="search"/>
-    @if (CustomCategories.Count != 0)
-    {
-        <p>@InstanceName</p>
-    }
-    @foreach (var category in CustomCategories)
-    {
-        <details open>
-            <summary aria-label="category">@category.Name</summary>
-            <div class="emoji-list">
-                @foreach (var emoji in category.Emojis)
-                {
-                    <div @onclick="() => Select(emoji)" class="emoji" title=":@emoji.Name:">
-                        <InlineEmoji Name="@emoji.Name" Url="@emoji.PublicUrl" Size="2rem"/>
-                    </div>
-                }
-            </div>
-        </details>
-    }
-    @if (UnicodeCategories.Count != 0)
-    {
-        @if (ShowSkinTonePicker)
+    <div class="controls">
+        <button class="close" @onclick="Close"><Icon Name="Icons.X"/></button>
+        <input @bind="EmojiFilter" @bind:event="oninput" @bind:after="FilterEmojis" class="search" type="text" placeholder="Search" aria-label="search"/>
+    </div>
+    <div class="scroller">
+        <div class="header">@InstanceName</div>
+        @foreach (var category in CustomCategories)
         {
-            <div class="skin-tone-picker">
-                <button @onclick="() => SetSkinTone(null)">👋</button>
-                @foreach (var skinTone in Emoji.SkinTones)
-                {
-                    <button @onclick="() => SetSkinTone(skinTone)">
-                        @("👋" + skinTone)
+            <details open>
+                <summary aria-label="category">@category.Name</summary>
+                <div class="emoji-list">
+                    @foreach (var emoji in category.Emojis)
+                    {
+                        <div @onclick="() => Select(emoji)" class="emoji" title=":@emoji.Name:">
+                            <InlineEmoji Name="@emoji.Name" Url="@emoji.PublicUrl" Size="2rem"/>
+                        </div>
+                    }
+                </div>
+            </details>
+        }
+        @if (UnicodeCategories.Count != 0)
+        {
+            @if (ShowSkinTonePicker)
+            {
+                <div class="header skin-tone-picker open">
+                    <button @onclick="() => SetSkinTone(null)">👋</button>
+                    @foreach (var skinTone in Emoji.SkinTones)
+                    {
+                        <button @onclick="() => SetSkinTone(skinTone)">
+                            @("👋" + skinTone)
+                        </button>
+                    }
+                </div>
+            }
+            else
+            {
+                <div class="header skin-tone-picker">
+                    <button @onclick="() => { ShowSkinTonePicker = true; }">
+                        @("👋" + SkinTone)
                     </button>
-                }
-            </div>
+                    Unicode
+                </div>
+            }
         }
-        else
+        @foreach (var category in UnicodeCategories)
         {
-            <div class="skin-tone-picker">
-                <button @onclick="() => { ShowSkinTonePicker = true; }">
-                    @("👋" + SkinTone)
-                </button>
-                Unicode
-            </div>
+            <details open>
+                <summary aria-label="category">@category.Name</summary>
+                <div class="emoji-list">
+                    @foreach (var emoji in category.Emojis)
+                    {
+                        <div @onclick="() => Select(emoji.Name)" class="emoji" title="@emoji.License">
+                            <InlineEmoji Name="@emoji.Name" Url="@null" Size="2rem"/>
+                        </div>
+                    }
+                </div>
+            </details>
         }
-    }
-    @foreach (var category in UnicodeCategories)
-    {
-        <details open>
-            <summary aria-label="category">@category.Name</summary>
-            <div class="emoji-list">
-                @foreach (var emoji in category.Emojis)
-                {
-                    <div @onclick="() => Select(emoji.Name)" class="emoji" title="@emoji.License">
-                        <InlineEmoji Name="@emoji.Name" Url="@null" Size="2rem"/>
-                    </div>
-                }
-            </div>
-        </details>
-    }
-    @if (CustomCategories.Count == 0 && UnicodeCategories.Count == 0)
-    {
-        <i>@Loc[L.Emojis_Empty]</i>
-    }
+        @if (CustomCategories.Count == 0 && UnicodeCategories.Count == 0)
+        {
+            <i class="header">@Loc[L.Emojis_Empty]</i>
+        }
+    </div>
 </div>
 
 
