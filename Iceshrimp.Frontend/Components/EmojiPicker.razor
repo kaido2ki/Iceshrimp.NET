@@ -127,16 +127,15 @@
 
     private void UpdateRecents(EmojiResponse emoji)
     {
-        if (Preferences.RecentEmojis.Find(p => (emoji.Slug != null && p.Slug == emoji.Slug) || p.Name == emoji.Name) is { } r)
-        {
-            Preferences.RecentEmojis.Remove(r);
-        }
-        else if (Preferences.RecentEmojis.Count >= 10)
+        // Add/move emoji to start of list
+        Preferences.RecentEmojis.RemoveAll(p => (emoji.Slug != null && p.Slug == emoji.Slug) || p.Name == emoji.Name);
+        Preferences.RecentEmojis.Insert(0, emoji);
+
+        // Make sure list isn't too long
+        while (Preferences.RecentEmojis.Count > 8)
         {
             Preferences.RecentEmojis.RemoveAt(Preferences.RecentEmojis.Count - 1);
         }
-
-        Preferences.RecentEmojis.Insert(0, emoji);
     }
 
     private async Task Select(EmojiResponse emoji)
