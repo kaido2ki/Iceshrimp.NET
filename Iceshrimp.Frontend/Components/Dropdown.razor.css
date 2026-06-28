@@ -1,13 +1,14 @@
 .dropdown-menu {
-    position: absolute;
-    top: 2.5rem;
-    left: 1.25rem;
+    margin: 0;
+    inset: auto;
+    position-area: bottom center;
     background-color: var(--background-color);
     padding: 0.5rem;
     border-color: var(--border-color);
     border-style: solid;
     border-width: 0.1rem;
     border-radius: 0.5rem;
+    box-shadow: 0 0 1rem black;
 }
 
 .dropdown-root {
@@ -17,6 +18,7 @@
     line-height: 1;
     cursor: pointer;
     border-radius: 8px;
+    background-color: unset;
 }
 
 .dropdown-root:hover {

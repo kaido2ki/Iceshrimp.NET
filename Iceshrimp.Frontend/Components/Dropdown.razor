@@ -1,22 +1,25 @@
+@using Iceshrimp.Frontend.Core.Services
 @typeparam TBind
+@inject JsService Js;
 
-<div @onclick="Toggle" class="dropdown-root">
+<button class="dropdown-root" popovertarget="@Id">
     @CurrentIcon
-</div>
+</button>
 
-@if (Visible)
-{
-    <div class="dropdown-menu">
+<div @ref="Popover" class="dropdown-menu" id="@Id" popover="auto">
+    <div class="elements">
         @foreach (var entry in Elements)
         {
-            <DropdownElement TBind="TBind" OnSelect="UpdateSelected" Icon="entry.Icon" Content="entry.Content" Selection="entry.Selection"/>
+            <DropdownElement TBind="TBind" OnSelect="Select" Icon="entry.Icon" Content="entry.Content"
+                             Selection="entry.Selection"/>
         }
     </div>
-}
+</div>
 
 @code {
     private                                      TBind                               _value = default!;
     [Parameter] [EditorRequired] public required IEnumerable<DropdownElement<TBind>> Elements { get; set; }
+    [Parameter] [EditorRequired] public required string                              Id       { get; set; }
 
     [Parameter]
     [EditorRequired]
@@ -36,23 +39,23 @@
     [Parameter] public EventCallback<TBind>    ValueChanged     { get; set; }
     private            DropdownElement<TBind>? CurrentSelection { get; set; }
     private            RenderFragment?         CurrentIcon      { get; set; }
-    private            bool                    Visible          { get; set; }
+    private            ElementReference        Popover          { get; set; }
 
-    private void UpdateSelected(DropdownElement<TBind> element)
+    private async Task Select(DropdownElement<TBind> element)
+    {
+        await UpdateSelected(element);
+        await Js.HidePopoverAsync(Popover);
+    }
+
+    private async Task UpdateSelected(DropdownElement<TBind> element)
     {
         CurrentSelection = element;
         CurrentIcon      = CurrentSelection.Icon;
-        ValueChanged.InvokeAsync(element.Selection);
-        Visible = false;
+        await ValueChanged.InvokeAsync(element.Selection);
     }
 
-    private void Toggle()
+    protected override async Task OnInitializedAsync()
     {
-        Visible = !Visible;
-    }
-
-    protected override void OnInitialized()
-    {
-        UpdateSelected(Elements.FirstOrDefault() ?? throw new InvalidOperationException());
+        await UpdateSelected(Elements.FirstOrDefault() ?? throw new InvalidOperationException());
     }
 }

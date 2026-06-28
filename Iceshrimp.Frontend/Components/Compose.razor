@@ -24,7 +24,7 @@
             </button>
             @if (string.IsNullOrEmpty(NoteId))
             {
-                <Dropdown TBind="NoteVisibility" Elements="@DropDownCreate()" @bind-Value="NoteDraft.Visibility"/>
+                <Dropdown Id="compose-visibility" TBind="NoteVisibility" Elements="@DropDownCreate()" @bind-Value="NoteDraft.Visibility"/>
             }
             <StateButton OnClick="SendNote" @ref="SendButton" ExtraClasses="post-btn" AriaLabel="post"
                          Disabled="@SendingDisabled()">
