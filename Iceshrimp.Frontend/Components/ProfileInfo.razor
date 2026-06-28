@@ -66,9 +66,11 @@
         </div>
         <div class="profile-buttons">
             <FollowButton User="User" UserProfile="UserProfile"/>
-            <button @ref="MenuButton" class="button context-button" @onclick="ToggleMenu" @onclick:stopPropagation="true" aria-label="more">
-                <Icon Name="Icons.DotsThreeOutline" Size="1.3em"/>
-                <Menu @ref="ContextMenu">
+            <MenuButton>
+                <Button>
+                    <Icon Name="Icons.DotsThreeOutline" Size="1.3rem"/>
+                </Button>
+                <Elements>
                     @if (UserProfile.Relations.HasFlag(Relations.Self))
                     {
                         <MenuElement Icon="Icons.Pencil" OnSelect="EditProfile">
@@ -183,9 +185,8 @@
                             <Text>@Loc[L.Report_User]</Text>
                         </MenuElement>
                     }
-                    <ClosingBackdrop OnClose="ContextMenu.Close"></ClosingBackdrop>
-                </Menu>
-            </button>
+                </Elements>
+            </MenuButton>
         </div>
     </div>
     @if (UserProfile.Bio != null)
@@ -276,16 +277,12 @@
     [Parameter] [EditorRequired] public required UserProfileResponse UserProfile { get; set; }
     [Parameter] [EditorRequired] public required List<EmojiResponse> Emojis      { get; set; }
 
-    private ElementReference  MenuButton  { get; set; }
-    private Menu              ContextMenu { get; set; } = null!;
     private UserMemoRequest   MemoForm    { get; set; } = null!;
     private StateButton       MemoButton  { get; set; } = null!;
     private bool              CanShare    { get; set; }
     private InstanceResponse? _instance;
 
     private Dictionary<string, string> _languages = LanguageHelper.Bcp47Languages;
-
-    private void ToggleMenu() => ContextMenu.Toggle(MenuButton);
 
     private void EditProfile() => Nav.NavigateTo("/settings/profile");
 

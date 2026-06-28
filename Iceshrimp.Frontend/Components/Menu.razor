@@ -1,43 +1,19 @@
-@inject IJSRuntime Js
+@using Iceshrimp.Frontend.Core.Services
+@inject JsService Js;
 
-@if (_display)
-{
-    <div class="menu @(Fixed ? "fixed" : "")" style="--top: @(_top)px; --left: @(_left)px">
+<div @ref="Popover" class="menu" id="@Id" popover="auto">
+    <div class="elements">
         @ChildContent
     </div>
-}
+</div>
 
 @code {
-    [Parameter] [EditorRequired] public required RenderFragment ChildContent { get; set; }
-    [Parameter]                  public          bool           Fixed        { get; set; }
+    [Parameter] [EditorRequired] public required RenderFragment   ChildContent { get; set; }
+    [Parameter] [EditorRequired] public required string           Id           { get; set; }
+    private                                      ElementReference Popover      { get; set; }
 
-    private bool                        _display;
-    private float                       _top;
-    private float                       _left;
-    private IJSInProcessObjectReference _module = null!;
-
-    protected override async Task OnInitializedAsync()
+    public async Task Toggle(ElementReference source)
     {
-        _module = (IJSInProcessObjectReference)await Js.InvokeAsync<IJSObjectReference>("import",
-                                                                                        "./Components/Menu.razor.js");
-    }
-
-    public void Toggle(ElementReference root, bool scrollY = true)
-    {
-        if (!_display)
-        {
-            var pos = _module.Invoke<List<float>>("getPosition", root, scrollY);
-            _left = pos[0];
-            _top  = pos[1];
-        }
-
-        _display = !_display;
-        StateHasChanged();
-    }
-
-    public void Close()
-    {
-        _display = false;
-        StateHasChanged();
+        await Js.TogglePopoverAsync(Popover, source);
     }
 }

@@ -77,3 +77,13 @@ export function canShareLink(text, url) {
 export async function shareLink(text, url) {
     await navigator.share({ text, url });
 }
+
+/**
+ * Toggle a popover
+ * @param {HTMLElement} element Popover to toggle
+ * @param {HTMLElement | null} source Element to associate with the popover
+ * @returns {void}
+ */
+export function togglePopover(element, source) {
+    element.togglePopover({source: source});
+}

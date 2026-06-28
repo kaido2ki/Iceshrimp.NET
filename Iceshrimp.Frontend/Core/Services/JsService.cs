@@ -77,6 +77,14 @@ public class JsService
     public ValueTask ShareAsync(string? text, string url) =>
         Module!.InvokeVoidAsync("shareLink", text, url);
 
+    /// <summary>
+    /// Toggle a popover
+    /// </summary>
+    /// <param name="element">Popover to toggle</param>
+    /// <param name="source">Element to associate with the popover</param>
+    public ValueTask TogglePopoverAsync(ElementReference element, ElementReference? source = null, bool? force = null) =>
+        Module!.InvokeVoidAsync("togglePopover", element, source);
+
     public enum ScrollBehavior
     {
         Auto,

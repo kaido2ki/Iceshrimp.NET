@@ -12,7 +12,7 @@
 <div class="sidebar @(_open ? "open" : "")" tabindex="0">
     <div class="header">
         @*ToDo: account dropdown*@
-        <div @ref="_avatar" @onclick="OpenAccountDropdown" class="avatar" @onclick:stopPropagation="true" >
+        <div @ref="_avatar" @onclick="OpenAccountDropdownAsync" class="avatar" @onclick:stopPropagation="true" >
             <UserAvatar User="Session.Current!"/>
             <AccountDropdown @ref="_accountDropdown" />
         </div>
@@ -154,10 +154,7 @@
         }
     }
 
-    private void OpenAccountDropdown()
-    {
-        _accountDropdown.Menu.Toggle(_avatar, false);
-    }
+    private Task OpenAccountDropdownAsync() => _accountDropdown.Menu.Toggle(_avatar);
 
     private async Task Open()
     {

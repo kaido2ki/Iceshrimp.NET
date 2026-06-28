@@ -29,46 +29,38 @@
             <span class="reply-count">@Replies</span>
         }
     </button>
-    <button @ref="RenoteButton" class="btn @(RenotePossible ? "" : "disabled")"
-            @onclick="@(RenotePossible ? ToggleRenoteMenu : () => { })" @onclick:stopPropagation="true"
-            aria-label="renote">
-        @if (RenotePossible)
-        {
-            <Icon Name="Icons.Repeat" Size="1.3em"/>
-            <Menu @ref="RenoteMenu">
-                @if (!Note.Renoted)
+    <MenuButton>
+        <Button>
+            <Icon Name="@(RenotePossible ? Note.Renoted ? Icons.RepeatOnce : Icons.Repeat : Icons.Lock)" Size="1.3em"/>
+            @if (Renotes > 0)
+            {
+                <span class="renote-count">@Renotes</span>
+            }
+        </Button>
+        <Elements>
+            @if (!Note.Renoted)
+            {
+                @if (Note.Visibility == NoteVisibility.Public)
                 {
-                    @if (Note.Visibility == NoteVisibility.Public)
-                    {
-                        <MenuElement Icon="Icons.Repeat" OnSelect="() => Renote(NoteVisibility.Public)">
-                            <Text>@Loc[L.Note_Renote]</Text>
-                        </MenuElement>
-                    }
-                    <MenuElement Icon="Icons.House" OnSelect="() => Renote(NoteVisibility.Home)">
-                        <Text>@Loc[L.Note_Renote_Unlisted]</Text>
-                    </MenuElement>
-                    <MenuElement Icon="Icons.Lock" OnSelect="() => Renote(NoteVisibility.Followers)">
-                        <Text>@Loc[L.Note_Renote_Followers]</Text>
+                    <MenuElement Icon="Icons.Repeat" OnSelect="() => Renote(NoteVisibility.Public)">
+                        <Text>@Loc[L.Note_Renote]</Text>
                     </MenuElement>
                 }
-                else
-                {
-                    <MenuElement Icon="Icons.Minus" OnSelect="Unrenote">
-                        <Text>@Loc[L.Note_Unrenote]</Text>
-                    </MenuElement>
-                }
-                <ClosingBackdrop OnClose="RenoteMenu.Close"></ClosingBackdrop>
-            </Menu>
-        }
-        else
-        {
-            <Icon Name="Icons.Lock" Size="1.3em" class="faded"/>
-        }
-        @if (Renotes > 0)
-        {
-            <span class="renote-count">@Renotes</span>
-        }
-    </button>
+                <MenuElement Icon="Icons.House" OnSelect="() => Renote(NoteVisibility.Home)">
+                    <Text>@Loc[L.Note_Renote_Unlisted]</Text>
+                </MenuElement>
+                <MenuElement Icon="Icons.Lock" OnSelect="() => Renote(NoteVisibility.Followers)">
+                    <Text>@Loc[L.Note_Renote_Followers]</Text>
+                </MenuElement>
+            }
+            else
+            {
+                <MenuElement Icon="Icons.Minus" OnSelect="Unrenote">
+                    <Text>@Loc[L.Note_Unrenote]</Text>
+                </MenuElement>
+            }
+        </Elements>
+    </MenuButton>
     <button @onclick="Like" @onclick:stopPropagation="true" class="btn" aria-label="like">
         @if (IsLiked)
         {
@@ -95,9 +87,11 @@
             @onclick:stopPropagation="true" aria-label="quote">
         <Icon Name="@(RenotePossible ? Icons.Quotes : Icons.Lock)" Size="1.3em" class="@(RenotePossible ? "" : "faded")"/>
     </button>
-    <button @ref="MenuButton" class="btn" @onclick="ToggleMenu" @onclick:stopPropagation="true" aria-label="more">
-        <Icon Name="Icons.DotsThreeOutline" Size="1.3em"/>
-        <Menu @ref="ContextMenu">
+    <MenuButton>
+        <Button>
+            <Icon Name="Icons.DotsThreeOutline" Size="1.3em"/>
+        </Button>
+        <Elements>
             @if (Note.CanBite)
             {
                 <MenuElement Icon="Icons.Tooth" OnSelect="Bite">
@@ -169,9 +163,8 @@
                     <Text>@Loc[L.Report_Note]</Text>
                 </MenuElement>
             }
-            <ClosingBackdrop OnClose="ContextMenu.Close"></ClosingBackdrop>
-        </Menu>
-    </button>
+        </Elements>
+    </MenuButton>
 </div>
 
 @code {
@@ -182,11 +175,7 @@
     [Parameter] [EditorRequired] public required int                      Replies        { get; set; }
     [Parameter]                  public          bool                     RenotePossible { get; set; }
     [Parameter]                  public          bool                     Indented       { get; set; }
-    private                                      Menu                     ContextMenu    { get; set; } = null!;
-    private                                      Menu                     RenoteMenu     { get; set; } = null!;
-    private                                      ElementReference         RenoteButton   { get; set; }
     private                                      ElementReference         EmojiButton    { get; set; }
-    private                                      ElementReference         MenuButton     { get; set; }
     private                                      bool                     CanShare       { get; set; }
 
     [CascadingParameter] NoteBase Note { get; set; } = null!;
@@ -195,8 +184,6 @@
     {
         CanShare = await JsSvc.CanShareAsync($"Note by {Note.User.DisplayName ?? Note.User.Username}", Note.Url);
     }
-
-    private void ToggleMenu() => ContextMenu.Toggle(MenuButton);
 
     private void Delete() => _ = NoteActions.DeleteAsync(Note);
 
@@ -241,11 +228,6 @@
     private void Edit()
     {
         NoteActions.Edit(Note);
-    }
-
-    private void ToggleRenoteMenu()
-    {
-        RenoteMenu.Toggle(RenoteButton);
     }
 
     private void Renote(NoteVisibility visibility)

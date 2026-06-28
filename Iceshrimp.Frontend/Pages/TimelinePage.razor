@@ -39,53 +39,57 @@
         <Icon Name="Icons.ArrowsClockwise"/>
         <span class="label">@Loc[L.Common_Refetch]</span>
     </button>
-    <button class="action" @onclick="() => MenuRef.Toggle(MenuButton, false)" @ref="MenuButton">
-        @switch (CurrentTimeline!.Enum)
-        {
-            case TimelineEnum.Home:
-                <Icon Name="Icons.House"/>
-                <span class="label">@Loc[L.Timeline_Home]</span>
-                break;
-            case TimelineEnum.Local:
-                <Icon Name="Icons.Users"/>
-                <span class="label">@Loc[L.Timeline_Local]</span>
-                break;
-            case TimelineEnum.Social:
-                <Icon Name="Icons.Handshake"/>
-                <span class="label">@Loc[L.Timeline_Social]</span>
-                break;
-            case TimelineEnum.Bubble:
-                <Icon Name="Icons.Hexagon"/>
-                <span class="label">@Loc[L.Timeline_Bubble]</span>
-                break;
-            case TimelineEnum.Global:
-                <Icon Name="Icons.Globe"/>
-                <span class="label">@Loc[L.Timeline_Global]</span>
-                break;
-            case TimelineEnum.Remote:
-                <Icon Name="Icons.Airplane"/>
-                @if (CurrentTimeline.Remote != null)
-                {
-                    <span class="label">@Loc[L.Timeline_Remote_Host, CurrentTimeline.Remote]</span>
-                }
-                else
-                {
-                    <span class="label">@Loc[L.Timeline_Remote]</span>
-                }
-                break;
-            case TimelineEnum.Tag:
-                <Icon Name="Icons.Tag"/>
-                @if (CurrentTimeline.Tag != null)
-                {
-                    <span class="label">@Loc[L.Timeline_Tag_Name, CurrentTimeline.Tag]</span>
-                }
-                else
-                {
-                    <span class="label">@Loc[L.Timeline_Tag]</span>
-                }
-                break;
-        }
-        <Menu @ref="MenuRef" Fixed="true">
+    <MenuButton>
+        <Button>
+            @switch (CurrentTimeline!.Enum)
+            {
+                case TimelineEnum.Home:
+                    <Icon Name="Icons.House"/>
+                    <span class="label">@Loc[L.Timeline_Home]</span>
+                    break;
+                case TimelineEnum.Local:
+                    <Icon Name="Icons.Users"/>
+                    <span class="label">@Loc[L.Timeline_Local]</span>
+                    break;
+                case TimelineEnum.Social:
+                    <Icon Name="Icons.Handshake"/>
+                    <span class="label">@Loc[L.Timeline_Social]</span>
+                    break;
+                case TimelineEnum.Bubble:
+                    <Icon Name="Icons.Hexagon"/>
+                    <span class="label">@Loc[L.Timeline_Bubble]</span>
+                    break;
+                case TimelineEnum.Global:
+                    <Icon Name="Icons.Globe"/>
+                    <span class="label">@Loc[L.Timeline_Global]</span>
+                    break;
+                case TimelineEnum.Remote:
+                    <Icon Name="Icons.Airplane"/>
+                    @if (CurrentTimeline.Remote != null)
+                    {
+                        <span class="label">@Loc[L.Timeline_Remote_Host, CurrentTimeline.Remote]</span>
+                    }
+                    else
+                    {
+                        <span class="label">@Loc[L.Timeline_Remote]</span>
+                    }
+                    break;
+                case TimelineEnum.Tag:
+                    <Icon Name="Icons.Tag"/>
+                    @if (CurrentTimeline.Tag != null)
+                    {
+                        <span class="label">@Loc[L.Timeline_Tag_Name, CurrentTimeline.Tag]</span>
+                    }
+                    else
+                    {
+                        <span class="label">@Loc[L.Timeline_Tag]</span>
+                    }
+                    break;
+                default:
+                    break;
+            }
+        </Button>
+        <Elements>
             <MenuElement OnSelect="() => SwitchTimeline(TimelineEnum.Home)">
                 <Text>
                     <Icon Name="Icons.House"/>@Loc[L.Timeline_Home]</Text>
@@ -116,8 +120,8 @@
                     <Icon Name="Icons.Tag" />@Loc[L.Timeline_Tag]
                 </Text>
             </MenuElement>
-        </Menu>
-    </button>
+        </Elements>
+    </MenuButton>
 </SectionContent>
 
 <div @ref="TimelineRef" class="timeline">
@@ -141,8 +145,6 @@
     private            bool                           _loaded;
     private            List<NoteResponse>?            NoteResponses   { get; set; }
     private            TimelineStore.Timeline?        CurrentTimeline { get; set; }
-    private            Menu                           MenuRef         { get; set; } = null!;
-    private            ElementReference               MenuButton      { get; set; }
     private            VirtualScroller<NoteResponse>? VirtualScroller { get; set; }
     private            ElementReference               TimelineRef     { get; set; }
 

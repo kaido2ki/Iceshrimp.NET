@@ -108,26 +108,31 @@
             </div>
             <div class="action section">
                 <h3>@Loc[L.Settings_Filters_Action]</h3>
-                <button @ref="MenuButton" class="button" @onclick="ToggleMenu">
-                    @if (FilterAction == FilterResponse.FilterAction.Hide)
-                    {
-                        <Icon Name="Icons.EyeClosed"/>
-                        <span>@Loc[L.Common_Hide]</span>
-                    }
-                    @if (FilterAction == FilterResponse.FilterAction.Warn)
-                    {
-                        <Icon Name="Icons.Warning"/>
-                        <span>@Loc[L.Settings_Filters_Action_Warn]</span>
-                    }
-                    <Menu @ref="MenuFilterAction">
+                <MenuButton>
+                    <Button>
+                        @switch (FilterAction)
+                        {
+                            case FilterResponse.FilterAction.Hide:
+                                <Icon Name="Icons.EyeClosed"/>
+                                <span>@Loc[L.Common_Hide]</span>
+                                break;
+                            case FilterResponse.FilterAction.Warn:
+                                <Icon Name="Icons.Warning"/>
+                                <span>@Loc[L.Settings_Filters_Action_Warn]</span>
+                                break;
+                            default:
+                                break;
+                        }
+                    </Button>
+                    <Elements>
                         <MenuElement Icon="Icons.EyeClosed" OnSelect="() => FilterAction = FilterResponse.FilterAction.Hide">
                             <Text>@Loc[L.Common_Hide]</Text>
                         </MenuElement>
                         <MenuElement Icon="Icons.Warning" OnSelect="() => FilterAction = FilterResponse.FilterAction.Warn">
                             <Text>@Loc[L.Settings_Filters_Action_Warn]</Text>
                         </MenuElement>
-                    </Menu>
-                </button>
+                    </Elements>
+                </MenuButton>
             </div>
             <div class="contexts section">
                 <h3>@Loc[L.Settings_Filters_Contexts]</h3>
@@ -146,10 +151,12 @@
                         </div>
                     }
                 </div>
-                <button @ref="ContextButton" class="button" @onclick="ToggleFilterContextMenu">
-                    <Icon Name="Icons.Plus"/>
-                    <span>@Loc[L.Common_Add]</span>
-                    <Menu @ref="MenuFilterContexts">
+                <MenuButton>
+                    <Button>
+                        <Icon Name="Icons.Plus"/>
+                        <span>@Loc[L.Common_Add]</span>
+                    </Button>
+                    <Elements>
                         <MenuElement OnSelect="() => AddFilterContext(FilterResponse.FilterContext.Home)">
                             <Text>@Loc[L.Timeline_Home]</Text>
                         </MenuElement>
@@ -168,9 +175,8 @@
                         <MenuElement OnSelect="() => AddFilterContext(FilterResponse.FilterContext.Public)">
                             <Text>@Loc[L.Note_Visibility_Public]</Text>
                         </MenuElement>
-                        <ClosingBackdrop OnClose="MenuFilterContexts.Close"></ClosingBackdrop>
-                    </Menu>
-                </button>
+                    </Elements>
+                </MenuButton>
             </div>
             <div class="expiry-section">
                 <h3>@Loc[L.Settings_Filters_ExpiresAt]</h3>
@@ -203,11 +209,7 @@
     private bool                               TemporaryFilter    { get; set; }
     private DateTime?                          FilterExpiry       { get; set; }
     private FilterResponse.FilterAction        FilterAction       { get; set; }
-    private Menu                               MenuFilterAction   { get; set; } = null!;
-    private Menu                               MenuFilterContexts { get; set; } = null!;
     private List<FilterResponse.FilterContext> FilterContexts     { get; }      = [];
-    private ElementReference                   MenuButton         { get; set; }
-    private ElementReference                   ContextButton      { get; set; }
 
     // ReSharper disable once UnusedAutoPropertyAccessor.Local, Justification: this is still work in progress
     private StateButton ButtonAddFilter { get; set; } = null!;
@@ -290,16 +292,6 @@
             }
             catch (ApiException) { }
         }
-    }
-
-    private void ToggleMenu()
-    {
-        MenuFilterAction.Toggle(MenuButton);
-    }
-
-    private void ToggleFilterContextMenu()
-    {
-        MenuFilterContexts.Toggle(ContextButton);
     }
 
     private void AddKeyword()

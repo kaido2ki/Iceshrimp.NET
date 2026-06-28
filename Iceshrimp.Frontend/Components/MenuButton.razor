@@ -1,0 +1,9 @@
+<button popovertarget="@Id">@Button</button>
+<Menu Id="@Id">@Elements</Menu>
+
+@code {
+    [Parameter] [EditorRequired] public required RenderFragment Button   { get; set; }
+    [Parameter] [EditorRequired] public required RenderFragment Elements { get; set; }
+
+    public string Id { get; set; } = Guid.NewGuid().ToString();
+}

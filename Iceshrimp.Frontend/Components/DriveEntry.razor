@@ -10,7 +10,7 @@
 
 @if (File != null && Folder == null)
 {
-    <div @ref="FileButton" class="drive-entry" @onclick="SelectFile" @onclick:stopPropagation="true">
+    <div @ref="FileButton" class="drive-entry" @onclick="SelectFileAsync" @onclick:stopPropagation="true">
         <div class="labels">
             @if (File.IsAvatar)
             {
@@ -56,7 +56,7 @@
             </span>
         }
         <span>@File.Filename</span>
-        <Menu @ref="FileMenu">
+        <Menu @ref="FileMenu" Id="@($"file-menu-{File.Id}")">
             <MenuElement Icon="Icons.ArrowSquareOut" OnSelect="OpenFile">
                 <Text>@Loc[L.Common_Open]</Text>
             </MenuElement>
@@ -92,18 +92,17 @@
             <MenuElement Icon="Icons.Trash" OnSelect="DeleteFile" Danger>
                 <Text>@Loc[L.Common_Delete]</Text>
             </MenuElement>
-            <ClosingBackdrop OnClose="FileMenu.Close"></ClosingBackdrop>
         </Menu>
     </div>
 }
 @if (Folder != null && File == null)
 {
-    <div @ref="FolderButton" class="drive-entry" @onclick="SelectFolder" @onclick:stopPropagation="true">
+    <div @ref="FolderButton" class="drive-entry" @onclick="SelectFolderAsync" @onclick:stopPropagation="true">
         <span class="icon">
             <Icon Name="Icons.FolderOpen" Size="5em" Pack="IconStyle.Fill"/>
         </span>
         <span>@Folder.Name</span>
-        <Menu @ref="FolderMenu">
+        <Menu @ref="FolderMenu" Id="@($"folder-menu-{Folder.Id}")">
             <MenuElement Icon="Icons.FolderOpen" OnSelect="OpenFolder">
                 <Text>@Loc[L.Common_Open]</Text>
             </MenuElement>
@@ -118,7 +117,6 @@
                     <Text>@Loc[L.Drive_Entry_Menu_Move]</Text>
                 </MenuElement>
             }
-            <ClosingBackdrop OnClose="FolderMenu.Close"></ClosingBackdrop>
         </Menu>
     </div>
 }
@@ -134,7 +132,7 @@
     [Parameter, EditorRequired] public required string?                   ParentId   { get; set; }
     [Parameter, EditorRequired] public required List<DriveFolderResponse> FolderList { get; set; }
 
-    private void SelectFile() => FileMenu.Toggle(FileButton);
+    private Task SelectFileAsync() => FileMenu.Toggle(FileButton);
 
     private async Task RenameFile() =>
         await Global.PromptDialog?.Prompt(new EventCallback<string?>(this, RenameFileCallback), Loc[L.Common_Rename], Loc[L.Drive_Entry_RenameDialog_FilePlaceholder], File!.Filename, buttonText: Loc[L.Drive_Entry_RenameDialog_Submit])!;
@@ -250,7 +248,7 @@
         }
     }
 
-    private void SelectFolder() => FolderMenu.Toggle(FolderButton);
+    private Task SelectFolderAsync() => FolderMenu.Toggle(FolderButton);
 
     private async Task RenameFolder()
     {
