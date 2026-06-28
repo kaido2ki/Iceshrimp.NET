@@ -66,10 +66,10 @@
         </div>
         <div class="profile-buttons">
             <FollowButton User="User" UserProfile="UserProfile"/>
-            <MenuButton>
-                <Button>
+            <MenuButton ButtonClass="button context-button">
+                <ButtonContent>
                     <Icon Name="Icons.DotsThreeOutline" Size="1.3rem"/>
-                </Button>
+                </ButtonContent>
                 <Elements>
                     @if (UserProfile.Relations.HasFlag(Relations.Self))
                     {

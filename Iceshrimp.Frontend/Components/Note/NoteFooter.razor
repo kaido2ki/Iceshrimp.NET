@@ -29,14 +29,14 @@
             <span class="reply-count">@Replies</span>
         }
     </button>
-    <MenuButton>
-        <Button>
+    <MenuButton ButtonClass="btn" ButtonDisabled="@(!RenotePossible)" ButtonRole="renote">
+        <ButtonContent>
             <Icon Name="@(RenotePossible ? Note.Renoted ? Icons.RepeatOnce : Icons.Repeat : Icons.Lock)" Size="1.3em"/>
             @if (Renotes > 0)
             {
                 <span class="renote-count">@Renotes</span>
             }
-        </Button>
+        </ButtonContent>
         <Elements>
             @if (!Note.Renoted)
             {
@@ -87,10 +87,10 @@
             @onclick:stopPropagation="true" aria-label="quote">
         <Icon Name="@(RenotePossible ? Icons.Quotes : Icons.Lock)" Size="1.3em" class="@(RenotePossible ? "" : "faded")"/>
     </button>
-    <MenuButton>
-        <Button>
+    <MenuButton ButtonClass="btn" ButtonRole="more">
+        <ButtonContent>
             <Icon Name="Icons.DotsThreeOutline" Size="1.3em"/>
-        </Button>
+        </ButtonContent>
         <Elements>
             @if (Note.CanBite)
             {

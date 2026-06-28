@@ -1,9 +1,13 @@
-<button popovertarget="@Id">@Button</button>
-<Menu Id="@Id">@Elements</Menu>
+<button class="@ButtonClass" popovertarget="@MenuId" title="@ButtonTitle" role="@ButtonRole"
+        disabled="@ButtonDisabled">@ButtonContent</button>
+<Menu Id="@MenuId">@Elements</Menu>
 
 @code {
-    [Parameter] [EditorRequired] public required RenderFragment Button   { get; set; }
-    [Parameter] [EditorRequired] public required RenderFragment Elements { get; set; }
-
-    public string Id { get; set; } = Guid.NewGuid().ToString();
+    [Parameter] [EditorRequired] public required RenderFragment ButtonContent  { get; set; }
+    [Parameter] [EditorRequired] public required RenderFragment Elements       { get; set; }
+    [Parameter]                  public          string?        ButtonClass    { get; set; }
+    [Parameter]                  public          bool?          ButtonDisabled { get; set; }
+    [Parameter]                  public          string?        ButtonRole     { get; set; }
+    [Parameter]                  public          string?        ButtonTitle    { get; set; }
+    [Parameter]                  public          string         MenuId         { get; set; } = Guid.NewGuid().ToString();
 }

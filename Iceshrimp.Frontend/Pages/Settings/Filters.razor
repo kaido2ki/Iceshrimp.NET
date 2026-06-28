@@ -108,8 +108,8 @@
             </div>
             <div class="action section">
                 <h3>@Loc[L.Settings_Filters_Action]</h3>
-                <MenuButton>
-                    <Button>
+                <MenuButton ButtonClass="button">
+                    <ButtonContent>
                         @switch (FilterAction)
                         {
                             case FilterResponse.FilterAction.Hide:
@@ -123,7 +123,7 @@
                             default:
                                 break;
                         }
-                    </Button>
+                    </ButtonContent>
                     <Elements>
                         <MenuElement Icon="Icons.EyeClosed" OnSelect="() => FilterAction = FilterResponse.FilterAction.Hide">
                             <Text>@Loc[L.Common_Hide]</Text>
@@ -151,11 +151,11 @@
                         </div>
                     }
                 </div>
-                <MenuButton>
-                    <Button>
+                <MenuButton ButtonClass="button">
+                    <ButtonContent>
                         <Icon Name="Icons.Plus"/>
                         <span>@Loc[L.Common_Add]</span>
-                    </Button>
+                    </ButtonContent>
                     <Elements>
                         <MenuElement OnSelect="() => AddFilterContext(FilterResponse.FilterContext.Home)">
                             <Text>@Loc[L.Timeline_Home]</Text>

@@ -14,7 +14,7 @@
     padding-left: 0.75em;
 }
 
-.btn {
+.note-footer ::deep .btn {
     display: inline-flex;
     align-items: center;
     min-width: 2.5em;
@@ -25,7 +25,7 @@
     width: fit-content;
 }
 
-.btn:hover {
+.note-footer ::deep .btn:hover {
     transition: 250ms;
     border-color: var(--notice-color);
     background-color: var(--hover-color);
@@ -45,10 +45,6 @@
 .positioned {
     position: relative;
     top: 0;
-}
-
-.disabled {
-    cursor: not-allowed;
 }
 
 ::deep {
