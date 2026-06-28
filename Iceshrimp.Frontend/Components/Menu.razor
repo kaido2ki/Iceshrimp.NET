@@ -2,7 +2,7 @@
 @inject JsService Js;
 
 <div @ref="Popover" class="menu" id="@Id" popover="auto">
-    <div class="elements">
+    <div class="elements" @onclick="Close">
         @ChildContent
     </div>
 </div>
@@ -15,5 +15,10 @@
     public async Task Toggle(ElementReference source)
     {
         await Js.TogglePopoverAsync(Popover, source);
+    }
+
+    private async Task Close()
+    {
+        await Js.HidePopoverAsync(Popover);
     }
 }

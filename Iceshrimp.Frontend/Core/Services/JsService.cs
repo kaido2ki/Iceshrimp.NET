@@ -82,8 +82,15 @@ public class JsService
     /// </summary>
     /// <param name="element">Popover to toggle</param>
     /// <param name="source">Element to associate with the popover</param>
-    public ValueTask TogglePopoverAsync(ElementReference element, ElementReference? source = null, bool? force = null) =>
+    public ValueTask TogglePopoverAsync(ElementReference element, ElementReference? source) =>
         Module!.InvokeVoidAsync("togglePopover", element, source);
+
+    /// <summary>
+    /// Hide a popover
+    /// </summary>
+    /// <param name="element">Popover to hide</param>
+    public ValueTask HidePopoverAsync(ElementReference element) =>
+        Module!.InvokeVoidAsync("hidePopover", element);
 
     public enum ScrollBehavior
     {
