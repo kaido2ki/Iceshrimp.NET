@@ -150,6 +150,11 @@ public class NoteService(
 		if (!data.LocalOnly && (data.Renote is { LocalOnly: true } || data.Reply is { LocalOnly: true }))
 			data.LocalOnly = true;
 
+		if (data.Renote != null && data.Renote.Visibility > data.Visibility)
+			data.Visibility = data.Renote.Visibility;
+		else if (data.Reply != null && data.Reply.Visibility > data.Visibility)
+			data.Visibility = data.Reply.Visibility;
+
 		if (!data.Preview && data.Renote != null)
 		{
 			var pureRenote = data.Text == null && data.Poll == null && data.Attachments is not { Count: > 0 };
@@ -167,9 +172,6 @@ public class NoteService(
 				if (await db.Blockings.AnyAsync(p => p.Blockee == data.User && p.Blocker == data.Renote.User))
 					throw GracefulException.Forbidden($"You are not allowed to interact with @{data.Renote.User.Acct}");
 			}
-
-			if (pureRenote && data.Renote.Visibility > data.Visibility)
-				data.Visibility = data.Renote.Visibility;
 		}
 
 		var (mentionedUserIds, mentionedLocalUserIds, mentions, remoteMentions, splitDomainMapping) =
