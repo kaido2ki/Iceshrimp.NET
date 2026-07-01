@@ -303,6 +303,7 @@
     private IList<DropdownElement<NoteVisibility>> DropDownCreate()
     {
         return Enum.GetValues<NoteVisibility>()
+                   .Where(vis => ReplyOrQuote == null || ReplyOrQuote.Visibility <= vis)
                    .Select(vis =>
                                new DropdownElement<NoteVisibility>
                                {
