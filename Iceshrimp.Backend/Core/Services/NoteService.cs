@@ -152,7 +152,7 @@ public class NoteService(
 
 		if (data.Renote != null && data.Renote.Visibility > data.Visibility)
 			data.Visibility = data.Renote.Visibility;
-		else if (data.Reply != null && data.Reply.Visibility > data.Visibility)
+		if (data.Reply != null && data.Reply.Visibility > data.Visibility)
 			data.Visibility = data.Reply.Visibility;
 
 		if (!data.Preview && data.Renote != null)
