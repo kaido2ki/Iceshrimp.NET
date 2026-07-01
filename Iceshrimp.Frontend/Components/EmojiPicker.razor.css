@@ -1,7 +1,7 @@
 .emoji-picker {
-    --top: 0px;
-    --left: 0px;
-    position: absolute;
+    margin: 0;
+    inset: auto;
+    position-area: bottom center;
     background-color: var(--foreground-color);
     border: var(--border-color) solid 0.1rem;
     padding: 1rem;
@@ -10,18 +10,13 @@
     min-height: 10rem;
     max-height: 20rem;
     overflow: auto;
-    top: calc(var(--top) + 2.5rem);
-    left: calc(var(--left) - 5.5rem);
+    box-shadow: 0 0 1rem black;
 }
 
 .emoji-list {
     display: grid;
     grid-template-columns: repeat(auto-fill, minmax(2.5rem, 1fr));
     grid-template-rows: repeat(auto-fill, minmax(2.5rem, 1fr));
-}
-
-.dialog {
-    z-index: +26;
 }
 
 .emoji:hover {
@@ -40,6 +35,7 @@ summary {
 
 @media (max-width: 1000px) {
     .emoji-picker {
+        position-area: none;
         top: unset;
         left: 0;
         /*Display emoji picker above keyboard (currently only on Chrome)*/

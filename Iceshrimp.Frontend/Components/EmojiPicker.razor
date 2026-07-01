@@ -6,34 +6,29 @@
 @inject JsService          Js
 @inject IStringLocalizer<Localization> Loc;
 
-<dialog class="dialog" @ref="EmojiPickerRef">
-    <div class="emoji-picker" style="--top: @(_top)px; --left: @(_left)px">
-        <input @bind="EmojiFilter" @bind:event="oninput" @bind:after="FilterEmojis" class="search" type="text" placeholder="Search" aria-label="search"/>
-        @foreach (var category in Categories)
-        {
-            <details open>
-                <summary aria-label="category">@category.Category</summary>
-                <div class="emoji-list">
-                    @foreach (var emoji in category.Emojis)
-                    {
-                        <div @onclick="() => Select(emoji)" class="emoji" title=":@emoji.Name:">
-                            <InlineEmoji Name="@emoji.Name" Url="@emoji.PublicUrl" Size="2rem"/>
-                        </div>
-                    }
-                </div>
-            </details>
-        }
-    </div>
-    <ClosingBackdrop OnClose="Close"></ClosingBackdrop>
-</dialog>
+<div @ref="Popover" class="emoji-picker" popover="auto">
+    <input @bind="EmojiFilter" @bind:event="oninput" @bind:after="FilterEmojis" class="search" type="text" placeholder="Search" aria-label="search"/>
+    @foreach (var category in Categories)
+    {
+        <details open>
+            <summary aria-label="category">@category.Category</summary>
+            <div class="emoji-list">
+                @foreach (var emoji in category.Emojis)
+                {
+                    <div @onclick="() => Select(emoji)" class="emoji" title=":@emoji.Name:">
+                        <InlineEmoji Name="@emoji.Name" Url="@emoji.PublicUrl" Size="2rem"/>
+                    </div>
+                }
+            </div>
+        </details>
+    }
+</div>
 
 
 @code {
-    private EventCallback<EmojiResponse> OnEmojiSelect  { get; set; }
-    private List<EmojiResponse>          EmojiList      { get; set; } = [];
-    private ElementReference             EmojiPickerRef { get; set; }
-    private double                       _top;
-    private double                       _left;
+    private EventCallback<EmojiResponse> OnEmojiSelect { get; set; }
+    private List<EmojiResponse>          EmojiList     { get; set; } = [];
+    private ElementReference             Popover       { get; set; }
 
     private string                               EmojiFilter { get; set; } = "";
     private List<(string Category, List<EmojiResponse> Emojis)> Categories  { get; set; } = [];
@@ -51,10 +46,10 @@
 
     private async Task Close()
     {
-        await Js.CloseDialogAsync(EmojiPickerRef);
+        await Js.HidePopoverAsync(Popover);
     }
 
-    public async Task Open(ElementReference root, EventCallback<EmojiResponse> func)
+    public async Task Open(ElementReference source, EventCallback<EmojiResponse> func)
     {
         if (EmojiList.Count == 0)
         {
@@ -63,8 +58,7 @@
         }
 
         OnEmojiSelect = func;
-        (_left, _top) = await Js.GetPositionAsync(root, true);
-        await Js.ShowDialogAsync(EmojiPickerRef, false);
+        await Js.TogglePopoverAsync(Popover, source);
         StateHasChanged();
     }
 
