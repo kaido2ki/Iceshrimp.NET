@@ -37,12 +37,14 @@ public class SessionController(DatabaseContext db) : ControllerBase
 	public async Task<List<SessionResponse>> GetSessions(int page = 0)
 	{
 		const int pageSize  = 20;
+		var       user      = HttpContext.GetUserOrFail();
 		var       currentId = HttpContext.GetSessionOrFail().Id;
 
 		return await db.Sessions
 		               .Include(p => p.MastodonToken!.App)
-		               .Where(p => p.User == HttpContext.GetUserOrFail())
-		               .OrderByDescending(p => p.LastActiveDate ?? p.CreatedAt)
+		               .Where(p => p.User == user)
+		               .OrderBy(p => p.Id != currentId)
+		               .ThenByDescending(p => p.LastActiveDate ?? p.CreatedAt)
 		               .Skip(page * pageSize)
 		               .Take(pageSize)
 		               .Select(p => RenderWebSession(p, currentId, true))
@@ -105,12 +107,13 @@ public class SessionController(DatabaseContext db) : ControllerBase
 	public async Task<List<MastodonSessionResponse>> GetMastodonSessions(int page = 0)
 	{
 		const int pageSize  = 20;
+		var       user      = HttpContext.GetUserOrFail();
 		var       currentId = HttpContext.GetSessionOrFail().Id;
 
 		return await db.OauthTokens
 		               .Include(p => p.App)
 		               .Include(p => p.WebSession)
-		               .Where(p => p.User == HttpContext.GetUserOrFail())
+		               .Where(p => p.User == user)
 		               .OrderByDescending(p => p.LastActiveDate ?? p.CreatedAt)
 		               .Skip(page * pageSize)
 		               .Take(pageSize)
