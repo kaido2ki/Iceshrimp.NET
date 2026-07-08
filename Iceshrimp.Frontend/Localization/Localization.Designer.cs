@@ -3134,5 +3134,17 @@ namespace Iceshrimp.Frontend.Localization {
                 return ResourceManager.GetString("Settings_Sessions_LinkedToMastodon", resourceCulture);
             }
         }
+        
+        internal static string Settings_Sessions_TerminateAllSessions {
+            get {
+                return ResourceManager.GetString("Settings_Sessions_TerminateAllSessions", resourceCulture);
+            }
+        }
+        
+        internal static string Settings_Sessions_TerminateAllDialog_Question {
+            get {
+                return ResourceManager.GetString("Settings_Sessions_TerminateAllDialog_Question", resourceCulture);
+            }
+        }
     }
 }

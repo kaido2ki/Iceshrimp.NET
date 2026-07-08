@@ -97,6 +97,11 @@
     cursor: not-allowed;
 }
 
+.top-bar ::deep .action.danger,
+.widget-panel ::deep .widget-panel-header .action.danger {
+    color: var(--danger-color);
+}
+
 @media (max-width: 1000px) {
     .top-bar ::deep .action .label {
         display: none;

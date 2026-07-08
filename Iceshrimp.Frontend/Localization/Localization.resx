@@ -1564,4 +1564,10 @@
     <data name="Settings_Sessions_LinkedToMastodon" xml:space="preserve">
         <value>Linked to Mastodon API: {0}</value>
     </data>
+    <data name="Settings_Sessions_TerminateAllSessions" xml:space="preserve">
+        <value>Terminate all sessions</value>
+    </data>
+    <data name="Settings_Sessions_TerminateAllDialog_Question" xml:space="preserve">
+        <value>Terminate all other Iceshrimp.NET and Mastodon API sessions?</value>
+    </data>
 </root>

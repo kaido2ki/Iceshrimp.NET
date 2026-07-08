@@ -19,6 +19,15 @@
 <SectionContent SectionName="top-bar">
     @Loc[L.Settings_Sessions]
 </SectionContent>
+<SectionContent SectionName="top-bar-actions">
+    @if (State == State.Loaded && (WebSessions.Count > 1 || MastoSessions.Count != 0))
+    {
+        <button class="action danger" @onclick="TerminateAllSessionsAsync">
+            <Icon Name="Icons.Trash"/>
+            <span class="label">@Loc[L.Settings_Sessions_TerminateAllSessions]</span>
+        </button>
+    }
+</SectionContent>
 
 <section class="body">
     @if (State == State.Loaded)
@@ -196,6 +205,26 @@
                 if (session.LinkedSession != null)
                     WebSessions.Remove(session.LinkedSession);
             }
+
+            StateHasChanged();
+        }
+        catch (ApiException e)
+        {
+            await Global.NoticeDialog?.DisplayApiError(e)!;
+        }
+    }
+
+    private Task TerminateAllSessionsAsync() =>
+        Global.ConfirmDialog?.Confirm(new EventCallback<bool>(this, TerminateAllSessionsCallback), L.Settings_Sessions_TerminateAllDialog_Question, Icons.Trash, L.Settings_Sessions_Terminate)!;
+
+    private async Task TerminateAllSessionsCallback(bool confirm)
+    {
+        try
+        {
+            await Api.Sessions.TerminateAllSessionsAsync();
+
+            WebSessions.RemoveAll(p => !p.Current);
+            MastoSessions.Clear();
 
             StateHasChanged();
         }
