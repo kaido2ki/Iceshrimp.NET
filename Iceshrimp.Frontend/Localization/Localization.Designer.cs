@@ -3146,5 +3146,11 @@ namespace Iceshrimp.Frontend.Localization {
                 return ResourceManager.GetString("Settings_Sessions_TerminateAllDialog_Question", resourceCulture);
             }
         }
+        
+        internal static string Settings_Sessions_UpdateFlags {
+            get {
+                return ResourceManager.GetString("Settings_Sessions_UpdateFlags", resourceCulture);
+            }
+        }
     }
 }

@@ -109,26 +109,32 @@
                 <h4>@Loc[L.Settings_Sessions_Flags]</h4>
                 <div class="badge-group">
                     <label>
-                        <input type="checkbox" checked="@(session.Flags.SupportsHtmlFormatting)" disabled>
+                        <input type="checkbox" @bind="@session.Flags.SupportsHtmlFormatting">
                         @Loc[L.Settings_Sessions_Flag_SupportsHtmlFormatting]
                     </label>
                     <label>
-                        <input type="checkbox" checked="@(session.Flags.SupportsInlineMedia)" disabled>
+                        <input type="checkbox" @bind="@session.Flags.SupportsInlineMedia">
                         @Loc[L.Settings_Sessions_Flag_SupportsInlineMedia]
                     </label>
                     <label>
-                        <input type="checkbox" checked="@(session.Flags.AutoDetectQuotes)" disabled>
+                        <input type="checkbox" @bind="@session.Flags.AutoDetectQuotes">
                         @Loc[L.Settings_Sessions_Flag_AutoDetectQuotes]
                     </label>
                     <label>
-                        <input type="checkbox" checked="@(session.Flags.IsPleroma)" disabled>
+                        <input type="checkbox" @bind="@session.Flags.IsPleroma">
                         @Loc[L.Settings_Sessions_Flag_IsPleroma]
                     </label>
                 </div>
-                <button @onclick="() => TerminateMastoSession(session.Id)" class="card-button danger">
-                    <Icon Name="Icons.Trash"/>
-                    @Loc[L.Settings_Sessions_Terminate]
-                </button>
+                <div class="button-group">
+                    <button @onclick="() => UpdateMastoSession(session.Id, session.Flags)" class="card-button">
+                        <Icon Name="Icons.FloppyDisk"/>
+                        @Loc[L.Settings_Sessions_UpdateFlags]
+                    </button>
+                    <button @onclick="() => TerminateMastoSession(session.Id)" class="card-button danger">
+                        <Icon Name="Icons.Trash"/>
+                        @Loc[L.Settings_Sessions_Terminate]
+                    </button>
+                </div>
             </article>
         }
     }
@@ -184,6 +190,19 @@
                     MastoSessions.Remove(session.LinkedSession);
             }
 
+            StateHasChanged();
+        }
+        catch (ApiException e)
+        {
+            await Global.NoticeDialog?.DisplayApiError(e)!;
+        }
+    }
+
+    private async Task UpdateMastoSession(string id, SessionSchemas.MastodonSessionFlags flags)
+    {
+        try
+        {
+            await Api.Sessions.UpdateMastodonSessionAsync(id, flags);
             StateHasChanged();
         }
         catch (ApiException e)
