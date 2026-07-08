@@ -1,0 +1,122 @@
+@page "/settings/sessions"
+@using Iceshrimp.Assets.PhosphorIcons
+@using Iceshrimp.Frontend.Components
+@using Iceshrimp.Frontend.Core.Miscellaneous
+@using Iceshrimp.Frontend.Core.Services
+@using Iceshrimp.Shared.Schemas.Web
+@using Microsoft.AspNetCore.Authorization
+@using Microsoft.AspNetCore.Components.Sections
+@attribute [Authorize]
+@layout SettingsLayout
+@inject ApiService                     Api;
+@inject GlobalComponentSvc             Global;
+@inject IStringLocalizer<Localization> Loc;
+
+<HeadTitle Text="@Loc[L.Settings_Sessions]"/>
+<SectionContent SectionName="top-bar-icon">
+    <Icon Name="Icons.Devices"/>
+</SectionContent>
+<SectionContent SectionName="top-bar">
+    @Loc[L.Settings_Sessions]
+</SectionContent>
+
+<section class="body">
+    @if (State == State.Loaded)
+    {
+        <h2>@Loc[L.Settings_Sessions_Iceshrimp]</h2>
+        @if (WebSessions.Count == 0)
+        {
+            <i>@Loc[L.Settings_Sessions_Empty]</i>
+        }
+
+        @foreach (var session in WebSessions)
+        {
+            <article class="card session">
+                <div class="badge-group">
+                    @session.Id
+                    @if (session.Current)
+                    {
+                        <span class="badge notice">@Loc[L.Settings_Sessions_Current]</span>
+                    }
+                    else if (session.Active)
+                    {
+                        <span class="badge success">@Loc[L.Settings_Sessions_Active]</span>
+                    }
+                    else
+                    {
+                        <span class="badge warning">@Loc[L.Settings_Sessions_Current]</span>
+                    }
+                </div>
+                <span>@Loc[L.Settings_Sessions_CreatedAt_DateTime, session.CreatedAt.ToString("G")]</span>
+                @if (session.LastActive != null)
+                {
+                    <span>@Loc[L.Settings_Sessions_LastActive_DateTime, session.LastActive.Value.ToString("G")]</span>
+                }
+                @if (!session.Current)
+                {
+                    <button @onclick="() => TerminateWebSession(session.Id)" class="card-button danger">
+                        <Icon Name="Icons.Trash"/>
+                        @Loc[L.Settings_Sessions_Terminate]
+                    </button>
+                }
+            </article>
+        }
+
+        <h2>@Loc[L.Settings_Sessions_Mastodon]</h2>
+        @if (MastoSessions.Count == 0)
+        {
+            <i>@Loc[L.Settings_Sessions_Empty]</i>
+        }
+    }
+    else if (State == State.Loading)
+    {
+        <div class="loading">
+            <LoadingSpinner Scale="2"/>
+        </div>
+    }
+    else if (State == State.Error)
+    {
+        <i>@Loc[L.Error_Api_Unknown]</i>
+    }
+</section>
+
+@code {
+    private State State { get; set; }
+
+    private List<SessionSchemas.SessionResponse>         WebSessions   { get; set; } = [];
+    private List<SessionSchemas.MastodonSessionResponse> MastoSessions { get; set; } = [];
+
+    protected override async Task OnInitializedAsync()
+    {
+        State = State.Loading;
+
+        try
+        {
+            WebSessions   = (await Api.Sessions.GetSessionsAsync()).OrderBy(p => !p.Current).ThenBy(p => p.LastActive).ToList();
+            MastoSessions = (await Api.Sessions.GetMastodonSessionsAsync()).OrderBy(p => p.LastActive).ToList();
+        }
+        catch (ApiException)
+        {
+            State = State.Error;
+            StateHasChanged();
+            return;
+        }
+
+        State = State.Loaded;
+        StateHasChanged();
+    }
+
+    private async Task TerminateWebSession(string id)
+    {
+        try
+        {
+            await Api.Sessions.TerminateSessionAsync(id);
+            WebSessions.RemoveAll(p => p.Id == id);
+            StateHasChanged();
+        }
+        catch (ApiException e)
+        {
+            await Global.NoticeDialog?.DisplayApiError(e)!;
+        }
+    }
+}

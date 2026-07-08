@@ -3026,5 +3026,65 @@ namespace Iceshrimp.Frontend.Localization {
                 return ResourceManager.GetString("User_Badge_FollowedBy", resourceCulture);
             }
         }
+        
+        internal static string Settings_Sessions {
+            get {
+                return ResourceManager.GetString("Settings_Sessions", resourceCulture);
+            }
+        }
+        
+        internal static string Settings_Sessions_Iceshrimp {
+            get {
+                return ResourceManager.GetString("Settings_Sessions_Iceshrimp", resourceCulture);
+            }
+        }
+        
+        internal static string Settings_Sessions_Mastodon {
+            get {
+                return ResourceManager.GetString("Settings_Sessions_Mastodon", resourceCulture);
+            }
+        }
+        
+        internal static string Settings_Sessions_Empty {
+            get {
+                return ResourceManager.GetString("Settings_Sessions_Empty", resourceCulture);
+            }
+        }
+        
+        internal static string Settings_Sessions_Current {
+            get {
+                return ResourceManager.GetString("Settings_Sessions_Current", resourceCulture);
+            }
+        }
+        
+        internal static string Settings_Sessions_Active {
+            get {
+                return ResourceManager.GetString("Settings_Sessions_Active", resourceCulture);
+            }
+        }
+        
+        internal static string Settings_Sessions_Inactive {
+            get {
+                return ResourceManager.GetString("Settings_Sessions_Inactive", resourceCulture);
+            }
+        }
+        
+        internal static string Settings_Sessions_CreatedAt_DateTime {
+            get {
+                return ResourceManager.GetString("Settings_Sessions_CreatedAt_DateTime", resourceCulture);
+            }
+        }
+        
+        internal static string Settings_Sessions_LastActive_DateTime {
+            get {
+                return ResourceManager.GetString("Settings_Sessions_LastActive_DateTime", resourceCulture);
+            }
+        }
+        
+        internal static string Settings_Sessions_Terminate {
+            get {
+                return ResourceManager.GetString("Settings_Sessions_Terminate", resourceCulture);
+            }
+        }
     }
 }

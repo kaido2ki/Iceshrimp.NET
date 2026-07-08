@@ -1510,4 +1510,34 @@
     <data name="User_Badge_FollowedBy" xml:space="preserve">
         <value>Follows you</value>
     </data>
+    <data name="Settings_Sessions" xml:space="preserve">
+        <value>Sessions</value>
+    </data>
+    <data name="Settings_Sessions_Iceshrimp" xml:space="preserve">
+        <value>Iceshrimp.NET Sessions</value>
+    </data>
+    <data name="Settings_Sessions_Mastodon" xml:space="preserve">
+        <value>Mastodon API Sessions</value>
+    </data>
+    <data name="Settings_Sessions_Empty" xml:space="preserve">
+        <value>No sessions were found.</value>
+    </data>
+    <data name="Settings_Sessions_Current" xml:space="preserve">
+        <value>Current</value>
+    </data>
+    <data name="Settings_Sessions_Active" xml:space="preserve">
+        <value>Active</value>
+    </data>
+    <data name="Settings_Sessions_Inactive" xml:space="preserve">
+        <value>Inactive</value>
+    </data>
+    <data name="Settings_Sessions_CreatedAt_DateTime" xml:space="preserve">
+        <value>Created at: {0}</value>
+    </data>
+    <data name="Settings_Sessions_LastActive_DateTime" xml:space="preserve">
+        <value>Last active: {0}</value>
+    </data>
+    <data name="Settings_Sessions_Terminate" xml:space="preserve">
+        <value>Terminate</value>
+    </data>
 </root>
