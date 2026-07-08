@@ -50,6 +50,26 @@ public class SessionController(DatabaseContext db) : ControllerBase
 	}
 
 	/// <summary>
+	/// Terminate all sessions
+	/// </summary>
+	/// <remarks>Terminate all Iceshrimp.NET and Mastodon sessions except the current session.</remarks>
+	[HttpDelete("all")]
+	[ProducesResults(HttpStatusCode.OK)]
+	public async Task TerminateAllSessions()
+	{
+		var user    = HttpContext.GetUserOrFail();
+		var current = HttpContext.GetSessionOrFail();
+
+		var webSessions   = await db.Sessions.Where(p => p.UserId == user.Id && p.Id != current.Id).ToListAsync();
+		var mastoSessions = await db.OauthTokens.Where(p => p.UserId == user.Id).ToListAsync();
+
+		db.RemoveRange(webSessions);
+		db.RemoveRange(mastoSessions);
+
+		await db.SaveChangesAsync();
+	}
+
+	/// <summary>
 	/// Terminate Iceshrimp.NET session
 	/// </summary>
 	/// <remarks>Terminate the session, preventing it from accessing the Iceshrimp.NET API.</remarks>
