@@ -1573,4 +1573,7 @@
     <data name="Settings_Sessions_UpdateFlags" xml:space="preserve">
         <value>Update flags</value>
     </data>
+    <data name="Common_LoadMore" xml:space="preserve">
+        <value>Load more</value>
+    </data>
 </root>

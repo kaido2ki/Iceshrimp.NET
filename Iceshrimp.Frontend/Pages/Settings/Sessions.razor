@@ -71,6 +71,11 @@
             </article>
         }
 
+        @if (WebSessions.Count % PageSize == 0)
+        {
+            <button class="button" @onclick="LoadMoreWebSessions">@Loc[L.Common_LoadMore]</button>
+        }
+
         <h2>@Loc[L.Settings_Sessions_Mastodon]</h2>
         @if (MastoSessions.Count == 0)
         {
@@ -137,6 +142,11 @@
                 </div>
             </article>
         }
+
+        @if (MastoSessions.Count % PageSize == 0)
+        {
+            <button class="button" @onclick="LoadMoreMastoSessions">@Loc[L.Common_LoadMore]</button>
+        }
     }
     else if (State == State.Loading)
     {
@@ -151,29 +161,62 @@
 </section>
 
 @code {
-    private State State { get; set; }
+    private State State     { get; set; }
+    private int   WebPage   { get; set; }
+    private int   MastoPage { get; set; }
 
     private List<SessionSchemas.SessionResponse>         WebSessions   { get; set; } = [];
     private List<SessionSchemas.MastodonSessionResponse> MastoSessions { get; set; } = [];
+
+    private const int PageSize = 20;
 
     protected override async Task OnInitializedAsync()
     {
         State = State.Loading;
 
-        try
-        {
-            WebSessions   = (await Api.Sessions.GetSessionsAsync()).OrderBy(p => !p.Current).ThenBy(p => p.LastActive).ToList();
-            MastoSessions = (await Api.Sessions.GetMastodonSessionsAsync()).OrderBy(p => p.LastActive).ToList();
-        }
-        catch (ApiException)
-        {
-            State = State.Error;
-            StateHasChanged();
-            return;
-        }
+        await LoadMoreWebSessions();
+        await LoadMoreMastoSessions();
 
         State = State.Loaded;
         StateHasChanged();
+    }
+
+    private async Task LoadMoreWebSessions()
+    {
+        try
+        {
+            var res = await Api.Sessions.GetSessionsAsync(WebPage);
+            @if (res.Count != 0)
+            {
+                WebSessions.AddRange(res);
+                WebPage++;
+            }
+
+            StateHasChanged();
+        }
+        catch (ApiException e)
+        {
+            await Global.NoticeDialog?.DisplayApiError(e)!;
+        }
+    }
+
+    private async Task LoadMoreMastoSessions()
+    {
+        try
+        {
+            var res = await Api.Sessions.GetMastodonSessionsAsync(MastoPage);
+            @if (res.Count != 0)
+            {
+                MastoSessions.AddRange(res);
+                MastoPage++;
+            }
+
+            StateHasChanged();
+        }
+        catch (ApiException e)
+        {
+            await Global.NoticeDialog?.DisplayApiError(e)!;
+        }
     }
 
     private async Task TerminateWebSession(string id)

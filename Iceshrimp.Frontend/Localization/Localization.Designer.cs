@@ -3152,5 +3152,11 @@ namespace Iceshrimp.Frontend.Localization {
                 return ResourceManager.GetString("Settings_Sessions_UpdateFlags", resourceCulture);
             }
         }
+        
+        internal static string Common_LoadMore {
+            get {
+                return ResourceManager.GetString("Common_LoadMore", resourceCulture);
+            }
+        }
     }
 }
