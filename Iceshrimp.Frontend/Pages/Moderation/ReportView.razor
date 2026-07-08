@@ -33,18 +33,18 @@
 
 @if (State == State.Loaded && Report != null)
 {
-    <div class="report">
+    <div class="card report">
         <div class="report-user">
             <NoteUserInfo User="Report.TargetUser" Indented="false"/>
             <div class="report-details">
                 <Timestamp Date="Report.CreatedAt"/>
                 @if (Report.Resolved)
                 {
-                    <span class="report-resolved">@Loc[L.Moderation_Reports_Resolved]</span>
+                    <span class="badge success">@Loc[L.Moderation_Reports_Resolved]</span>
                 }
                 else
                 {
-                    <span class="report-unresolved">@Loc[L.Moderation_Reports_Unresolved]</span>
+                    <span class="badge danger">@Loc[L.Moderation_Reports_Unresolved]</span>
                 }
             </div>
         </div>
@@ -154,7 +154,7 @@
         </div>
     }
     
-    <div class="report">
+    <div class="card report">
         <h3>@Loc[L.Moderation_Reports_Actions]</h3>
         @if (Report.TargetUser.IsSuspended)
         {
@@ -166,26 +166,26 @@
             <MfmText Text="@Loc[L.Moderation_Reports_ResolvedBy_Username, Report.Assignee.DisplayName ?? Report.Assignee.Username]"
                      Emoji="Report.Assignee.Emojis" Simple="true"/>
         }
-        <div class="buttons">
+        <div class="button-group">
             @if (!Report.Resolved)
             {
                 @if (Report.Reporter.Host == null && Report.TargetUser.Host != null && !Report.Forwarded)
                 {
-                    <span class="button" @onclick="Forward">
+                    <span class="card-button" @onclick="Forward">
                         <Icon Name="Icons.PaperPlaneRight"/>
                         @Loc[L.Report_Dialog_Forward_Host, Report.TargetUser.Host]
                     </span>
                 }
-                <span class="button" @onclick="Resolve">
+                <span class="card-button" @onclick="Resolve">
                     <Icon Name="Icons.CheckCircle"/>
                     @Loc[L.Moderation_Reports_MarkResolved]
                 </span>
-                <span class="button danger" @onclick="Suspend">
+                <span class="card-button danger" @onclick="Suspend">
                     <Icon Name="Icons.Gavel"/>
                     @Loc[L.Moderation_Reports_SuspendTarget]
                 </span>
             }
-            <span class="button danger" @onclick="DeleteReport">
+            <span class="card-button danger" @onclick="DeleteReport">
                 <Icon Name="Icons.Trash"/>
                 @Loc[L.Common_Delete]
             </span>

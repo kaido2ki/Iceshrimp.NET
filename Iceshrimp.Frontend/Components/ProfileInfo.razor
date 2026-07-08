@@ -19,7 +19,7 @@
         </WarningBanner>
     }
     <div class="top-row">
-        <div class="badges">
+        <div class="badge-group">
             @if (UserProfile.Lang != null && (UserProfile.Pronouns?.TryGetValue(UserProfile.Lang, out var pronouns) ?? false))
             {
                 <span class="badge">@pronouns</span>
@@ -64,7 +64,7 @@
                 </span>
             }
         </div>
-        <div class="profile-buttons">
+        <div class="button-group profile-buttons">
             <FollowButton User="User" UserProfile="UserProfile"/>
             <MenuButton ButtonClass="button context-button">
                 <ButtonContent>

@@ -22,7 +22,7 @@
     <div class="badge-feed">
         @if (_badges.Count != 0)
         {
-            <div class="badges">
+            <div class="badge-group">
                 @foreach (var badge in _badges)
                 {
                     <span class="badge">
@@ -34,7 +34,7 @@
         }
         @if (_feeds != null)
         {
-            <div class="feeds">
+            <div class="button-group feeds">
                 <a href="@_feeds["Atom"].Item2" type="@_feeds["Atom"].Item1" title="Atom Feed">
                     <Icon Name="Icons.Atom" Size="1.3em"/>
                 </a>

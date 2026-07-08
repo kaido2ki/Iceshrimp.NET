@@ -33,18 +33,18 @@
 {
     @foreach (var report in Reports)
     {
-        <div class="report">
+        <div class="card report">
             <div class="report-user">
                 <NoteUserInfo User="report.TargetUser" Indented="false"/>
                 <div class="report-details">
                     <Timestamp Date="report.CreatedAt"/>
                     @if (report.Resolved)
                     {
-                        <span class="report-resolved">@Loc[L.Moderation_Reports_Resolved]</span>
+                        <span class="badge success">@Loc[L.Moderation_Reports_Resolved]</span>
                     }
                     else
                     {
-                        <span class="report-unresolved">@Loc[L.Moderation_Reports_Unresolved]</span>
+                        <span class="badge danger">@Loc[L.Moderation_Reports_Unresolved]</span>
                     }
                 </div>
             </div>

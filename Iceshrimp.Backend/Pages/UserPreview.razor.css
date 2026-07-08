@@ -75,28 +75,10 @@
     padding-top: 0.5rem;
 }
 
-.badges, .feeds {
-    display: flex;
-    gap: 0.5rem;
-}
-
-.badges {
-    flex-wrap: wrap;
-}
-
 .feeds {
     margin-left: auto;
     justify-content: end;
     width: max-content;
-}
-
-.badge {
-    display: inline-flex;
-    align-items: center;
-    gap: 0.25rem;
-    padding: 0 0.5rem;
-    background-color: var(--highlight-color);
-    border-radius: 0.5rem;
 }
 
 .field {
