@@ -13,6 +13,7 @@ internal class ApiService(ApiClient client)
 	public readonly NoteControllerModel          Notes          = new(client);
 	public readonly NotificationControllerModel  Notifications  = new(client);
 	public readonly SearchControllerModel        Search         = new(client);
+	public readonly SessionControllerModel       Sessions       = new(client);
 	public readonly SettingsControllerModel      Settings       = new(client);
 	public readonly TimelineControllerModel      Timelines      = new(client);
 	public readonly UserControllerModel          Users          = new(client);
