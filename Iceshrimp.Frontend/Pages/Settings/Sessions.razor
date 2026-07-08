@@ -31,22 +31,22 @@
 
         @foreach (var session in WebSessions)
         {
-            <article class="card session">
+            <article id="@session.Id" class="card session">
                 <div class="badge-group">
-                    @session.Id
+                    <h3>@session.Id</h3>
                     @if (session.Current)
                     {
                         <span class="badge notice">@Loc[L.Settings_Sessions_Current]</span>
                     }
-                    else if (session.Active)
-                    {
-                        <span class="badge success">@Loc[L.Settings_Sessions_Active]</span>
-                    }
-                    else
+                    else if (!session.Active)
                     {
                         <span class="badge warning">@Loc[L.Settings_Sessions_Current]</span>
                     }
                 </div>
+                @if (session.LinkedSession != null)
+                {
+                    <span>@Loc[L.Settings_Sessions_LinkedToMastodon, @session.LinkedSession.Id]</span>
+                }
                 <span>@Loc[L.Settings_Sessions_CreatedAt_DateTime, session.CreatedAt.ToString("G")]</span>
                 @if (session.LastActive != null)
                 {
@@ -66,6 +66,61 @@
         @if (MastoSessions.Count == 0)
         {
             <i>@Loc[L.Settings_Sessions_Empty]</i>
+        }
+        
+        @foreach (var session in MastoSessions)
+        {
+            <article id="@session.Id" class="card session">
+                <div class="badge-group">
+                    <h3>@(string.IsNullOrWhiteSpace(session.App) ? session.Id : $"{session.App}: {session.Id}")</h3>
+                    @if (!session.Active)
+                    {
+                        <span class="badge warning">@Loc[L.Settings_Sessions_Current]</span>
+                    }
+                </div>
+                @if (session.LinkedSession != null)
+                {
+                    <span>@Loc[L.Settings_Sessions_LinkedToIceshrimp, @session.LinkedSession.Id]</span>
+                }
+                <span>@Loc[L.Settings_Sessions_CreatedAt_DateTime, session.CreatedAt.ToString("G")]</span>
+                @if (session.LastActive != null)
+                {
+                    <span>@Loc[L.Settings_Sessions_LastActive_DateTime, session.LastActive.Value.ToString("G")]</span>
+                }
+                @if (session.Scopes.Count != 0)
+                {
+                    <h4>@Loc[L.Settings_Sessions_Scopes]</h4>
+                    <div class="badge-group">
+                        @foreach (var scope in session.Scopes)
+                        {
+                            <span class="badge">@scope</span>
+                        }
+                    </div>
+                }
+                <h4>@Loc[L.Settings_Sessions_Flags]</h4>
+                <div class="badge-group">
+                    <label>
+                        <input type="checkbox" checked="@(session.Flags.SupportsHtmlFormatting)" disabled>
+                        @Loc[L.Settings_Sessions_Flag_SupportsHtmlFormatting]
+                    </label>
+                    <label>
+                        <input type="checkbox" checked="@(session.Flags.SupportsInlineMedia)" disabled>
+                        @Loc[L.Settings_Sessions_Flag_SupportsInlineMedia]
+                    </label>
+                    <label>
+                        <input type="checkbox" checked="@(session.Flags.AutoDetectQuotes)" disabled>
+                        @Loc[L.Settings_Sessions_Flag_AutoDetectQuotes]
+                    </label>
+                    <label>
+                        <input type="checkbox" checked="@(session.Flags.IsPleroma)" disabled>
+                        @Loc[L.Settings_Sessions_Flag_IsPleroma]
+                    </label>
+                </div>
+                <button @onclick="() => TerminateMastoSession(session.Id)" class="card-button danger">
+                    <Icon Name="Icons.Trash"/>
+                    @Loc[L.Settings_Sessions_Terminate]
+                </button>
+            </article>
         }
     }
     else if (State == State.Loading)
@@ -111,7 +166,37 @@
         try
         {
             await Api.Sessions.TerminateSessionAsync(id);
-            WebSessions.RemoveAll(p => p.Id == id);
+
+            var session = WebSessions.FirstOrDefault(p => p.Id == id);
+            if (session != null)
+            {
+                WebSessions.Remove(session);
+                if (session.LinkedSession != null)
+                    MastoSessions.Remove(session.LinkedSession);
+            }
+
+            StateHasChanged();
+        }
+        catch (ApiException e)
+        {
+            await Global.NoticeDialog?.DisplayApiError(e)!;
+        }
+    }
+
+    private async Task TerminateMastoSession(string id)
+    {
+        try
+        {
+            await Api.Sessions.TerminateMastodonSessionAsync(id);
+
+            var session = MastoSessions.FirstOrDefault(p => p.Id == id);
+            if (session != null)
+            {
+                MastoSessions.Remove(session);
+                if (session.LinkedSession != null)
+                    WebSessions.Remove(session.LinkedSession);
+            }
+
             StateHasChanged();
         }
         catch (ApiException e)

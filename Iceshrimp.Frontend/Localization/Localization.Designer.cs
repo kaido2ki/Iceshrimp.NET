@@ -3086,5 +3086,53 @@ namespace Iceshrimp.Frontend.Localization {
                 return ResourceManager.GetString("Settings_Sessions_Terminate", resourceCulture);
             }
         }
+        
+        internal static string Settings_Sessions_Flag_SupportsHtmlFormatting {
+            get {
+                return ResourceManager.GetString("Settings_Sessions_Flag_SupportsHtmlFormatting", resourceCulture);
+            }
+        }
+        
+        internal static string Settings_Sessions_Flag_SupportsInlineMedia {
+            get {
+                return ResourceManager.GetString("Settings_Sessions_Flag_SupportsInlineMedia", resourceCulture);
+            }
+        }
+        
+        internal static string Settings_Sessions_Flag_AutoDetectQuotes {
+            get {
+                return ResourceManager.GetString("Settings_Sessions_Flag_AutoDetectQuotes", resourceCulture);
+            }
+        }
+        
+        internal static string Settings_Sessions_Flag_IsPleroma {
+            get {
+                return ResourceManager.GetString("Settings_Sessions_Flag_IsPleroma", resourceCulture);
+            }
+        }
+        
+        internal static string Settings_Sessions_Scopes {
+            get {
+                return ResourceManager.GetString("Settings_Sessions_Scopes", resourceCulture);
+            }
+        }
+        
+        internal static string Settings_Sessions_Flags {
+            get {
+                return ResourceManager.GetString("Settings_Sessions_Flags", resourceCulture);
+            }
+        }
+        
+        internal static string Settings_Sessions_LinkedToIceshrimp {
+            get {
+                return ResourceManager.GetString("Settings_Sessions_LinkedToIceshrimp", resourceCulture);
+            }
+        }
+        
+        internal static string Settings_Sessions_LinkedToMastodon {
+            get {
+                return ResourceManager.GetString("Settings_Sessions_LinkedToMastodon", resourceCulture);
+            }
+        }
     }
 }

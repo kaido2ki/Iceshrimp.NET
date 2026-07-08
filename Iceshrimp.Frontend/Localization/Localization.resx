@@ -1540,4 +1540,28 @@
     <data name="Settings_Sessions_Terminate" xml:space="preserve">
         <value>Terminate</value>
     </data>
+    <data name="Settings_Sessions_Flag_SupportsHtmlFormatting" xml:space="preserve">
+        <value>HTML formatting</value>
+    </data>
+    <data name="Settings_Sessions_Flag_SupportsInlineMedia" xml:space="preserve">
+        <value>Inline media</value>
+    </data>
+    <data name="Settings_Sessions_Flag_AutoDetectQuotes" xml:space="preserve">
+        <value>Auto detect quotes</value>
+    </data>
+    <data name="Settings_Sessions_Flag_IsPleroma" xml:space="preserve">
+        <value>Pleroma/Akkoma app</value>
+    </data>
+    <data name="Settings_Sessions_Scopes" xml:space="preserve">
+        <value>Permission scopes</value>
+    </data>
+    <data name="Settings_Sessions_Flags" xml:space="preserve">
+        <value>Feature flags</value>
+    </data>
+    <data name="Settings_Sessions_LinkedToIceshrimp" xml:space="preserve">
+        <value>Linked to Iceshrimp.NET: {0}</value>
+    </data>
+    <data name="Settings_Sessions_LinkedToMastodon" xml:space="preserve">
+        <value>Linked to Mastodon API: {0}</value>
+    </data>
 </root>

@@ -1,0 +1,8 @@
+.session h2, .session h3 {
+    margin: 0;
+    font-size: 1rem;
+}
+
+.session label {
+    margin: 0;
+}
