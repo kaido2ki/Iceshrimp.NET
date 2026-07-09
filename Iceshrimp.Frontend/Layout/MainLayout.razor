@@ -1,8 +1,12 @@
 ﻿@using Iceshrimp.Frontend.Core.Services
+@using Iceshrimp.Shared.Schemas.Web
 @using Microsoft.AspNetCore.Components.Authorization
 @using Microsoft.AspNetCore.Components.Sections
 @inherits LayoutComponentBase
-@inject SettingsService Settings;
+@inject ApiService        Api;
+@inject NavigationManager Nav;
+@inject SessionService    Session;
+@inject SettingsService   Settings;
 
 <HeadContent>
     @if (!string.IsNullOrWhiteSpace(Settings.Preferences.CustomCss))
@@ -40,3 +44,20 @@
         </AuthorizeView>
     </div>
 </div>
+
+@code {
+    protected override async Task OnInitializedAsync()
+    {
+        @if (Session.Current != null)
+        {
+            var res = await Api.Auth.GetAuthStatusAsync();
+            if (res.Status != AuthStatusEnum.Authenticated)
+            {
+                var id = Session.Current.Id;
+                Session.EndSession();
+                Session.DeleteUser(id);
+                Nav.NavigateTo("/login");
+            }
+        }
+    }
+}
