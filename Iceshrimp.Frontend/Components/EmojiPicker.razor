@@ -180,6 +180,12 @@
     {
         LocalStorage.SetItem(nameof(EmojiPreferences), Preferences);
         await Js.HidePopoverAsync(Popover);
+
+        if (!string.IsNullOrWhiteSpace(EmojiFilter))
+        {
+            EmojiFilter = "";
+            FilterEmojis();
+        }
     }
 
     public async Task Open(ElementReference source, EventCallback<SelectedEmoji> func)
