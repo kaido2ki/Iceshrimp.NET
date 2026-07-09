@@ -36,18 +36,17 @@ public class SessionController(DatabaseContext db) : ControllerBase
 	[ProducesResults(HttpStatusCode.OK)]
 	public async Task<List<SessionResponse>> GetSessions(int page = 0)
 	{
-		const int pageSize  = 20;
-		var       user      = HttpContext.GetUserOrFail();
-		var       currentId = HttpContext.GetSessionOrFail().Id;
+		const int pageSize = 20;
+		var       current  = HttpContext.GetSessionOrFail();
 
 		return await db.Sessions
 		               .Include(p => p.MastodonToken!.App)
-		               .Where(p => p.User == user)
-		               .OrderBy(p => p.Id != currentId)
+		               .Where(p => p.User == current.User)
+		               .OrderBy(p => p.Id != current.Id)
 		               .ThenByDescending(p => p.LastActiveDate ?? p.CreatedAt)
 		               .Skip(page * pageSize)
 		               .Take(pageSize)
-		               .Select(p => RenderWebSession(p, currentId, true))
+		               .Select(p => RenderWebSession(p, current.Id, true))
 		               .ToListAsync();
 	}
 
@@ -59,16 +58,10 @@ public class SessionController(DatabaseContext db) : ControllerBase
 	[ProducesResults(HttpStatusCode.OK)]
 	public async Task TerminateAllSessions()
 	{
-		var user    = HttpContext.GetUserOrFail();
 		var current = HttpContext.GetSessionOrFail();
 
-		var webSessions   = await db.Sessions.Where(p => p.UserId == user.Id && p.Id != current.Id).ToListAsync();
-		var mastoSessions = await db.OauthTokens.Where(p => p.UserId == user.Id).ToListAsync();
-
-		db.RemoveRange(webSessions);
-		db.RemoveRange(mastoSessions);
-
-		await db.SaveChangesAsync();
+		await db.Sessions.Where(p => p.User == current.User && p.Id != current.Id).ExecuteDeleteAsync();
+		await db.OauthTokens.Where(p => p.User == current.User).ExecuteDeleteAsync();
 	}
 
 	/// <summary>
@@ -106,18 +99,17 @@ public class SessionController(DatabaseContext db) : ControllerBase
 	[ProducesResults(HttpStatusCode.OK)]
 	public async Task<List<MastodonSessionResponse>> GetMastodonSessions(int page = 0)
 	{
-		const int pageSize  = 20;
-		var       user      = HttpContext.GetUserOrFail();
-		var       currentId = HttpContext.GetSessionOrFail().Id;
+		const int pageSize = 20;
+		var       current  = HttpContext.GetSessionOrFail();
 
 		return await db.OauthTokens
 		               .Include(p => p.App)
 		               .Include(p => p.WebSession)
-		               .Where(p => p.User == user)
+		               .Where(p => p.User == current.User)
 		               .OrderByDescending(p => p.LastActiveDate ?? p.CreatedAt)
 		               .Skip(page * pageSize)
 		               .Take(pageSize)
-		               .Select(p => RenderMastoSession(p, currentId, true))
+		               .Select(p => RenderMastoSession(p, current.Id, true))
 		               .ToListAsync();
 	}
 
