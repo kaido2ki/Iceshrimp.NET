@@ -7,74 +7,72 @@
 @inject JsService                      Js;
 @inject IStringLocalizer<Localization> Loc;
 
-<dialog @onkeyup="HandleKeys" class="dialog" @ref="Dialog">
-    <div class="contents">
-        <div class="header">
-            <Icon Name="Icons.Megaphone" Size="1.3em"/>
-            @if (Announcements.Count != 1)
-            {
-                <span>@Loc[L.Announcements_Count, Current + 1, Announcements.Count]</span>
-            }
-            else
-            {
-                <span>@Loc[L.Announcement]</span>
-            }
-        </div>
-        <div class="body">
-            @if (Announcements.Count != 0)
-            {
-                var current = Announcements[Current];
+<dialog class="modal" @ref="Dialog">
+    <div class="dialog-header header">
+        <Icon Name="Icons.Megaphone" Size="1.3em"/>
+        @if (Announcements.Count != 1)
+        {
+            <span>@Loc[L.Announcements_Count, Current + 1, Announcements.Count]</span>
+        }
+        else
+        {
+            <span>@Loc[L.Announcement]</span>
+        }
+    </div>
+    <div class="body">
+        @if (Announcements.Count != 0)
+        {
+            var current = Announcements[Current];
 
-                <span class="title">
+            <span class="title">
                     <MfmText Text="@current.Title" Emoji="@current.Emojis" Simple/>
                 </span>
-                <span class="text">
+            <span class="text">
                     <MfmText Text="@current.Text" Emoji="@current.Emojis"/>
                 </span>
 
-                @if (current.ImageUrl != null)
-                {
-                    <img src="@current.ImageUrl"/>
-                }
-
-                <span class="date">
-                    @if (current.UpdatedAt != null)
-                    {
-                        @Loc[L.Announcement_Date_CreatedAt_UpdatedAt, current.CreatedAt.ToLocalTime().ToString("G"), current.UpdatedAt.Value.ToLocalTime().ToString("G")]
-                    }
-                    else
-                    {
-                        @current.CreatedAt.ToLocalTime().ToString("G")
-                    }
-                </span>
-            }
-        </div>
-        <div class="buttons">
-            @if (Announcements.Count != 1)
+            @if (current.ImageUrl != null)
             {
-                <button class="button" @onclick="Previous"
-                        disabled="@(Current == 0 && NextButton?.State != StateButton.StateEnum.Loading)">
-                <Icon Name="Icons.CaretLeft"/>
-                    @Loc[L.Common_Previous]
-                </button>
+                <img src="@current.ImageUrl"/>
             }
-            <StateButton OnClick="Next" ExtraClasses="button confirm-btn" @ref="NextButton">
-                <Initial>
-                    <span>@Loc[L.Common_Next]</span>
-                    <Icon Name="Icons.CaretRight"/>
-                </Initial>
-                <Success>
-                    <span>@Loc[L.Common_Close]</span>
-                </Success>
-                <Loading>
-                    <span>@Loc[L.StateButton_Loading]</span>
-                    <LoadingSpinner/>
-                </Loading>
-                <Failed>
-                    @Loc[L.StateButton_Retry]<Icon Name="Icons.X"/>
-                </Failed>
-            </StateButton>
-        </div>
+
+            <span class="date">
+                    @if (current.UpdatedAt != null)
+                {
+                    @Loc[L.Announcement_Date_CreatedAt_UpdatedAt, current.CreatedAt.ToLocalTime().ToString("G"), current.UpdatedAt.Value.ToLocalTime().ToString("G")]
+                }
+                else
+                {
+                    @current.CreatedAt.ToLocalTime().ToString("G")
+                }
+                </span>
+        }
+    </div>
+    <div class="dialog-footer button-group">
+        @if (Announcements.Count != 1)
+        {
+            <button class="button" @onclick="Previous"
+                    disabled="@(Current == 0 && NextButton?.State != StateButton.StateEnum.Loading)">
+                <Icon Name="Icons.CaretLeft"/>
+                @Loc[L.Common_Previous]
+            </button>
+        }
+        <StateButton OnClick="Next" ExtraClasses="button primary-button" @ref="NextButton">
+            <Initial>
+                <span>@Loc[L.Common_Next]</span>
+                <Icon Name="Icons.CaretRight"/>
+            </Initial>
+            <Success>
+                <span>@Loc[L.Common_Close]</span>
+            </Success>
+            <Loading>
+                <span>@Loc[L.StateButton_Loading]</span>
+                <LoadingSpinner/>
+            </Loading>
+            <Failed>
+                @Loc[L.StateButton_Retry]<Icon Name="Icons.X"/>
+            </Failed>
+        </StateButton>
     </div>
 </dialog>
 
@@ -154,18 +152,6 @@
 
             NextButton.State = res.Data.Count == 0 ? StateButton.StateEnum.Success : StateButton.StateEnum.Initial;
             Current++;
-        }
-    }
-
-    private async Task HandleKeys(KeyboardEventArgs e)
-    {
-        if (e is { Code: "Escape" })
-        {
-            Previous();
-        }
-        if (e is { Code: "Enter" })
-        {
-            await Next();
         }
     }
 
