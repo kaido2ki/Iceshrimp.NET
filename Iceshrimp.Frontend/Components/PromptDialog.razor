@@ -13,11 +13,11 @@
         <div class="dialog-header">@Text</div>
         @if (MultiLine)
         {
-            <textarea class="prompt" @bind="Input" @bind:event="oninput" rows="5" placeholder="@Placeholder"></textarea>
+            <textarea class="prompt" @bind="Input" @bind:event="oninput" rows="5" placeholder="@Placeholder" autofocus></textarea>
         }
         else
         {
-            <input type="text" class="input" @bind="Input" @bind:event="oninput" placeholder="@Placeholder"/>
+            <input type="text" class="input" @bind="Input" @bind:event="oninput" placeholder="@Placeholder" autofocus/>
         }
 
         <div class="dialog-footer button-group">
