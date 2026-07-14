@@ -8,9 +8,8 @@
 @inject IStringLocalizer<Localization> Loc;
 @inject SessionService                 Session;
 
-<dialog class="dialog" @ref="Dialog">
-    <div class="report @(Waiting ? "waiting" : "")">
-        @if (Waiting)
+<dialog closedby="none" class="modal" @ref="Dialog">
+    @if (Waiting)
         {
             <LoadingSpinner Scale="1.5"/>
         }
@@ -18,14 +17,14 @@
         {
             @if (ReportedNote != null)
             {
-                <span>@Loc[L.Report_Note]</span>
+                <div class="dialog-header">@Loc[L.Report_Note]</div>
                 <div class="report-note">
                     <NoteComponent Note="ReportedNote" AsQuote="true" OpenNote="false"/>
                 </div>
             }
             else if (ReportedUser != null)
             {
-                <span>@Loc[L.Report_User]</span>
+                <div class="dialog-header">@Loc[L.Report_User]</div>
                 <div class="report-user">
                     <UserAvatar User="ReportedUser" Title="true"/>
                     <div class="name-section">
@@ -72,10 +71,10 @@
                 </ol>
             }
 
-            <textarea class="input" @bind="Comment" @bind:event="oninput" rows="5"
+            <textarea class="input details" @bind="Comment" @bind:event="oninput" rows="5"
                       placeholder="@Loc[L.Report_Dialog_DetailsPlaceholder]"></textarea>
             
-            @if (ReportedUser?.Host != null && (Session?.Current?.IsModerator ?? false) || (Session?.Current?.IsAdmin ?? false))
+            @if (ReportedUser?.Host != null && ((Session?.Current?.IsModerator ?? false) || (Session?.Current?.IsAdmin ?? false)))
             {
                 <label>
                     <InputCheckbox @bind-Value="Forward"/>
@@ -83,13 +82,12 @@
                 </label>
             }
             
-            <div class="buttons">
-                <button class="button submit-btn" @onclick="Submit"
+            <div class="dialog-footer button-group">
+                <button class="button primary-button" @onclick="Submit"
                         disabled="@string.IsNullOrWhiteSpace(Comment)">@Loc[L.Dialog_Submit]</button>
                 <button class="button" @onclick="Cancel">@Loc[L.Dialog_Cancel]</button>
             </div>
         }
-    </div>
 </dialog>
 
 @code {

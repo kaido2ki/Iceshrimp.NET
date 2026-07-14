@@ -56,83 +56,85 @@
     </div>
 }
 
-<dialog class="dialog" @ref="ComposeDialog">
-    <div class="compose">
-        <div class="header">
-            <button class="btn" title="@Loc[L.Common_Close]" @onclick="CloseDialog" aria-label="close">
-                <Icon Name="Icons.X"/>
-            </button>
-            <span>@Loc[L.Announcement]</span>
-            <StateButton OnClick="Send" @ref="SendButton" ExtraClasses="announce-btn" AriaLabel="aanounce"
-                         Disabled="@(string.IsNullOrWhiteSpace(Draft.Title) || string.IsNullOrWhiteSpace(Draft.Text))">
-                <Initial>
-                    @Loc[L.Moderation_Announcements_StateButton_Initial]<Icon Name="Icons.PaperPlaneRight"/>
-                </Initial>
-                <Loading>
-                    @Loc[L.Compose_Sending]<LoadingSpinner />
-                </Loading>
-                <Success>
-                    @Loc[L.Dialog_Confirm]<Icon Name="Icons.Check"/>
-                </Success>
-                <Failed>
-                    @Loc[L.StateButton_Error]<Icon Name="Icons.X"/>
-                </Failed>
-            </StateButton>
-        </div>
-        <input @bind="Draft.Title" @bind:event="oninput" class="input" placeholder="@Loc[L.Moderation_Announcements_Title]" aria-label="title"
-               autofocus="autofocus"/>
-        <hr class="separator"/>
-        <textarea @ref="Textarea" @bind="Draft.Text" @bind:event="oninput" class="textarea"
-                  placeholder="@Loc[L.Compose_BodyPlaceholder_Note]" rows="5" cols="35" aria-label="announcement text"></textarea>
-        <div class="footer">
-            <div class="buttons">
-                <button class="btn" title="@Loc[L.Moderation_Announcements_Image_Add]" @onclick="OpenUploadImage" aria-label="upload">
-                    <Icon Name="Icons.Upload" Size="1.3rem"></Icon>
-                </button>
-                <div class="file-input">
-                    <InputFile @ref="ImageInput" OnChange="UploadImage" accept="image/*">Upload!</InputFile>
-                </div>
-                @if (Draft.ImageUrl != null)
-                {
-                    <button class="btn" title="@Loc[L.Moderation_Announcements_Image_Remove]" @onclick="() => Draft.ImageUrl = null" aria-label="upload">
-                        <Icon Name="Icons.Trash" Size="1.3rem"></Icon>
-                    </button>
-                }
-                <button @ref="EmojiButton" class="btn" title="@Loc[L.Common_Emojis]" @onclick="ToggleEmojiPicker"
-                        aria-label="emoji">
-                    <Icon Name="Icons.Smiley" Size="1.3rem"></Icon>
-                </button>
-                <label>
-                    <input type="checkbox" @bind="Draft.ShowPopup">
-                    @Loc[L.Moderation_Announcements_Popup]
-                </label>
-            </div>
-            <div class="buttons">
-                <button class="btn" title="@Loc[L.Moderation_Announcements_TogglePreview]" @onclick="() => Preview = !Preview"
-                        aria-label="preview">
-                    <Icon Name="Icons.Binoculars" Size="1.3rem"></Icon>
-                </button>
-            </div>
-        </div>
-        @if (Preview)
-        {
-            <div class="preview">
-                @if (string.IsNullOrWhiteSpace(Draft.Text))
-                {
-                    <span>@Loc[L.Compose_NoPreview]</span>
-                }
-                else
-                {
-                    <MfmText Text="@Draft.Text.ReplaceLineEndings("\n")" Emoji="@EmojiList"/>
-                }
-            </div>
-        }
-        @if (Draft.ImageUrl != null)
-        {
-            <img src="@Draft.ImageUrl"/>
-        }
-        <div @onclick="CloseDialog" class="backdrop"></div>
+<dialog closedby="none" class="compose" @ref="ComposeDialog">
+    <div class="header">
+        <button class="btn" title="@Loc[L.Common_Close]" @onclick="CloseDialog" aria-label="close">
+            <Icon Name="Icons.X"/>
+        </button>
+        <span>@Loc[L.Announcement]</span>
+        <StateButton OnClick="Send" @ref="SendButton" ExtraClasses="announce-btn" AriaLabel="aanounce"
+                     Disabled="@(string.IsNullOrWhiteSpace(Draft.Title) || string.IsNullOrWhiteSpace(Draft.Text))">
+            <Initial>
+                @Loc[L.Moderation_Announcements_StateButton_Initial]<Icon Name="Icons.PaperPlaneRight"/>
+            </Initial>
+            <Loading>
+                @Loc[L.Compose_Sending]<LoadingSpinner/>
+            </Loading>
+            <Success>
+                @Loc[L.Dialog_Confirm]<Icon Name="Icons.Check"/>
+            </Success>
+            <Failed>
+                @Loc[L.StateButton_Error]<Icon Name="Icons.X"/>
+            </Failed>
+        </StateButton>
     </div>
+    <input @bind="Draft.Title" @bind:event="oninput" class="input" placeholder="@Loc[L.Moderation_Announcements_Title]"
+           aria-label="title"
+           autofocus="autofocus"/>
+    <hr class="separator"/>
+    <textarea @ref="Textarea" @bind="Draft.Text" @bind:event="oninput" class="textarea"
+              placeholder="@Loc[L.Compose_BodyPlaceholder_Note]" rows="5" cols="35"
+              aria-label="announcement text"></textarea>
+    <div class="footer">
+        <div class="buttons">
+            <button class="btn" title="@Loc[L.Moderation_Announcements_Image_Add]" @onclick="OpenUploadImage"
+                    aria-label="upload">
+                <Icon Name="Icons.Upload" Size="1.3rem"></Icon>
+            </button>
+            <div class="file-input">
+                <InputFile @ref="ImageInput" OnChange="UploadImage" accept="image/*">Upload!</InputFile>
+            </div>
+            @if (Draft.ImageUrl != null)
+            {
+                <button class="btn" title="@Loc[L.Moderation_Announcements_Image_Remove]"
+                        @onclick="() => Draft.ImageUrl = null" aria-label="upload">
+                    <Icon Name="Icons.Trash" Size="1.3rem"></Icon>
+                </button>
+            }
+            <button @ref="EmojiButton" class="btn" title="@Loc[L.Common_Emojis]" @onclick="ToggleEmojiPicker"
+                    aria-label="emoji">
+                <Icon Name="Icons.Smiley" Size="1.3rem"></Icon>
+            </button>
+            <label>
+                <input type="checkbox" @bind="Draft.ShowPopup">
+                @Loc[L.Moderation_Announcements_Popup]
+            </label>
+        </div>
+        <div class="buttons">
+            <button class="btn" title="@Loc[L.Moderation_Announcements_TogglePreview]"
+                    @onclick="() => Preview = !Preview"
+                    aria-label="preview">
+                <Icon Name="Icons.Binoculars" Size="1.3rem"></Icon>
+            </button>
+        </div>
+    </div>
+    @if (Preview)
+    {
+        <div class="preview">
+            @if (string.IsNullOrWhiteSpace(Draft.Text))
+            {
+                <span>@Loc[L.Compose_NoPreview]</span>
+            }
+            else
+            {
+                <MfmText Text="@Draft.Text.ReplaceLineEndings("\n")" Emoji="@EmojiList"/>
+            }
+        </div>
+    }
+    @if (Draft.ImageUrl != null)
+    {
+        <img src="@Draft.ImageUrl"/>
+    }
 </dialog>
 
 @code {
@@ -163,7 +165,7 @@
         if (EmojiList.Count == 0)
             EmojiList = await EmojiSvc.GetEmojiAsync();
 
-        await Js.ShowDialogAsync(ComposeDialog, false);
+        await Js.ShowDialogAsync(ComposeDialog);
     }
 
     private async Task EditAnnouncement(string id)

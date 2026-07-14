@@ -6,39 +6,41 @@
 @inject JsService                      Js;
 @inject IStringLocalizer<Localization> Loc;
 
-<dialog @onkeyup="HandleKeys" class="dialog" @ref="Dialog">
-    <div class="select @(Waiting ? "waiting" : "")">
-        @if (Waiting)
+<dialog closedby="none" @onkeyup="HandleKeys" class="modal" @ref="Dialog">
+    @if (Waiting)
+    {
+        <LoadingSpinner Scale="1.5"/>
+    }
+    else
+    {
+        <div class="dialog-header">@Text</div>
+        <div class="search">
+            <input type="text" class="input" id="username" @bind="Username" @bind:event="oninput" @bind:after="Search"
+                   placeholder="@Loc[L.User_Username]" aria-label="username"/>
+            <input type="text" class="input" id="host" @bind="Host" @bind:event="oninput" @bind:after="Search"
+                   placeholder="@Loc[L.User_Host]" aria-label="host"/>
+        </div>
+
+        @foreach (var user in Users)
         {
-            <LoadingSpinner Scale="1.5"/>
-        }
-        else
-        {
-            <span>@Text</span>
-            <div class="search">
-                <input type="text" class="input" id="username" @bind="Username" @bind:event="oninput" @bind:after="Search" placeholder="@Loc[L.User_Username]" aria-label="username"/>
-                <input type="text" class="input" id="host" @bind="Host" @bind:event="oninput" @bind:after="Search" placeholder="@Loc[L.User_Host]" aria-label="host"/>
-            </div>
-            
-            @foreach (var user in Users)
-            {
-                <div @onclick="() => { Selected = user; }" class="user-entry @(user == Selected ? "selected" : "")">
-                    <UserAvatar User="@user"/>
-                    <div class="name-section">
-                        <span class="display-name"><UserDisplayName User="@user"/></span>
-                        <span class="identifier">
+            <div @onclick="() => { Selected = user; }" class="user-entry @(user == Selected ? "selected" : "")">
+                <UserAvatar User="@user"/>
+                <div class="name-section">
+                    <span class="display-name"><UserDisplayName User="@user"/></span>
+                    <span class="identifier">
                             @@@user.Username@(user.Host != null ? $"@{user.Host}" : "")
                         </span>
-                    </div>
                 </div>
-            }
-
-            <div class="buttons">
-                <button class="button submit-btn" @onclick="ConfirmAction" disabled="@(Selected == null)">@(ButtonText ?? Loc[L.Dialog_Submit])</button>
-                <button class="button" @onclick="CancelAction">@Loc[L.Dialog_Cancel]</button>
             </div>
         }
-    </div>
+
+        <div class="dialog-footer button-group">
+            <button class="button primary-button" @onclick="ConfirmAction" disabled="@(Selected == null)">
+                @(ButtonText ?? Loc[L.Dialog_Submit])
+            </button>
+            <button class="button" @onclick="CancelAction">@Loc[L.Dialog_Cancel]</button>
+        </div>
+    }
 </dialog>
 
 @code {

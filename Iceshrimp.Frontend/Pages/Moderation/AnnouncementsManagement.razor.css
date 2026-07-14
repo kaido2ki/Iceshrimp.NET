@@ -10,37 +10,9 @@
     margin-top: 5rem;
 }
 
-.dialog {
-    width: 100vw;
-    height: 100vh;
-    top: 0;
-    left: 0;
-    position: fixed;
-    margin: auto;
-    background-color: unset;
-    z-index: +11;
-    overflow-y: scroll;
-}
-
 .compose {
-    background-color: var(--background-color);
-    border-radius: 1rem;
-    margin: 10% auto 0;
-    padding: 1rem;
+    width: 100%;
     max-width: 45rem;
-    color: var(--font-color);
-    border: solid var(--border-color) 0.05rem;
-}
-
-.backdrop {
-    position: fixed;
-    width: 100vw;
-    height: 100vh;
-    top: 0;
-    left: 0;
-    z-index: -2;
-    opacity: 50%;
-    background-color: black;
 }
 
 .header {
@@ -144,4 +116,13 @@
 
 .file-input {
     display: none;
+}
+
+@media (max-width: 1000px) {
+    .compose {
+        max-width: unset;
+        min-height: 100vh;
+        border: none;
+        border-radius: 0;
+    }
 }
