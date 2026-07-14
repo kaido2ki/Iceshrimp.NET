@@ -120,6 +120,24 @@ dialog::backdrop {
     opacity: 0.5;
 }
 
+dialog.modal {
+    text-align: center;
+    text-wrap: wrap;
+    word-break: break-word;
+}
+
+dialog .dialog-header {
+    margin-bottom: 1rem;
+    text-align: center;
+    font-weight: bold;
+}
+
+dialog .dialog-footer {
+    justify-content: center;
+    margin-top: 1rem;
+    text-align: center;
+}
+
 button {
     border-radius: 8px;
     border: 0;
