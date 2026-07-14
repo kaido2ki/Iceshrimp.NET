@@ -182,6 +182,11 @@ button[disabled], .button[disabled] {
     cursor: not-allowed;
 }
 
+.primary-button {
+    background: var(--accent-color);
+    color: var(--font-color);
+}
+
 input, textarea, select {
     display: block;
     background-color: var(--foreground-color);

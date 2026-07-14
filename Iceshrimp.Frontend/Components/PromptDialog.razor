@@ -3,31 +3,29 @@
 @inject JsService                      Js;
 @inject IStringLocalizer<Localization> Loc;
 
-<dialog @onkeyup="HandleKeys" class="dialog" @ref="Dialog">
-    <div class="prompt @(Waiting ? "waiting" : "")">
-        @if (Waiting)
+<dialog closedby="none" @onkeyup="HandleKeys" class="modal" @ref="Dialog">
+    @if (Waiting)
+    {
+        <LoadingSpinner Scale="1.5"/>
+    }
+    else
+    {
+        <div class="dialog-header">@Text</div>
+        @if (MultiLine)
         {
-            <LoadingSpinner Scale="1.5"/>
+            <textarea class="prompt" @bind="Input" @bind:event="oninput" rows="5" placeholder="@Placeholder"></textarea>
         }
         else
         {
-            <span>@Text</span>
-            @if (MultiLine)
-            {
-                <textarea class="input" @bind="Input" @bind:event="oninput" rows="5" placeholder="@Placeholder"></textarea>
-            }
-            else
-            {
-                <input type="text" class="input" @bind="Input" @bind:event="oninput" placeholder="@Placeholder"/>
-            }
-
-            <div class="buttons">
-                <button class="button submit-btn" @onclick="ConfirmAction"
-                        disabled="@(Required && string.IsNullOrWhiteSpace(Input))">@(ButtonText ?? Loc[L.Dialog_Submit])</button>
-                <button class="button" @onclick="CancelAction">@Loc[L.Dialog_Cancel]</button>
-            </div>
+            <input type="text" class="input" @bind="Input" @bind:event="oninput" placeholder="@Placeholder"/>
         }
-    </div>
+
+        <div class="dialog-footer button-group">
+            <button class="button primary-button" @onclick="ConfirmAction" autofocus
+                    disabled="@(Required && string.IsNullOrWhiteSpace(Input))">@(ButtonText ?? Loc[L.Dialog_Submit])</button>
+            <button class="button" @onclick="CancelAction">@Loc[L.Dialog_Cancel]</button>
+        </div>
+    }
 </dialog>
 
 @code {

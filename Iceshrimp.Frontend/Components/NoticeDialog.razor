@@ -6,29 +6,31 @@
 @inject JsService                      Js;
 @inject IStringLocalizer<Localization> Loc;
 
-<dialog @onkeyup="HandleKeys" class="dialog" @ref="Dialog">
-    <div class="notice">
-        <span class="notice-icon">
-            @switch (Type)
-            {
-                case NoticeType.Warning:
-                    <Icon Name="Icons.WarningCircle" Size="3em"/>
-                    break;
-                case NoticeType.Error:
-                    <Icon Name="Icons.Warning" Size="3em"/>
-                    break;
-                case NoticeType.Notice:
-                    <Icon Name="Icons.Info" Size="3em"/>
-                    break;
-                default:
-                    throw new ArgumentOutOfRangeException();
-            }
-        </span>
-        @foreach (var line in Text)
+<dialog closedby="none" @onkeyup="HandleKeys" class="modal" @ref="Dialog">
+    <div class="dialog-header notice-icon">
+        @switch (Type)
         {
-            <p class="text">@line</p>
+            case NoticeType.Warning:
+                <Icon Name="Icons.WarningCircle" Size="3em"/>
+                break;
+            case NoticeType.Error:
+                <Icon Name="Icons.Warning" Size="3em"/>
+                break;
+            case NoticeType.Notice:
+                <Icon Name="Icons.Info" Size="3em"/>
+                break;
+            default:
+                throw new ArgumentOutOfRangeException();
         }
-        <button class="button confirm-btn" @onclick="CloseDialog">@Loc[L.Dialog_Confirm]</button>
+    </div>
+    @foreach (var line in Text)
+    {
+        <p class="text">@line</p>
+    }
+    <div class="dialog-footer button-group">
+        <button class="button primary-button" @onclick="CloseDialog" autofocus>
+            @Loc[L.Dialog_Confirm]
+        </button>
     </div>
 </dialog>
 

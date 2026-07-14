@@ -2,32 +2,31 @@
 @inject UpdateService                  UpdateSvc;
 @inject JsService                      Js;
 @inject IStringLocalizer<Localization> Loc;
-@inject NavigationManager              Nav;
 @implements IDisposable
 
-<dialog class="dialog" @ref="Dialog">
-    <div class="notice">
-        @Loc[L.Update_Notice]
-        <div class="version">
-            <span class="name">Iceshrimp.NET</span>
-            <span class="value">
+<dialog closedby="none" class="modal" @ref="Dialog">
+    <div class="dialog-header">@Loc[L.Update_Notice]</div>
+    <div class="version">
+        <span class="name">Iceshrimp.NET</span>
+        <span class="value">
             <code>@UpdateSvc.BackendVersion?.Version</code>
         </span>
-            <span class="name">@Loc[L.Update_Codename]</span>
-            <span class="value">
+        <span class="name">@Loc[L.Update_Codename]</span>
+        <span class="value">
             <code>@UpdateSvc.BackendVersion?.Codename</code>
         </span>
-            @if (UpdateSvc.BackendVersion?.CommitHash != null)
-            {
-                <span class="name">@Loc[L.Update_Commit]</span>
-                <span class="value">
+        @if (UpdateSvc.BackendVersion?.CommitHash != null)
+        {
+            <span class="name">@Loc[L.Update_Commit]</span>
+            <span class="value">
                 <code>@UpdateSvc.BackendVersion?.CommitHash</code>
             </span>
-            }
-            <span class="name">
-                <a href="@UpdateSvc.BackendVersion?.ReleaseUrl" target="_blank">@Loc[L.Update_ReleaseNotes]</a>
-            </span>
-        </div>
+        }
+        <span class="name">
+            <a href="@UpdateSvc.BackendVersion?.ReleaseUrl" target="_blank">@Loc[L.Update_ReleaseNotes]</a>
+        </span>
+    </div>
+    <div class="dialog-footer button-group">
         <StateButton @ref="UpdateButton" OnClick="SwitchVersion" ExtraClasses="button">
             <Success>@Loc[L.Update_StateButton_Success]</Success>
             <Initial>@Loc[L.Update_StateButton_Initial]</Initial>

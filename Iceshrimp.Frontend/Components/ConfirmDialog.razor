@@ -4,22 +4,24 @@
 @inject JsService                      Js;
 @inject IStringLocalizer<Localization> Loc;
 
-<dialog @onkeyup="HandleKeys" class="dialog" @ref="Dialog">
-    <div class="confirm @(Waiting ? "waiting" : "")">
-        @if (Waiting)
-        {
-            <LoadingSpinner Scale="1.5"/>
-        }
-        else
-        {
-            <span class="confirm-icon"><Icon Name="@(ConfirmIcon ?? Icons.Question)" Size="3em"/></span>
-            <span>@Question</span>
-            <div class="buttons">
-                <button class="button confirm-btn" @onclick="ConfirmAction">@(ButtonText ?? Loc[L.Dialog_Confirm])</button>
-                <button class="button" @onclick="CancelAction">@Loc[L.Dialog_Cancel]</button>
-            </div>
-        }
-    </div>
+<dialog closedby="none" @onkeyup="HandleKeys" class="modal" @ref="Dialog">
+    @if (Waiting)
+    {
+        <LoadingSpinner Scale="1.5"/>
+    }
+    else
+    {
+        <div class="dialog-header confirm-icon">
+            <Icon Name="@(ConfirmIcon ?? Icons.Question)" Size="3em"/>
+        </div>
+        <span>@Question</span>
+        <div class="dialog-footer button-group">
+            <button class="button primary-button" @onclick="ConfirmAction" autofocus>
+                @(ButtonText ?? Loc[L.Dialog_Confirm])
+            </button>
+            <button class="button" @onclick="CancelAction">@Loc[L.Dialog_Cancel]</button>
+        </div>
+    }
 </dialog>
 
 @code {
@@ -64,11 +66,6 @@
     
     private async Task HandleKeys(KeyboardEventArgs e)
     {
-        if (e is { Code: "Enter" })
-        {
-            if (!Waiting) await ConfirmAction();
-        }
-
         if (e is { Code: "Escape" })
         {
             if (!Waiting) await CancelAction();

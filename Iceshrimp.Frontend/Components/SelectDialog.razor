@@ -3,27 +3,27 @@
 @inject JsService                      Js;
 @inject IStringLocalizer<Localization> Loc;
 
-<dialog @onkeyup="HandleKeys" class="dialog" @ref="Dialog">
-    <div class="select @(Waiting ? "waiting" : "")">
-        @if (Waiting)
-        {
-            <LoadingSpinner Scale="1.5" />
-        }
-        else
-        {
-            <span>@Text</span>
-            <select class="input" @bind="Selected">
-                @foreach (var option in Options.Select((o, i) => new { o.Label, i }))
-                {
-                    <option value="@option.i">@option.Label</option>
-                }
-            </select>
-            <div class="buttons">
-                <button class="button submit-btn" @onclick="ConfirmAction">@(ButtonText ?? Loc[L.Dialog_Submit])</button>
-                <button class="button" @onclick="CancelAction">@Loc[L.Dialog_Cancel]</button>
-            </div>
-        }
-    </div>
+<dialog closedby="none" @onkeyup="HandleKeys" class="modal" @ref="Dialog">
+    @if (Waiting)
+    {
+        <LoadingSpinner Scale="1.5"/>
+    }
+    else
+    {
+        <div class="dialog-header">@Text</div>
+        <select class="input" @bind="Selected">
+            @foreach (var option in Options.Select((o, i) => new { o.Label, i }))
+            {
+                <option value="@option.i">@option.Label</option>
+            }
+        </select>
+        <div class="dialog-footer button-group">
+            <button class="button primary-button" @onclick="ConfirmAction" autofocus>
+                @(ButtonText ?? Loc[L.Dialog_Submit])
+            </button>
+            <button class="button" @onclick="CancelAction">@Loc[L.Dialog_Cancel]</button>
+        </div>
+    }
 </dialog>
 
 @code {
@@ -70,11 +70,6 @@
     
     private async Task HandleKeys(KeyboardEventArgs e)
     {
-        if (e is { Code: "Enter" })
-        {
-            if (!Waiting) await ConfirmAction();
-        }
-
         if (e is { Code: "Escape" })
         {
             if (!Waiting) await CancelAction();
