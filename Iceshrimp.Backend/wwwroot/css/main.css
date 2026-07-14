@@ -108,10 +108,16 @@ hr {
 }
 
 dialog {
-    border: 0;
-    margin: 0;
-    padding: 0;
-    background-color: transparent;
+    padding: 1rem;
+    background-color: var(--background-color);
+    color: var(--font-color);
+    border: solid var(--border-color) 0.05rem;
+    border-radius: 1rem;
+}
+
+dialog::backdrop {
+    background-color: black;
+    opacity: 0.5;
 }
 
 button {
