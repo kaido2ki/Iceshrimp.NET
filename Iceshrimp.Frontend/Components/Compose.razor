@@ -16,192 +16,196 @@
 @inject GlobalComponentSvc             GlobalComponentSvc
 @inject SettingsService                Settings;
 @inject NoteActions                    NoteActions;
-<dialog @onkeydown="HandleKeyDown" class="dialog" @ref="Dialog">
-    <div class="compose">
-        <div class="header">
-            <button class="btn" title="@Loc[L.Common_Close]" @onclick="CloseDialog" aria-label="close" disabled="@(SendLock || UploadingFiles != 0)">
-                <Icon Name="Icons.X"/>
-            </button>
-            @if (string.IsNullOrEmpty(NoteId))
-            {
-                <Dropdown Id="compose-visibility" TBind="NoteVisibility" Elements="@DropDownCreate()" @bind-Value="NoteDraft.Visibility"/>
-            }
-            <StateButton OnClick="SendNote" @ref="SendButton" ExtraClasses="post-btn" AriaLabel="post"
-                         Disabled="@SendingDisabled()">
-                <Initial>
-                    @if(string.IsNullOrEmpty(NoteId))
-                    {
-                        @Loc[L.Compose_PublishNote]
-                        <Icon Name="Icons.PaperPlaneRight"/>
-                    }
-                    else
-                    {
-                        @Loc[L.Compose_SaveEdit]
-                        <Icon Name="Icons.Pencil"/>
-                    }
-                </Initial>
-                <Loading>
-                    @Loc[L.Compose_Sending]<LoadingSpinner />
-                </Loading>
-                <Success>
-                    @Loc[L.Dialog_Confirm]<Icon Name="Icons.Check"/>
-                </Success>
-                <Failed>
-                    @Loc[L.StateButton_Error]<Icon Name="Icons.X"/>
-                </Failed>
-            </StateButton>
-        </div>
-        @if (ReplyOrQuote != null && !Preview)
+<dialog @oncancel="CloseDialog" closedby="none" @onkeydown="HandleKeyDown" class="compose"
+        @ref="Dialog">
+    <div class="header">
+        <button class="btn" title="@Loc[L.Common_Close]" @onclick="CloseDialog" aria-label="close"
+                disabled="@(SendLock || UploadingFiles != 0)">
+            <Icon Name="Icons.X"/>
+        </button>
+        @if (string.IsNullOrEmpty(NoteId))
         {
-            <div class="reply-or-quote">
-                <NoteComponent Note="ReplyOrQuote" AsQuote="true" OpenNote="false"/>
-            </div>
+            <Dropdown Id="compose-visibility" TBind="NoteVisibility" Elements="@DropDownCreate()"
+                      @bind-Value="NoteDraft.Visibility"/>
         }
-        @if (NoteDraft.Cw != null)
-        {
-            <input @bind="NoteDraft.Cw" @bind:event="oninput" class="input cw-field" placeholder="Content Warning"
-                   aria-label="content warning"/>
-            <hr class="separator"/>
-        }
-        <textarea @ref="Textarea" @bind="NoteDraft.Text" @bind:event="oninput" class="textarea"
-                  placeholder="@Loc[TextPlaceholder ?? L.Compose_BodyPlaceholder_Note]" rows="5"
-                  cols="35" autofocus="autofocus" aria-label="note text" data-quote="@((NoteDraft.RenoteId != null || AttachedQuote != null).ToString())"></textarea>
-        <div class="footer">
-            <div class="buttons">
-                <button class="btn" title="@Loc[L.Drive_UploadFile]" @onclick="OpenUpload" aria-label="upload">
-                    <Icon Name="Icons.Upload" Size="1.3rem"></Icon>
-                </button>
-                <div class="file-input">
-                    <InputFile @ref="UploadInput" OnChange="Upload" multiple>Upload!</InputFile>
-                </div>
-                <button class="btn" title="@Loc[L.Note_Poll]" @onclick="TogglePoll" aria-label="poll">
-                    <Icon Name="Icons.MicrophoneStage" Size="1.3rem"></Icon>
-                </button>
-                <button class="btn" title="@Loc[L.Note_Cw]" @onclick="ToggleCw" aria-label="content warning">
-                    <Icon Name="Icons.EyeSlash" Size="1.3rem"></Icon>
-                </button>
-                <button class="btn" title="@Loc[L.User_AddMention]" @onclick="AddMention" aria-label="add mention">
-                    <Icon Name="Icons.At" Size="1.3rem"></Icon>
-                </button>
-                <button @ref="EmojiButton" class="btn" title="@Loc[L.Common_Emojis]" @onclick="ToggleEmojiPicker"
-                        aria-label="emoji">
-                    <Icon Name="Icons.Smiley" Size="1.3rem"></Icon>
-                </button>
-                @if (NoteDraft.RenoteId == null && AttachedQuote == null)
+        <StateButton OnClick="SendNote" @ref="SendButton" ExtraClasses="post-btn" AriaLabel="post"
+                     Disabled="@SendingDisabled()">
+            <Initial>
+                @if (string.IsNullOrEmpty(NoteId))
                 {
-                    <button class="btn" title="@Loc[L.Compose_Quote_Add]" @onclick="AddQuote" aria-label="add quote">
-                        <Icon Name="Icons.Quotes" Size="1.3rem"></Icon>
-                    </button>
-                }
-            </div>
-            <div class="buttons">
-                <span title="@Loc[L.Compose_CharacterLimit]"
-                      aria-label="character limit">@(NoteLength - ((NoteDraft.Cw?.Length ?? 0) + NoteDraft.Text.Length))</span>
-                <button class="btn" title="@Loc[L.Compose_TogglePreview]" @onclick="() => Preview = !Preview"
-                        aria-label="preview">
-                    <Icon Name="Icons.Binoculars" Size="1.3rem"></Icon>
-                </button>
-            </div>
-        </div>
-        @if (AttachedQuote != null)
-        {
-            <div>
-                <span>
-                    <Icon Name="Icons.Quotes"/>
-                    <a href="@($"/notes/{AttachedQuote}")" target="_blank">@Loc[L.Compose_Quote]</a>
-                    <button class="btn" title="@Loc[L.Compose_Quote_Remove]" @onclick="RemoveQuote" aria-label="remove quote">
-                        <Icon Name="Icons.Trash" Size="1rem"></Icon>
-                    </button>
-                </span>
-            </div>
-        }
-        @if (UploadingFiles != 0)
-        {
-            <div>
-                <span><LoadingSpinner/> @(UploadingFiles == 1 ? Loc[L.Drive_Uploading] : Loc[L.Drive_Uploading_Count, UploadingFiles])</span>
-            </div>
-        }
-        @if (Attachments.Count != 0)
-        {
-            <div class="attachments">
-                @foreach (var attachment in Attachments)
-                {
-                    <ComposeAttachment File="@attachment" AddInlineMedia="AddInlineMedia" RemoveAttachment="RemoveAttachment"/>
-                }
-            </div>
-        }
-        @if (NoteDraft.Poll != null)
-        {
-            <div class="poll">
-                <div class="choices">
-                    @foreach (var entry in PollChoices)
-                    {
-                        <div class="choice">
-                            <input class="input" placeholder="@Loc[L.Compose_Poll_ChoicePlaceholder]" @bind="@entry.Value"/>
-                            <button class="button" title="@Loc[L.Common_Delete]" @onclick="() => DeletePollChoice(entry)">
-                                <Icon Name="Icons.Trash"/>
-                            </button>
-                        </div>
-                    }
-                    @if (PollChoices.Count < 10)
-                    {
-                        <div class="choice">
-                            <input class="input" placeholder="@Loc[L.Compose_Poll_ChoicePlaceholder]" @bind="@PollEntry"/>
-                            <button class="button" title="@Loc[L.Common_Add]" @onclick="AddPollChoice">
-                                <Icon Name="Icons.Plus"/>
-                            </button>
-                        </div>
-                    }
-                </div>
-                <label class="inline-label">
-                    <input type="checkbox" @bind="NoteDraft.Poll.Multiple"/>
-                    @Loc[L.Note_Poll_MultipleChoice]
-                </label>
-                <div class="expire">
-                    <div>
-                        <label for="poll-expires">@Loc[L.Compose_Poll_ExpiresAt]</label>
-                        <select @bind="PollExpires" id="poll-expires">
-                            <option value="@PollExpire.Never">@Loc[L.Compose_Poll_ExpiresAt_Never]</option>
-                            <option value="@PollExpire.ExpiresAt">@Loc[L.Compose_Poll_ExpiresAt_DateTime]</option>
-                            <option value="@PollExpire.ExpiresAfter">@Loc[L.Compose_Poll_ExpiresAt_AfterDuration]</option>
-                        </select>
-                    </div>
-                    @switch (PollExpires)
-                    {
-                        case PollExpire.Never:
-                            break;
-                        case PollExpire.ExpiresAt:
-                            <input type="datetime-local" class="input" @bind="PollExpireTime"/>
-                            break;
-                        case PollExpire.ExpiresAfter:
-                            <input type="number" class="input" placeholder="@Loc[L.Compose_Poll_Duration]" min="@(PollExpiresAft == PollExpireAfter.Minutes ? 5 : 1)" @bind="PollExpireLen"/>
-                            <select @bind="PollExpiresAft">
-                                <option value="@PollExpireAfter.Minutes">@Loc[L.Duration_Minutes]</option>
-                                <option value="@PollExpireAfter.Hours">@Loc[L.Duration_Hours]</option>
-                                <option value="@PollExpireAfter.Days">@Loc[L.Duration_Days]</option>
-                            </select>
-                            break;
-                        default:
-                            throw new ArgumentOutOfRangeException();
-                    }
-                </div>
-            </div>
-        }
-        @if (Preview)
-        {
-            <div class="preview">
-                @if (string.IsNullOrWhiteSpace(NoteDraft.Text))
-                {
-                    <span>@Loc[L.Compose_NoPreview]</span>
+                    @Loc[L.Compose_PublishNote]
+                    <Icon Name="Icons.PaperPlaneRight"/>
                 }
                 else
                 {
-                    <MfmText Text="@NoteDraft.Text.ReplaceLineEndings("\n")" Emoji="EmojiList"/>
+                    @Loc[L.Compose_SaveEdit]
+                    <Icon Name="Icons.Pencil"/>
+                }
+            </Initial>
+            <Loading>
+                @Loc[L.Compose_Sending]<LoadingSpinner/>
+            </Loading>
+            <Success>
+                @Loc[L.Dialog_Confirm]<Icon Name="Icons.Check"/>
+            </Success>
+            <Failed>
+                @Loc[L.StateButton_Error]<Icon Name="Icons.X"/>
+            </Failed>
+        </StateButton>
+    </div>
+    @if (ReplyOrQuote != null && !Preview)
+    {
+        <div class="reply-or-quote">
+            <NoteComponent Note="ReplyOrQuote" AsQuote="true" OpenNote="false"/>
+        </div>
+    }
+    @if (NoteDraft.Cw != null)
+    {
+        <input @bind="NoteDraft.Cw" @bind:event="oninput" class="input cw-field" placeholder="Content Warning"
+               aria-label="content warning"/>
+        <hr class="separator"/>
+    }
+    <textarea @ref="Textarea" @bind="NoteDraft.Text" @bind:event="oninput" class="textarea"
+              placeholder="@Loc[TextPlaceholder ?? L.Compose_BodyPlaceholder_Note]" rows="5"
+              cols="35" autofocus="autofocus" aria-label="note text"
+              data-quote="@((NoteDraft.RenoteId != null || AttachedQuote != null).ToString())"></textarea>
+    <div class="footer">
+        <div class="buttons">
+            <button class="btn" title="@Loc[L.Drive_UploadFile]" @onclick="OpenUpload" aria-label="upload">
+                <Icon Name="Icons.Upload" Size="1.3rem"></Icon>
+            </button>
+            <div class="file-input">
+                <InputFile @ref="UploadInput" OnChange="Upload" multiple>Upload!</InputFile>
+            </div>
+            <button class="btn" title="@Loc[L.Note_Poll]" @onclick="TogglePoll" aria-label="poll">
+                <Icon Name="Icons.MicrophoneStage" Size="1.3rem"></Icon>
+            </button>
+            <button class="btn" title="@Loc[L.Note_Cw]" @onclick="ToggleCw" aria-label="content warning">
+                <Icon Name="Icons.EyeSlash" Size="1.3rem"></Icon>
+            </button>
+            <button class="btn" title="@Loc[L.User_AddMention]" @onclick="AddMention" aria-label="add mention">
+                <Icon Name="Icons.At" Size="1.3rem"></Icon>
+            </button>
+            <button @ref="EmojiButton" class="btn" title="@Loc[L.Common_Emojis]" @onclick="ToggleEmojiPicker"
+                    aria-label="emoji">
+                <Icon Name="Icons.Smiley" Size="1.3rem"></Icon>
+            </button>
+            @if (NoteDraft.RenoteId == null && AttachedQuote == null)
+            {
+                <button class="btn" title="@Loc[L.Compose_Quote_Add]" @onclick="AddQuote" aria-label="add quote">
+                    <Icon Name="Icons.Quotes" Size="1.3rem"></Icon>
+                </button>
+            }
+        </div>
+        <div class="buttons">
+            <span title="@Loc[L.Compose_CharacterLimit]"
+                  aria-label="character limit">@(NoteLength - ((NoteDraft.Cw?.Length ?? 0) + NoteDraft.Text.Length))</span>
+            <button class="btn" title="@Loc[L.Compose_TogglePreview]" @onclick="() => Preview = !Preview"
+                    aria-label="preview">
+                <Icon Name="Icons.Binoculars" Size="1.3rem"></Icon>
+            </button>
+        </div>
+    </div>
+    @if (AttachedQuote != null)
+    {
+        <div>
+            <span>
+                <Icon Name="Icons.Quotes"/>
+                <a href="@($"/notes/{AttachedQuote}")" target="_blank">@Loc[L.Compose_Quote]</a>
+                <button class="btn" title="@Loc[L.Compose_Quote_Remove]" @onclick="RemoveQuote"
+                        aria-label="remove quote">
+                    <Icon Name="Icons.Trash" Size="1rem"></Icon>
+                </button>
+            </span>
+        </div>
+    }
+    @if (UploadingFiles != 0)
+    {
+        <div>
+            <span><LoadingSpinner/> @(UploadingFiles == 1 ? Loc[L.Drive_Uploading] : Loc[L.Drive_Uploading_Count, UploadingFiles])</span>
+        </div>
+    }
+    @if (Attachments.Count != 0)
+    {
+        <div class="attachments">
+            @foreach (var attachment in Attachments)
+            {
+                <ComposeAttachment File="@attachment" AddInlineMedia="AddInlineMedia"
+                                   RemoveAttachment="RemoveAttachment"/>
+            }
+        </div>
+    }
+    @if (NoteDraft.Poll != null)
+    {
+        <div class="poll">
+            <div class="choices">
+                @foreach (var entry in PollChoices)
+                {
+                    <div class="choice">
+                        <input class="input" placeholder="@Loc[L.Compose_Poll_ChoicePlaceholder]" @bind="@entry.Value"/>
+                        <button class="button" title="@Loc[L.Common_Delete]" @onclick="() => DeletePollChoice(entry)">
+                            <Icon Name="Icons.Trash"/>
+                        </button>
+                    </div>
+                }
+                @if (PollChoices.Count < 10)
+                {
+                    <div class="choice">
+                        <input class="input" placeholder="@Loc[L.Compose_Poll_ChoicePlaceholder]" @bind="@PollEntry"/>
+                        <button class="button" title="@Loc[L.Common_Add]" @onclick="AddPollChoice">
+                            <Icon Name="Icons.Plus"/>
+                        </button>
+                    </div>
                 }
             </div>
-        }
-        <div @onclick="CloseDialog" class="backdrop"></div>
-    </div>
+            <label class="inline-label">
+                <input type="checkbox" @bind="NoteDraft.Poll.Multiple"/>
+                @Loc[L.Note_Poll_MultipleChoice]
+            </label>
+            <div class="expire">
+                <div>
+                    <label for="poll-expires">@Loc[L.Compose_Poll_ExpiresAt]</label>
+                    <select @bind="PollExpires" id="poll-expires">
+                        <option value="@PollExpire.Never">@Loc[L.Compose_Poll_ExpiresAt_Never]</option>
+                        <option value="@PollExpire.ExpiresAt">@Loc[L.Compose_Poll_ExpiresAt_DateTime]</option>
+                        <option value="@PollExpire.ExpiresAfter">@Loc[L.Compose_Poll_ExpiresAt_AfterDuration]</option>
+                    </select>
+                </div>
+                @switch (PollExpires)
+                {
+                    case PollExpire.Never:
+                        break;
+                    case PollExpire.ExpiresAt:
+                        <input type="datetime-local" class="input" @bind="PollExpireTime"/>
+                        break;
+                    case PollExpire.ExpiresAfter:
+                        <input type="number" class="input" placeholder="@Loc[L.Compose_Poll_Duration]"
+                               min="@(PollExpiresAft == PollExpireAfter.Minutes ? 5 : 1)" @bind="PollExpireLen"/>
+                        <select @bind="PollExpiresAft">
+                            <option value="@PollExpireAfter.Minutes">@Loc[L.Duration_Minutes]</option>
+                            <option value="@PollExpireAfter.Hours">@Loc[L.Duration_Hours]</option>
+                            <option value="@PollExpireAfter.Days">@Loc[L.Duration_Days]</option>
+                        </select>
+                        break;
+                    default:
+                        throw new ArgumentOutOfRangeException();
+                }
+            </div>
+        </div>
+    }
+    @if (Preview)
+    {
+        <div class="preview">
+            @if (string.IsNullOrWhiteSpace(NoteDraft.Text))
+            {
+                <span>@Loc[L.Compose_NoPreview]</span>
+            }
+            else
+            {
+                <MfmText Text="@NoteDraft.Text.ReplaceLineEndings("\n")" Emoji="EmojiList"/>
+            }
+        </div>
+    }
 </dialog>
 
 
@@ -272,7 +276,7 @@
 
         if (e is { Code: "Escape" })
         {
-            if (!SendLock && UploadingFiles == 0) await CloseDialog();
+            await CloseDialog();
         }
     }
 
@@ -347,7 +351,7 @@
         NoteDraft.ReplyId    = note.ReplyId;
         UploadingFiles       = 0;
         StateHasChanged();
-        await JsSvc.ShowDialogAsync(Dialog, false);
+        await JsSvc.ShowDialogAsync(Dialog);
     }
 
     public async Task OpenDialogEdit(NoteBase note)
@@ -383,7 +387,7 @@
             });
         }
         StateHasChanged();
-        await JsSvc.ShowDialogAsync(Dialog, false);
+        await JsSvc.ShowDialogAsync(Dialog);
     }
 
     public async Task OpenDialog(NoteBase? replyTo = null, NoteBase? quote = null, string? noteText = null)
@@ -423,7 +427,7 @@
 
         StateHasChanged();
 
-        await JsSvc.ShowDialogAsync(Dialog, false);
+        await JsSvc.ShowDialogAsync(Dialog);
     }
 
     private async Task<List<string>> EnumerateMentions(NoteBase noteBase)
@@ -475,6 +479,7 @@
 
     private async Task CloseDialog()
     {
+        if (SendLock || UploadingFiles != 0) return;
         await JsSvc.CloseDialogAsync(Dialog);
     }
 
@@ -538,9 +543,9 @@
         }
 
         SendButton.State = StateButton.StateEnum.Success;
-        await CloseDialog();
         SendLock         = false;
         SendButton.State = StateButton.StateEnum.Initial;
+        await CloseDialog();
         // FIXME: Implement timeline refresh and call it here.
     }
     
