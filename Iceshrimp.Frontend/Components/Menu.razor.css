@@ -7,7 +7,7 @@
     border: var(--border-color) solid 0.1rem;
     width: 15rem;
     max-width: 20rem;
-    box-shadow: 0 0 1rem black;
+    box-shadow: 0 0 1rem var(--shadow-color);
 }
 
 .elements {

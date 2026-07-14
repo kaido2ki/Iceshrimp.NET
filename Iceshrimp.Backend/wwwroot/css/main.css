@@ -30,6 +30,7 @@
     --accent-primary-color: #685bc4;
     --accent-secondary-color: #7b74cc;
     --accent-color: linear-gradient(to right, var(--accent-primary-color), var(--accent-secondary-color));
+    --shadow-color: black;
 
     --btn-radius: 1.25rem;
 

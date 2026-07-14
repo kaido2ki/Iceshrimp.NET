@@ -116,6 +116,18 @@
 }
 
 .sidebar {
+    flex-direction: column;
+    height: 100vh;
+    width: 15rem;
+    position: sticky;
+    margin: 0;
+    inset: 0;
+    top: 0;
+    background-color: var(--background-color);
+    border: none;
+    border-right: var(--border-color) solid 0.05rem;
+    overflow-y: auto;
+
     .post-btn {
         display: flex;
         justify-content: center;
@@ -130,6 +142,10 @@
     }
 }
 
+.sidebar:popover-open {
+    display: flex;
+}
+
 .rule {
     width: 90%;
     color: var(--highlight-color);
@@ -142,25 +158,9 @@
     justify-content: space-around;
 }
 
-.open {
-    display: block !important;
-    position: fixed;
-    width: 15rem;
-    height: 100vh;
-    z-index: +25;
-    background-color: var(--foreground-color);
-}
-
 @media (min-width: 1001px) {
     .sidebar {
         display: flex;
-        flex-direction: column;
-        height: 100vh;
-        width: 15rem;
-        position: sticky;
-        top: 0;
-        background-color: var(--background-color);
-        border-right: var(--border-color) solid 0.05rem;
     }
 
     .bottom-bar {
@@ -170,7 +170,9 @@
 
 @media (max-width: 1000px) {
     .sidebar {
-        display: none;
+        position: fixed;
+        height: 100vh;
+        box-shadow: 0 0 1rem var(--shadow-color);
     }
 
     .bottom-bar {
