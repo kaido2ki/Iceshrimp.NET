@@ -15,70 +15,11 @@
     height: 3rem;
 }
 
-.dialog {
-    background-color: unset;
-    width: 100vw;
-    height: 100vh;
-    top: 0;
-    left: 0;
-    position: fixed;
-    margin: auto;
-    z-index: +11;
-}
-
 .loading {
     display: flex;
     align-items: center;
     justify-content: center;
     padding-top: 25vh;
-}
-
-.backdrop {
-    opacity: 50%;
-    background-color: black;
-    position: fixed;
-    width: 100vw;
-    height: 100vh;
-    top: 0;
-    left: 0;
-    z-index: -2;
-}
-
-.dialog-content {
-    border-radius: 1rem;
-    margin: 0 auto;
-    top: 10%;
-    padding: 1rem;
-    position: relative;
-    max-width: 30rem;
-    color: var(--font-color);
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    background-color: var(--background-color);
-    border: solid var(--border-color) 0.05rem;
-}
-
-.header {
-    display: flex;
-    align-items: center;
-    flex-direction: column;
-    width: 100%;
-}
-
-.close {
-    position: absolute;
-    right: 0.5rem;
-    top: 0.5rem;
-}
-
-.title {
-    margin: 0;
-    font-size: 1.2rem;
-}
-
-.otp-input {
-    margin-top: 1rem;
 }
 
 .user-picker {

@@ -5,7 +5,6 @@
 @using Iceshrimp.Frontend.Core.Schemas
 @using Iceshrimp.Frontend.Core.Services
 @using Iceshrimp.Shared.Schemas.Web
-@using Iceshrimp.Assets.PhosphorIcons
 @inject ApiService                     Api
 @inject SessionService                 SessionService
 @inject NavigationManager              Navigation
@@ -21,7 +20,7 @@
 <div class="body">
     <img class="logo" src="/_content/Iceshrimp.Assets.Branding/splash.png"/>
     <span>
-            <h3>@Loc[L.Auth_Login_Header, Name]</h3></span>
+        <h3>@Loc[L.Auth_Login_Header, Name]</h3></span>
     <div class="login-form">
         <input placeholder="@Loc[L.User_Username]" autocomplete="username" name="username" required="required"
                @bind="@Username"/>
@@ -43,13 +42,13 @@
     {
         <h2>@Loc[L.Auth_Login_Sessions]</h2>
         <div class="user-picker">
-        @foreach(var user in SessionService.Users.Values)
-        {
-            <div class="user" tabindex="0" @onclick="() => LoginUser(user)">
-                <UserAvatar User="@user" Size="4rem"/>
-                <div class="username"><UserDisplayName User="user"></UserDisplayName></div>
-            </div>
-        }
+            @foreach(var user in SessionService.Users.Values)
+            {
+                <div class="user" tabindex="0" @onclick="() => LoginUser(user)">
+                    <UserAvatar User="@user" Size="4rem"/>
+                    <div class="username"><UserDisplayName User="user"></UserDisplayName></div>
+                </div>
+            }
         </div>
     }
     @if (!string.IsNullOrWhiteSpace(Settings.Preferences.CustomCss))
@@ -61,43 +60,24 @@
     {
         <a class="register-link" href="/register">@Loc[L.Auth_Login_SwitchToRegister]</a>
     }
-
-    <dialog class="dialog" @ref="Dialog">
-        <div class="dialog-content">
-            <div class="header">
-                <h2 class="title">@Loc[L.Settings_Account_2fa]</h2>
-                <button class="button close" @onclick="() => CloseDialog(Dialog)">
-                    <Icon Name="Icons.X"></Icon>
-                </button>
-            </div>
-            <input class="otp-input" @bind="Otp" autocomplete="one-time-code" autofocus="autofocus"/>
-            <StateButton ExtraClasses="button" @ref="OtpButton" OnClick="TwoFactorLogin">
-                <Loading>@Loc[L.StateButton_Loading]</Loading>
-                <Failed>@Loc[L.StateButton_Retry]</Failed>
-                <Success>@Loc[L.StateButton_Success]</Success>
-                <Initial>
-                    @Loc[L.Auth_Login]</Initial>
-            </StateButton>
-        </div>
-        <div class="backdrop"></div>
-    </dialog>
-
 </div>
+
+<NoticeDialog @ref="Notice"/>
+<PromptDialog @ref="Prompt"/>
 
 @code {
     [SupplyParameterFromQuery(Name = "rd")]
     [SuppressMessage("ReSharper", "UnusedAutoPropertyAccessor.Local")]
     private string? Redirect { get; set; }
 
-    private          string?                        Password  { get; set; }
-    private          string?                        Username  { get; set; }
-    private          bool                           Loading   { get; set; }
-    private          bool                           Failure   { get; set; }
-    private          string                         Name      { get; set; } = null!;
-    private          ElementReference               Dialog    { get; set; }
-    private          string?                        Otp       { get; set; }
-    private          StateButton                    OtpButton { get; set; } = null!;
-    private          Registrations                  Registration { get; set; }
+    private string?       Password     { get; set; }
+    private string?       Username     { get; set; }
+    private bool          Loading      { get; set; }
+    private bool          Failure      { get; set; }
+    private string        Name         { get; set; } = null!;
+    private Registrations Registration { get; set; }
+    private NoticeDialog  Notice       { get; set; } = null!;
+    private PromptDialog  Prompt       { get; set; } = null!;
 
     private async Task Submit()
     {
@@ -140,7 +120,7 @@
                     Loading = false;
                     break;
                 case AuthStatusEnum.TwoFactor:
-                    await Js.ShowDialogAsync(Dialog);
+                    await Prompt.Prompt(new EventCallback<string?>(this, TwoFactorLogin), Loc[L.Settings_Account_2fa], Loc[L.Settings_Account_2fa_CodePlaceholder], null, buttonText: Loc[L.Auth_Login]);
                     Api.SetBearerToken(res.Token!);
                     break;
             }
@@ -153,18 +133,17 @@
         }
     }
 
-    private async Task TwoFactorLogin()
+    private async Task TwoFactorLogin(string? code)
     {
-        if (Otp is null)
+        if (string.IsNullOrWhiteSpace(code))
         {
+            Loading = false;
             return;
         }
 
         try
         {
-            OtpButton.State = StateButton.StateEnum.Loading;
-            StateHasChanged();
-            var res = await Api.Auth.SubmitTwoFactorAsync(new TwoFactorRequest { Code = Otp });
+            var res = await Api.Auth.SubmitTwoFactorAsync(new TwoFactorRequest { Code = code.Trim() });
             if (res.Status is AuthStatusEnum.Authenticated)
             {
                 SessionService.AddUser(new StoredUser
@@ -188,18 +167,13 @@
             }
             else
             {
-                Failure         = true;
-                Loading         = false;
-                OtpButton.State = StateButton.StateEnum.Failed;
-                await Js.CloseDialogAsync(Dialog);
-                OtpButton.State = StateButton.StateEnum.Initial;
+                Failure = true;
+                Loading = false;
             }
         }
-
         catch (ApiException e)
         {
-            Logger.LogError(e, "2FA enrollment failed");
-            OtpButton.State = StateButton.StateEnum.Failed;
+            await Notice.DisplayApiError(e);
         }
     }
 

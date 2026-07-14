@@ -1,71 +1,16 @@
-.dialog {
-    width: 100vw;
-    height: 100vh;
-    top: 0;
-    left: 0;
-    position: fixed;
-    margin: auto;
-    background-color: unset;
-    z-index: +11;
-}
 .item {
     overflow: auto;
     user-select: all;
 }
 
-.container {
-    max-width: 100%;
-}
-
-.backdrop {
-    opacity: 50%;
-    background-color: black;
-    position: fixed;
-    width: 100vw;
-    height: 100vh;
-    top: 0;
-    left: 0;
-    z-index: -2
-}
-
-.dialog-content {
-    background-color: var(--background-color);
-    border-radius: 1rem;
-    margin: 0 auto;
-    top: 10%;
-    padding: 1rem;
-    position: relative;
-    max-width: 45rem;
-    color: var(--font-color);
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-}
-
 .qr {
+    display: block;
     width: 20rem;
     max-width: 75vw;
     border: white 0.75rem solid;
-    margin: 1rem;
+    margin: 1rem auto;
 }
 
-.header {
-    display: flex;
-    align-items: center;
-    flex-direction: column;
-    width: 100%;
-}
-
-.close {
-    position: absolute;
-    right: 0.5rem;
-    top: 0.5rem;
-}
-
-.title {
-    margin: 0;
-    font-size: 1.2rem;
-}
 .otp-input {
-    margin-top: 1rem;
+    margin: 1rem auto;
 }
