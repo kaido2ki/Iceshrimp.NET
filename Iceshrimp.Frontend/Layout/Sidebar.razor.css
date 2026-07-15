@@ -128,6 +128,7 @@
     border: none;
     border-right: var(--border-color) solid 0.05rem;
     overflow-y: auto;
+    outline: none;
 
     .post-btn {
         display: flex;
@@ -162,6 +163,9 @@
 @media (min-width: 1001px) {
     .sidebar {
         display: flex;
+        opacity: 1;
+        transform: none;
+        transition: none;
     }
 
     .bottom-bar {
@@ -174,6 +178,19 @@
         position: fixed;
         height: 100vh;
         box-shadow: 0 0 1rem var(--shadow-color);
+        opacity: 1;
+        transform: translateX(-100%);
+    }
+
+    .sidebar:popover-open {
+        transform: translateX(0);
+    }
+    
+    @starting-style {
+        .sidebar:popover-open {
+            opacity: 1;
+            transform: translateX(-100%);
+        }
     }
 
     .bottom-bar {

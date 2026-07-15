@@ -32,6 +32,7 @@
     --accent-color: linear-gradient(to right, var(--accent-primary-color), var(--accent-secondary-color));
     --shadow-color: black;
 
+    --animation-speed: 0.2s;
     --btn-radius: 1.25rem;
 
     overscroll-behavior-y: none;
@@ -114,11 +115,42 @@ dialog {
     color: var(--font-color);
     border: solid var(--border-color) 0.05rem;
     border-radius: 1rem;
+    opacity: 0;
+    transform: scale(0.9);
+    transition: opacity var(--animation-speed) ease-out,
+    transform var(--animation-speed) ease-out,
+    overlay var(--animation-speed) ease-out allow-discrete,
+    display var(--animation-speed) ease-out allow-discrete;
+}
+
+dialog:open {
+    opacity: 1;
+    transform: scale(1);
+}
+
+@starting-style {
+    dialog:open {
+        opacity: 0;
+        transform: scale(0.9);
+    }
 }
 
 dialog::backdrop {
     background-color: black;
+    opacity: 0;
+    transition: display var(--animation-speed) allow-discrete,
+    overlay var(--animation-speed) allow-discrete,
+    opacity var(--animation-speed);
+}
+
+dialog:open::backdrop {
     opacity: 0.5;
+}
+
+@starting-style {
+    dialog:open::backdrop {
+        opacity: 0;
+    }
 }
 
 dialog.modal {
@@ -137,6 +169,49 @@ dialog .dialog-footer {
     justify-content: center;
     margin-top: 1rem;
     text-align: center;
+}
+
+[popover] {
+    opacity: 0;
+    transform: translateY(1em);
+    transition: opacity var(--animation-speed),
+    transform var(--animation-speed),
+    overlay var(--animation-speed) allow-discrete,
+    display var(--animation-speed) allow-discrete;
+}
+
+[popover]:popover-open {
+    opacity: 1;
+    transform: translateY(0);
+}
+
+@starting-style {
+    [popover]:popover-open {
+        opacity: 0;
+        transform: translateY(1em);
+    }
+}
+
+@media (prefers-reduced-motion: reduce) {
+    dialog {
+        transform: scale(1);
+    }
+
+    @starting-style {
+        dialog:open {
+            transform: scale(1);
+        }
+    }
+
+    [popover] {
+        transform: translateY(0);
+    }
+
+    @starting-style {
+        [popover]:popover-open {
+            transform: translateY(0);
+        }
+    }
 }
 
 button {

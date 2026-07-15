@@ -201,6 +201,29 @@ input[type="number"] {
         padding-top: 0;
         border: none;
         border-radius: 0;
+        transform: translateY(1rem);
+    }
+
+    .compose:open {
+        transform: translateY(0);
+    }
+
+    @starting-style {
+        .compose:open {
+            transform: translateY(1rem);
+        }
+    }
+    
+    @media (prefers-reduced-motion: reduce) {
+        .compose {
+            transform: translateY(0);
+        }
+
+        @starting-style {
+            .compose:open {
+                transform: translateY(0);
+            }
+        }
     }
     
     .header {
