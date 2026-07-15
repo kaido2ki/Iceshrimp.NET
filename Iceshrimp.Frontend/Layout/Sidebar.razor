@@ -4,11 +4,13 @@
 @using Iceshrimp.Frontend.Core.Services
 @using Iceshrimp.Shared.Schemas.Web
 @implements IDisposable
-@inject ApiService Api;
-@inject SessionService Session;
+@inject ApiService                     Api;
+@inject JsService                      Js;
+@inject NavigationManager              Nav;
+@inject SessionService                 Session;
 
 <GlobalComponents></GlobalComponents>
-<div class="sidebar" tabindex="0" id="sidebar" popover="auto">
+<div class="sidebar" tabindex="0" id="sidebar" popover="auto" @ref="Ref">
     <div class="header">
         <div @ref="_avatar" @onclick="OpenAccountDropdownAsync" class="avatar" @onclick:stopPropagation="true" >
             <UserAvatar User="Session.Current!"/>
@@ -122,7 +124,8 @@
 
 @code {
     private          Compose          _compose = null!;
-    private          StatusResponse?  Status            { get; set; }
+    private          ElementReference Ref     { get; set; }
+    private          StatusResponse?  Status  { get; set; }
     private          AccountDropdown  _accountDropdown = null!;
     private          ElementReference _avatar;
     private readonly Timer            _timer;
@@ -154,8 +157,19 @@
         await _compose.OpenDialog();
     }
 
+    private void HandleLocationChanged(object? sender, LocationChangedEventArgs e)
+    {
+        Js.HidePopoverAsync(Ref);
+    }
+
+    protected override void OnInitialized()
+    {
+        Nav.LocationChanged += HandleLocationChanged;
+    }
+
     public void Dispose()
     {
+        Nav.LocationChanged -= HandleLocationChanged;
         _timer.Dispose();
     }
 }
