@@ -26,7 +26,9 @@
     --notice-color: light-dark(#2e89ff, #92c1ff);
     --warning-color: light-dark(#ffc229, #ffdf91);
     --danger-color: light-dark(#ff2929, #ff9191);
-    --link: light-dark(#6b6bff, #9E9EFF);
+    --link-color: light-dark(#6b6bff, #9E9EFF);
+    --mention-color: var(--notice-color);
+    --mention-me-color: var(--mention-color);
     --accent-primary-color: #685bc4;
     --accent-secondary-color: #7b74cc;
     --accent-color: linear-gradient(to right, var(--accent-primary-color), var(--accent-secondary-color));
@@ -304,11 +306,11 @@ textarea {
 }
 
 a {
-    color: var(--link);
+    color: var(--link-color);
 }
 
 .fake-link {
-    color: var(--link);
+    color: var(--link-color);
     cursor: pointer;
     tab-index: 0;
     text-decoration-line: none;

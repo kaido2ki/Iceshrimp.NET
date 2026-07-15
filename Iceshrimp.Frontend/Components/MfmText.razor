@@ -2,6 +2,7 @@
 @using Iceshrimp.Frontend.Core.Services
 @using Iceshrimp.Shared.Schemas.Web
 @inject MetadataService MetadataService
+@inject SessionService Session
 @TextBody
 
 @code {
@@ -16,7 +17,7 @@
         if (Text != null)
         {
             var instance = await MetadataService.Instance.Value;
-            TextBody = MfmRenderer.RenderString(Text, Emoji, instance.AccountDomain, Simple, SpeakAsCat);
+            TextBody = MfmRenderer.RenderString(Text, Emoji, Session.Current?.Username ?? "", instance.AccountDomain, Simple, SpeakAsCat);
         }
     }
 
@@ -25,7 +26,7 @@
         if (Text != null)
         {
             var instance = await MetadataService.Instance.Value;
-            TextBody = MfmRenderer.RenderString(Text, Emoji, instance.AccountDomain, Simple, SpeakAsCat);
+            TextBody = MfmRenderer.RenderString(Text, Emoji, Session.Current?.Username ?? "", instance.AccountDomain, Simple, SpeakAsCat);
         }
     }
 }

@@ -32,7 +32,7 @@
 }
 
 .path-entry a:visited {
-    color: var(--link);
+    color: var(--link-color);
 }
 
 .path-entry::after {

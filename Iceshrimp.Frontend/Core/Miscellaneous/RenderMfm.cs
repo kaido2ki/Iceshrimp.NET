@@ -13,11 +13,11 @@ namespace Iceshrimp.Frontend.Core.Miscellaneous;
 public static partial class MfmRenderer
 {
 	public static MarkupString RenderString(
-		string text, List<EmojiResponse> emoji, string accountDomain, bool simple = false, bool speakAsCat = false
+		string text, List<EmojiResponse> emoji, string username, string accountDomain, bool simple = false, bool speakAsCat = false
 	)
 	{
 		var res         = MfmParser.Parse(text, simple);
-		var renderedMfm = RenderMultipleNodes(res, emoji, accountDomain, simple, speakAsCat);
+		var renderedMfm = RenderMultipleNodes(res, emoji, username, accountDomain, simple, speakAsCat);
 		var html        = renderedMfm.ToHtml();
 		return new MarkupString(html);
 	}
@@ -28,7 +28,7 @@ public static partial class MfmRenderer
 	private static IElement CreateElement(string name)  => OwnerDocument.Value.CreateElement(name);
 
 	private static INode RenderMultipleNodes(
-		IEnumerable<IMfmNode> nodes, List<EmojiResponse> emoji, string accountDomain, bool simple,
+		IEnumerable<IMfmNode> nodes, List<EmojiResponse> emoji, string username, string accountDomain, bool simple,
 		bool speakAsCat
 	)
 	{
@@ -37,14 +37,14 @@ public static partial class MfmRenderer
 		el.ClassName = "mfm";
 		foreach (var node in nodes)
 		{
-			el.AppendNodes(RenderNode(node, emoji, accountDomain, simple, speakAsCat));
+			el.AppendNodes(RenderNode(node, emoji, username, accountDomain, simple, speakAsCat));
 		}
 
 		return el;
 	}
 
 	private static INode RenderNode(
-		IMfmNode node, List<EmojiResponse> emoji, string accountDomain, bool simple, bool speakAsCat
+		IMfmNode node, List<EmojiResponse> emoji, string username, string accountDomain, bool simple, bool speakAsCat
 	)
 	{
 		// Hard wrap makes this impossible to read
@@ -63,7 +63,7 @@ public static partial class MfmRenderer
 			MfmItalicNode mfmItalicNode         => MfmItalicNode(mfmItalicNode),
 			MfmLinkNode mfmLinkNode             => MfmLinkNode(mfmLinkNode),
 			// MfmInlineMathNode mfmInlineMathNode => TODO: Implement inline math
-			MfmMentionNode mfmMentionNode       => MfmMentionNode(mfmMentionNode, accountDomain),
+			MfmMentionNode mfmMentionNode       => MfmMentionNode(mfmMentionNode, username, accountDomain),
 			MfmPlainNode mfmPlainNode           => MfmPlainNode(mfmPlainNode),
 			MfmSmallNode _                      => MfmSmallNode(),
 			MfmStrikeNode mfmStrikeNode         => MfmStrikeNode(mfmStrikeNode),
@@ -77,7 +77,7 @@ public static partial class MfmRenderer
 		{
 			foreach (var childNode in node.Children)
 			{
-				rendered.AppendNodes(RenderNode(childNode, emoji, accountDomain, simple, speakAsCat));
+				rendered.AppendNodes(RenderNode(childNode, emoji, username, accountDomain, simple, speakAsCat));
 			}
 		}
 
@@ -239,14 +239,16 @@ public static partial class MfmRenderer
 		return el;
 	}
 
-	private static INode MfmMentionNode(MfmMentionNode node, string accountDomain)
+	private static INode MfmMentionNode(MfmMentionNode node, string username, string accountDomain)
 	{
 		var link = CreateElement("a");
 		link.SetAttribute("href",
 		                  node.Host != null && node.Host != accountDomain
 			                  ? $"/@{node.Acct}"
 			                  : $"/@{node.User}");
-		link.ClassName = "mention";
+		link.ClassList.Add("mention");
+		if (!string.IsNullOrEmpty(username) && node.User == username && node.Host == accountDomain)
+			link.ClassList.Add("me");
 		var userPart = CreateElement("span");
 		userPart.ClassName   = "user";
 		userPart.TextContent = $"@{node.User}";

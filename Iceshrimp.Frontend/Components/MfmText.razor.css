@@ -6,7 +6,8 @@
 ::deep {
     .mention {
         text-decoration: none;
-        background-color: var(--highlight-color);
+        background-color: color-mix(in srgb, var(--mention-color) 15%, transparent);
+        color: var(--mention-color);
         border-radius: 1em;
         padding: 0.2em 0.5em;
 
@@ -20,11 +21,9 @@
     }
 }
 
-::deep {
-    .mention {
-        text-decoration: none;
-        color: var(--notice-color);
-    }
+::deep .mention.me {
+    background-color: color-mix(in srgb, var(--mention-me-color) 20%, transparent);
+    color: var(--mention-me-color);
 }
 
 ::deep {
@@ -80,20 +79,20 @@
 
 ::deep {
     .link-node {
-        color: var(--link);
+        color: var(--link-color);
     }
 }
 
 ::deep {
     .url-node {
-        color: var(--link);
+        color: var(--link-color);
     }
 }
 
 ::deep {
     .hashtag-node {
         text-decoration-line: none;
-        color: var(--link);
+        color: var(--link-color);
     }
 }
 
