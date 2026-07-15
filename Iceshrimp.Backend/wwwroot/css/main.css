@@ -34,7 +34,7 @@
     --accent-color: linear-gradient(to right, var(--accent-primary-color), var(--accent-secondary-color));
     --shadow-color: black;
 
-    --animation-speed: 0.2s;
+    --animation-speed: 0.1s;
     --btn-radius: 1.25rem;
 
     overscroll-behavior-y: none;
@@ -118,7 +118,7 @@ dialog {
     border: solid var(--border-color) 0.05rem;
     border-radius: 1rem;
     opacity: 0;
-    transform: scale(0.9);
+    transform: scale(0.95);
     transition: opacity var(--animation-speed) ease-out,
     transform var(--animation-speed) ease-out,
     overlay var(--animation-speed) ease-out allow-discrete,
@@ -133,7 +133,7 @@ dialog:open {
 @starting-style {
     dialog:open {
         opacity: 0;
-        transform: scale(0.9);
+        transform: scale(0.95);
     }
 }
 
@@ -142,7 +142,7 @@ dialog::backdrop {
     opacity: 0;
     transition: display var(--animation-speed) allow-discrete,
     overlay var(--animation-speed) allow-discrete,
-    opacity var(--animation-speed);
+    opacity var(--animation-speed) ease-out;
 }
 
 dialog:open::backdrop {
@@ -175,11 +175,11 @@ dialog .dialog-footer {
 
 [popover] {
     opacity: 0;
-    transform: translateY(1em);
-    transition: opacity var(--animation-speed),
+    transform: translateY(0.3em);
+    transition: opacity var(--animation-speed) ease-out,
     transform var(--animation-speed),
-    overlay var(--animation-speed) allow-discrete,
-    display var(--animation-speed) allow-discrete;
+    overlay var(--animation-speed) ease-out allow-discrete,
+    display var(--animation-speed) ease-out allow-discrete;
 }
 
 [popover]:popover-open {
@@ -190,29 +190,23 @@ dialog .dialog-footer {
 @starting-style {
     [popover]:popover-open {
         opacity: 0;
-        transform: translateY(1em);
+        transform: translateY(0.3em);
     }
 }
 
 @media (prefers-reduced-motion: reduce) {
     dialog {
-        transform: scale(1);
-    }
-
-    @starting-style {
-        dialog:open {
-            transform: scale(1);
-        }
+        transition: opacity var(--animation-speed) ease-out,
+        transform 0s,
+        overlay var(--animation-speed) ease-out allow-discrete,
+        display var(--animation-speed) ease-out allow-discrete;
     }
 
     [popover] {
-        transform: translateY(0);
-    }
-
-    @starting-style {
-        [popover]:popover-open {
-            transform: translateY(0);
-        }
+        transition: opacity var(--animation-speed) ease-out,
+        transform 0s,
+        overlay var(--animation-speed) ease-out allow-discrete,
+        display var(--animation-speed) ease-out allow-discrete;
     }
 }
 

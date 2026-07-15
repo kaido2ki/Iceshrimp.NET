@@ -214,18 +214,6 @@ input[type="number"] {
         }
     }
     
-    @media (prefers-reduced-motion: reduce) {
-        .compose {
-            transform: translateY(0);
-        }
-
-        @starting-style {
-            .compose:open {
-                transform: translateY(0);
-            }
-        }
-    }
-    
     .header {
         position: sticky;
         top: 0;
