@@ -88,6 +88,7 @@
     margin-inline: 1rem;
     color: var(--font-color);
     font-size: 0.9em;
+    user-select: none;
 
     > .icon-wrapper {
         display: inline;

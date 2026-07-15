@@ -9,6 +9,7 @@
     object-fit: cover;
     width: 3em;
     height: 3em;
+    user-select: none;
 }
 
 .avatar.large {

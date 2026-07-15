@@ -1,5 +1,6 @@
 .note-footer {
     margin-top: 0.5em;
+    user-select: none;
 }
 
 .reactions {
@@ -23,6 +24,7 @@
     background-color: var(--foreground-color);
     border: 0.1rem solid var(--foreground-color);
     width: fit-content;
+    user-select: none;
 }
 
 .note-footer ::deep .btn:hover {

@@ -11,6 +11,7 @@
     z-index: 1;
     position: sticky;
     cursor: pointer;
+    user-select: none;
 }
  
 .cat-ears {

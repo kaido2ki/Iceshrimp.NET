@@ -80,6 +80,7 @@
     color: var(--notice-color);
     text-decoration: none;
     cursor: pointer;
+    user-select: none;
 
     .label {
         font-size: 0.9em;

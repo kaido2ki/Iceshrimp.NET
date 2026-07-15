@@ -334,6 +334,7 @@ details > summary {
     gap: 0.5rem;
     flex-wrap: wrap;
     align-items: center;
+    user-select: none;
 }
 
 .badge {

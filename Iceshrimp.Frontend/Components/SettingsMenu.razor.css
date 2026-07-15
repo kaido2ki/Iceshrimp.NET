@@ -10,6 +10,7 @@
     color: var(--font-color);
     font-size: 0.9em;
     background: var(--foreground-color);
+    user-select: none;
     
     > .icon-wrapper {
         padding-right: 0.5rem;

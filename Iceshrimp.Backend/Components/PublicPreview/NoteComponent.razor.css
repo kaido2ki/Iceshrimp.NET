@@ -30,6 +30,7 @@ details {
     flex-wrap: wrap;
     margin-top: 0.5em;
     gap: 2em;
+    user-select: none;
 }
 
 .reactions .reaction {
@@ -57,6 +58,7 @@ details {
     display: flex;
     margin-top: 0.5em;
     gap: 2em;
+    user-select: none;
 }
 
 .note-counts .count {
