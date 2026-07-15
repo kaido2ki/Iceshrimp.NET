@@ -26,23 +26,27 @@ details {
 }
 
 .reactions {
-    display: flex;
-    flex-wrap: wrap;
     margin-top: 0.5em;
-    gap: 2em;
-    user-select: none;
 }
 
 .reactions .reaction {
-    display: flex;
+    display: inline-flex;
     justify-content: center;
+    align-items: center;
     gap: 0.5em;
+    line-height: 1;
+    padding: 0.2em 0.5em;
+    border-radius: 0.5em;
+    border: 0.1em solid var(--border-color);
 }
 
-.reactions .emoji {
-    font-size: 1.5em;
-    height: 1em;
+.reactions .emoji.custom {
+    height: 1.5rem;
     width: auto;
+}
+
+.reactions .emoji.unicode {
+    font-size: 1.5rem;
 }
 
 .reactions .emoji.sensitive {

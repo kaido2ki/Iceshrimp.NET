@@ -32,17 +32,17 @@
 
     @if (ShowMedia)
     {
-        <div class="reactions">
+        <div class="reactions button-group">
             @foreach (var reaction in Note.Reactions)
             {
                 <span class="reaction" title="@reaction.Name">
                     @if (reaction.Url != null)
                     {
-                        <img class="@("emoji" + (reaction.Sensitive ? " sensitive" : ""))" src="@reaction.Url" alt="@reaction.Name"/>
+                        <img class="@("emoji custom" + (reaction.Sensitive ? " sensitive" : ""))" src="@reaction.Url" alt="@reaction.Name"/>
                     }
                     else
                     {
-                        <span class="emoji">@reaction.Name</span>
+                        <span class="emoji unicode">@reaction.Name</span>
                     }
                     @reaction.Count
                 </span>
