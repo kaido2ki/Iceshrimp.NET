@@ -11,7 +11,7 @@
                 }
                 <span class="user">
                     @Loc[L.Note_RenotedLabel]
-                    <a href="@($"/{NoteResponse.User.Handle}")">
+                    <a href="@($"/{NoteResponse.User.Handle}")" title="@NoteResponse.User.Handle">
                         <UserDisplayName User="@NoteResponse.User"/>
                     </a>
                 </span>

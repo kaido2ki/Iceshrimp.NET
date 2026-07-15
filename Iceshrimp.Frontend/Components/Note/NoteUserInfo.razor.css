@@ -17,9 +17,15 @@
 }
 
 .display-name {
+    color: var(--font-color);
+    text-decoration-line: none;
     white-space: nowrap;
     text-overflow: ellipsis;
     overflow: clip;
+}
+
+.display-name:hover {
+    text-decoration-line: underline;
 }
 
 ::deep .identifier .icon-wrapper {

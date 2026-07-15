@@ -83,10 +83,16 @@
 }
 
 .display-name {
+    color: var(--font-color);
+    text-decoration-line: none;
     white-space: nowrap;
     text-overflow: ellipsis;
     overflow: hidden;
     max-width: 15rem;
+}
+
+.display-name:hover {
+    text-decoration-line: underline;
 }
 
 .notification-body {
