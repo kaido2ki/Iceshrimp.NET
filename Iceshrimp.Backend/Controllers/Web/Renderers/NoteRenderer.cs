@@ -49,7 +49,7 @@ public class NoteRenderer(
 		res.RenoteId          = note.IsPureRenote ? note.RenoteId : null;
 		res.Quote             = quote;
 		res.QuoteId           = note.IsQuote ? note.RenoteId : null;
-		res.QuoteInaccessible = note.RenoteUri != null;
+		res.QuoteInaccessible = note is { IsQuote: true, Renote: null } && (note.RenoteId != null || note.RenoteUri != null);
 		res.Reply             = reply;
 		res.ReplyId           = note.ReplyId;
 		res.ReplyInaccessible = note.Reply == null && (note.ReplyId != null || note.ReplyUri != null);
