@@ -1,14 +1,40 @@
+@using Iceshrimp.Frontend.Core.Services
+@inject GlobalComponentSvc Global;
+
 <JsInteropWrapper />
-<EmojiPicker />
-<BannerContainer />
+<EmojiPicker @ref="_emojiPicker"/>
+<BannerContainer @ref="_bannerContainer"/>
 <AnnouncementsDialog />
-<ConfirmDialog />
-<NoticeDialog />
-<PromptDialog />
-<SelectDialog />
+<ConfirmDialog @ref="_confirmDialog"/>
+<NoticeDialog @ref="_noticeDialog"/>
+<PromptDialog @ref="_promptDialog"/>
+<SelectDialog @ref="_selectDialog"/>
 <StreamingStatus />
 <UpdateNotice />
-<UserDialog />
-<ReportDialog />
+<UserDialog @ref="_userDialog"/>
+<ReportDialog @ref="_reportDialog"/>
+
 @code {
+    private EmojiPicker     _emojiPicker     = null!;
+    private BannerContainer _bannerContainer = null!;
+    private ConfirmDialog   _confirmDialog   = null!;
+    private NoticeDialog    _noticeDialog    = null!;
+    private PromptDialog    _promptDialog    = null!;
+    private SelectDialog    _selectDialog    = null!;
+    private UserDialog      _userDialog      = null!;
+    private ReportDialog    _reportDialog    = null!;
+
+    protected override void OnAfterRender(bool firstRender)
+    {
+        if (!firstRender) return;
+
+        Global.EmojiPicker     = _emojiPicker;
+        Global.BannerComponent = _bannerContainer;
+        Global.ConfirmDialog   = _confirmDialog;
+        Global.NoticeDialog    = _noticeDialog;
+        Global.PromptDialog    = _promptDialog;
+        Global.SelectDialog    = _selectDialog;
+        Global.UserDialog      = _userDialog;
+        Global.ReportDialog    = _reportDialog;
+    }
 }

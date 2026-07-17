@@ -1,5 +1,4 @@
 @using Iceshrimp.Frontend.Core.Services
-@inject GlobalComponentSvc             GlobalComponentSvc;
 @inject JsService                      Js;
 @inject IStringLocalizer<Localization> Loc;
 
@@ -85,10 +84,5 @@
         {
             if (!Waiting) await CancelAction();
         }
-    }
-
-    protected override void OnInitialized()
-    {
-        GlobalComponentSvc.PromptDialog = this;
     }
 }

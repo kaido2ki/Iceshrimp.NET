@@ -2,7 +2,6 @@
 @using Iceshrimp.Frontend.Core.Services
 @using Iceshrimp.Shared.Schemas.Web
 @inject ApiService                     Api;
-@inject GlobalComponentSvc             GlobalComponentSvc;
 @inject JsService                      Js;
 @inject IStringLocalizer<Localization> Loc;
 
@@ -137,10 +136,5 @@
         {
             if (!Waiting) await CancelAction();
         }
-    }
-
-    protected override void OnInitialized()
-    {
-        GlobalComponentSvc.UserDialog = this;
     }
 }

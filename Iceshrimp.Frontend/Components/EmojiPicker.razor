@@ -2,7 +2,6 @@
 @using Iceshrimp.Frontend.Core.Services
 @using Iceshrimp.Shared.Schemas.Web
 @inject EmojiService       EmojiService
-@inject GlobalComponentSvc GlobalComponentSvc
 @inject JsService          Js
 @inject IStringLocalizer<Localization> Loc;
 
@@ -32,11 +31,6 @@
 
     private string                               EmojiFilter { get; set; } = "";
     private List<(string Category, List<EmojiResponse> Emojis)> Categories  { get; set; } = [];
-
-    protected override void OnInitialized()
-    {
-        GlobalComponentSvc.EmojiPicker = this;
-    }
 
     private async Task Select(EmojiResponse emoji)
     {

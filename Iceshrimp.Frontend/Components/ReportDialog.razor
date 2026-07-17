@@ -230,7 +230,6 @@
 
     protected override async Task OnInitializedAsync()
     {
-        Rules                           = await Api.Instance.GetRulesAsync();
-        GlobalComponentSvc.ReportDialog = this;
+        Rules = await Api.Instance.GetRulesAsync();
     }
 }
