@@ -203,7 +203,7 @@
             }
             else
             {
-                <MfmText Text="@NoteDraft.Text.ReplaceLineEndings("\n")" Emoji="EmojiList"/>
+                <MfmText Text="@NoteDraft.Text.ReplaceLineEndings("\n")" Emoji="@(EmojiService.Emojis ?? [])"/>
             }
         </div>
     }
@@ -222,7 +222,6 @@
     private EmojiPicker              EmojiPicker     { get; set; } = null!;
     private StateButton              SendButton      { get; set; } = null!;
     private bool                     Preview         { get; set; }
-    private List<EmojiResponse>      EmojiList       { get; set; } = [];
     private int                      NoteLength      { get; set; }
     private bool                     SendLock        { get; set; }
     private int                      UploadingFiles  { get; set; }
@@ -473,8 +472,7 @@
         AttachedQuote    = null;
         NoteId           = null;
 
-        if (EmojiList.Count == 0)
-            EmojiList = await EmojiService.GetEmojiAsync();
+        await EmojiService.GetEmojiAsync();
 
         await _module.InvokeVoidAsync("setupPaste", _objRef, Textarea, UploadInput.Element);
     }

@@ -26,7 +26,6 @@
 
 @code {
     private EventCallback<EmojiResponse> OnEmojiSelect { get; set; }
-    private List<EmojiResponse>          EmojiList     { get; set; } = [];
     private ElementReference             Popover       { get; set; }
 
     private string                               EmojiFilter { get; set; } = "";
@@ -45,11 +44,8 @@
 
     public async Task Open(ElementReference source, EventCallback<EmojiResponse> func)
     {
-        if (EmojiList.Count == 0)
-        {
-            EmojiList = await EmojiService.GetEmojiAsync();
-            FilterEmojis();
-        }
+        await EmojiService.GetEmojiAsync();
+        FilterEmojis();
 
         OnEmojiSelect = func;
         await Js.TogglePopoverAsync(Popover, source);
@@ -64,7 +60,7 @@
 
     private void FilterEmojis()
     {
-        Categories = EmojiList
+        Categories = EmojiService.Emojis?
             .Where(p => FilterName(p) || p.Tags.Count(a => a.Contains(EmojiFilter.StripLeadingTrailingSpaces())) != 0)
             .OrderBy(p => p.Name)
             .ThenBy(p => p.Id)
@@ -72,6 +68,6 @@
             .OrderBy(p => p.Key == null)
             .ThenBy(p => p.Key)
             .Select(p => (p.Key ?? Loc[L.Common_Other], p.ToList()))
-            .ToList();
+            .ToList() ?? [];
     }
 }

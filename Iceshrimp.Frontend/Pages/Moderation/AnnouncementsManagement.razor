@@ -128,7 +128,7 @@
             }
             else
             {
-                <MfmText Text="@Draft.Text.ReplaceLineEndings("\n")" Emoji="@EmojiList"/>
+                <MfmText Text="@Draft.Text.ReplaceLineEndings("\n")" Emoji="@(EmojiSvc.Emojis ?? [])"/>
             }
         </div>
     }
@@ -148,7 +148,6 @@
     private          StateButton                    SendButton     { get; set; } = null!;
     private          PaginationData?                PaginationData { get; set; }
     private          List<AnnouncementResponse>     Announcements  { get; set; } = [];
-    private          List<EmojiResponse>            EmojiList      { get; set; } = [];
     private          AnnouncementRequest            Draft          { get; set; }
     private          string?                        Editing        { get; set; }
     private          bool                           Preview        { get; set; }
@@ -164,8 +163,7 @@
         Editing          = null;
         SendButton.State = StateButton.StateEnum.Initial;
 
-        if (EmojiList.Count == 0)
-            EmojiList = await EmojiSvc.GetEmojiAsync();
+        await EmojiSvc.GetEmojiAsync();
 
         await Js.ShowDialogAsync(ComposeDialog);
     }
@@ -179,8 +177,7 @@
         Editing          = id;
         SendButton.State = StateButton.StateEnum.Initial;
 
-        if (EmojiList.Count == 0)
-            EmojiList = await EmojiSvc.GetEmojiAsync();
+        await EmojiSvc.GetEmojiAsync();
 
         await Js.ShowDialogAsync(ComposeDialog);
     }
