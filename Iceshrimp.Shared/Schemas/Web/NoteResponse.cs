@@ -44,7 +44,6 @@ public class NoteBase
 	public required bool                     Liked       { get; set; }
 	public required int                      Likes       { get; set; }
 	public required bool                     Renoted     { get; set; }
-	public required bool                     CanBite     { get; set; }
 	public required int                      Renotes     { get; set; }
 	public required int                      Replies     { get; set; }
 	public required UserResponse             User        { get; set; }

@@ -92,12 +92,9 @@
             <Icon Name="Icons.DotsThreeOutline" Size="1.3em"/>
         </ButtonContent>
         <Elements>
-            @if (Note.CanBite)
-            {
-                <MenuElement Icon="Icons.Tooth" OnSelect="Bite">
-                    <Text>@Loc[L.Common_Bite]</Text>
-                </MenuElement>
-            }
+            <MenuElement Icon="Icons.Tooth" OnSelect="Bite">
+                <Text>@Loc[L.Common_Bite]</Text>
+            </MenuElement>
             @if (Note.User.Host != null)
             {
                 <MenuElement Icon="Icons.ArrowsClockwise" OnSelect="RefetchNote">
