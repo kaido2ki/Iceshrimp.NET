@@ -33,7 +33,16 @@
                 }
             </div>
         }
-        <div class="header">@InstanceName</div>
+        @if (EmojiService.Emojis is { Count: > 0 })
+        {
+            <div class="header">
+                @InstanceName
+                @if (InstanceIcon != null)
+                {
+                    <img class="instance-icon" src="@InstanceIcon" aria-hidden="true"/>
+                }
+            </div>
+        }
         @foreach (var category in CustomCategories)
         {
             <details open>
@@ -52,7 +61,7 @@
         {
             @if (ShowSkinTonePicker)
             {
-                <div class="header skin-tone-picker open">
+                <div class="header skin-tone-picker">
                     <button @onclick="() => SetSkinTone(null)">👋</button>
                     @foreach (var skinTone in Emoji.SkinTones)
                     {
@@ -64,7 +73,7 @@
             }
             else
             {
-                <div class="header skin-tone-picker">
+                <div class="header">
                     <button @onclick="() => { ShowSkinTonePicker = true; }">
                         @("👋" + Preferences.SkinTone)
                     </button>
@@ -98,6 +107,7 @@
     private EventCallback<SelectedEmoji> OnEmojiSelect { get; set; }
     private ElementReference             Popover       { get; set; }
     private string                       InstanceName  { get; set; } = null!;
+    private string?                      InstanceIcon  { get; set; }
 
     private EmojiPreferences    Preferences        { get; set; } = null!;
     private string              EmojiFilter        { get; set; } = "";
@@ -121,8 +131,11 @@
 
     protected override async Task OnInitializedAsync()
     {
-        Preferences  = LocalStorage.GetItem<EmojiPreferences>(nameof(EmojiPreferences)) ?? new EmojiPreferences();
-        InstanceName = (await Meta.Instance.Value).Name;
+        Preferences = LocalStorage.GetItem<EmojiPreferences>(nameof(EmojiPreferences)) ?? new EmojiPreferences();
+
+        var instance = await Meta.Instance.Value;
+        InstanceName = instance.Name;
+        InstanceIcon = instance.IconUrl;
     }
 
     private void UpdateRecents(EmojiResponse emoji)
