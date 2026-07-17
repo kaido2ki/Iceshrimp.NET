@@ -313,14 +313,19 @@
 
     private async Task ToggleEmojiPicker()
     {
-        await GlobalComponentSvc.EmojiPicker?.Open(EmojiButton, new EventCallback<EmojiResponse>(this, AddEmoji))!;
+        await GlobalComponentSvc.EmojiPicker?.Open(EmojiButton, new EventCallback<EmojiPicker.SelectedEmoji>(this, AddEmoji))!;
     }
 
-    private async Task AddEmoji(EmojiResponse emoji)
+    private async Task AddEmoji(EmojiPicker.SelectedEmoji emoji)
     {
-        var pos         = await Js.GetSelectionStartAsync(Description);
-        var text        = UserProfile.Description ?? "";
-        var emojiString = $":{emoji.Name}: ";
+        var pos  = await Js.GetSelectionStartAsync(Description);
+        var text = UserProfile.Description ?? "";
+        var emojiString = emoji switch
+        {
+            EmojiPicker.SelectedEmojiResponse e => $":{e.Emoji.Name}: ",
+            EmojiPicker.SelectedUnicodeEmoji e  => $"{e.Value} ",
+            _                                   => throw new ArgumentOutOfRangeException(nameof(emoji)),
+        };
         UserProfile.Description = text.Insert(pos, emojiString);
         StateHasChanged();
     }

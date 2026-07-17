@@ -244,12 +244,22 @@
 
     private async Task ToggleEmojiPicker()
     {
-        await GlobalComponentSvc.EmojiPicker?.Open(EmojiButton, new EventCallback<EmojiResponse>(this, React))!;
+        await GlobalComponentSvc.EmojiPicker?.Open(EmojiButton, new EventCallback<EmojiPicker.SelectedEmoji>(this, React))!;
     }
 
-    private void React(EmojiResponse emoji)
+    private void React(EmojiPicker.SelectedEmoji emoji)
     {
-        NoteActions.React(Note, emoji);
+        switch (emoji)
+        {
+            case EmojiPicker.SelectedEmojiResponse e:
+                NoteActions.React(Note, e.Emoji);
+                break;
+            case EmojiPicker.SelectedUnicodeEmoji e:
+                NoteActions.React(Note, e.Value);
+                break;
+            default:
+                throw new ArgumentOutOfRangeException(nameof(emoji));
+        }
     }
 
     private void Redraft()

@@ -1,3 +1,4 @@
+using Iceshrimp.Frontend.Components;
 using Iceshrimp.Frontend.Core.Miscellaneous;
 using Iceshrimp.Shared.Schemas.Web;
 
@@ -241,8 +242,14 @@ internal class NoteActions(
 
 	public void React(NoteBase target, EmojiResponse emoji)
 	{
-		var x                                  = target.Reactions.FirstOrDefault(p => p.Name == emoji.Name);
-		if (x is null || x.Reacted == false) _ = AddReactAsync(target, emoji.Name, emoji.Sensitive, emoji.PublicUrl);
+		var x                          = target.Reactions.FirstOrDefault(p => p.Name == emoji.Name);
+		if (x is null || !x.Reacted) _ = AddReactAsync(target, emoji.Name, emoji.Sensitive, emoji.PublicUrl);
+	}
+
+	public void React(NoteBase target, string emoji)
+	{
+		var x                          = target.Reactions.FirstOrDefault(p => p.Name == emoji);
+		if (x is null || !x.Reacted) _ = AddReactAsync(target, emoji, false, null);
 	}
 
 	public async Task AddReactAsync(NoteBase target, string name, bool sensitive, string? url = null)

@@ -90,7 +90,7 @@
                     aria-label="emoji">
                 <Icon Name="Icons.Smiley" Size="1.3rem"></Icon>
             </button>
-            <EmojiPicker @ref="EmojiPicker"/>
+            <EmojiPicker @ref="EmojiPickerRef"/>
             @if (NoteDraft.RenoteId == null && AttachedQuote == null)
             {
                 <button class="btn" title="@Loc[L.Compose_Quote_Add]" @onclick="AddQuote" aria-label="add quote">
@@ -219,7 +219,7 @@
     private string?                  TextPlaceholder { get; set; }
     private ElementReference         Textarea        { get; set; }
     private ElementReference         EmojiButton     { get; set; }
-    private EmojiPicker              EmojiPicker     { get; set; } = null!;
+    private EmojiPicker              EmojiPickerRef  { get; set; } = null!;
     private StateButton              SendButton      { get; set; } = null!;
     private bool                     Preview         { get; set; }
     private int                      NoteLength      { get; set; }
@@ -689,7 +689,7 @@
 
     private async Task ToggleEmojiPicker()
     {
-        await EmojiPicker.Open(EmojiButton, new EventCallback<EmojiResponse>(this, AddEmoji))!;
+        await EmojiPickerRef.Open(EmojiButton, new EventCallback<EmojiPicker.SelectedEmoji>(this, AddEmoji))!;
     }
 
     private async Task AddMention() =>
@@ -736,9 +736,14 @@
         AttachedQuote = null;
     }
 
-    private async Task AddEmoji(EmojiResponse emoji)
+    private async Task AddEmoji(EmojiPicker.SelectedEmoji emoji)
     {
-        var emojiString = $":{emoji.Name}: ";
+        var emojiString = emoji switch
+        {
+            EmojiPicker.SelectedEmojiResponse e => $":{e.Emoji.Name}: ",
+            EmojiPicker.SelectedUnicodeEmoji e  => $"{e.Value} ",
+            _                                   => throw new ArgumentOutOfRangeException(nameof(emoji)),
+        };
         await InsertTextAsync(emojiString);
         StateHasChanged();
     }

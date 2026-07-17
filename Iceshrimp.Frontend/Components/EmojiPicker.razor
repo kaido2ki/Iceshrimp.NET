@@ -38,7 +38,7 @@
             <div class="emoji-list">
                 @foreach (var emoji in category.Emojis)
                 {
-                    <div @onclick="() => Select(emoji)" class="emoji" title="@emoji.License">
+                    <div @onclick="() => Select(emoji.Name)" class="emoji" title="@emoji.License">
                         <InlineEmoji Name="@emoji.Name" Url="@null" Size="2rem"/>
                     </div>
                 }
@@ -53,7 +53,7 @@
 
 
 @code {
-    private EventCallback<EmojiResponse> OnEmojiSelect { get; set; }
+    private EventCallback<SelectedEmoji> OnEmojiSelect { get; set; }
     private ElementReference             Popover       { get; set; }
     private string                       InstanceName  { get; set; } = null!;
 
@@ -63,6 +63,12 @@
 
     private record EmojiCategory(string Name, List<EmojiResponse> Emojis);
 
+    public abstract record SelectedEmoji;
+
+    public sealed record SelectedEmojiResponse(EmojiResponse Emoji) : SelectedEmoji;
+
+    public sealed record SelectedUnicodeEmoji(string Value) : SelectedEmoji;
+
     protected override async Task OnInitializedAsync()
     {
         InstanceName = (await Meta.Instance.Value).Name;
@@ -70,7 +76,13 @@
 
     private async Task Select(EmojiResponse emoji)
     {
-        await OnEmojiSelect.InvokeAsync(emoji);
+        await OnEmojiSelect.InvokeAsync(new SelectedEmojiResponse(emoji));
+        await Close();
+    }
+
+    private async Task Select(string emoji)
+    {
+        await OnEmojiSelect.InvokeAsync(new SelectedUnicodeEmoji(emoji));
         await Close();
     }
 
@@ -79,7 +91,7 @@
         await Js.HidePopoverAsync(Popover);
     }
 
-    public async Task Open(ElementReference source, EventCallback<EmojiResponse> func)
+    public async Task Open(ElementReference source, EventCallback<SelectedEmoji> func)
     {
         await EmojiService.GetEmojiAsync();
         FilterEmojis();
