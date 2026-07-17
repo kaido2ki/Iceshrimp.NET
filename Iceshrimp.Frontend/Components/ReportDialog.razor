@@ -8,7 +8,7 @@
 @inject IStringLocalizer<Localization> Loc;
 @inject SessionService                 Session;
 
-<dialog closedby="none" class="modal" @ref="Dialog">
+<dialog closedby="none" class="@(Waiting ? "" : "modal")" @ref="Dialog">
     @if (Waiting)
         {
             <LoadingSpinner Scale="1.5"/>

@@ -3,7 +3,7 @@
 @inject JsService                      Js;
 @inject IStringLocalizer<Localization> Loc;
 
-<dialog closedby="none" @onkeyup="HandleKeys" class="modal" @ref="Dialog">
+<dialog closedby="none" @onkeyup="HandleKeys" class="@(Waiting ? "" : "modal")" @ref="Dialog">
     @if (Waiting)
     {
         <LoadingSpinner Scale="1.5"/>
