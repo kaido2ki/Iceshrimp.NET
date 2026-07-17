@@ -105,6 +105,7 @@
                     aria-label="emoji">
                 <Icon Name="Icons.Smiley" Size="1.3rem"></Icon>
             </button>
+            <EmojiPicker @ref="EmojiPicker"/>
             <label>
                 <input type="checkbox" @bind="Draft.ShowPopup">
                 @Loc[L.Moderation_Announcements_Popup]
@@ -142,6 +143,7 @@
     private          ElementReference               ComposeDialog  { get; set; }
     private          ElementReference               Textarea       { get; set; }
     private          ElementReference               EmojiButton    { get; set; }
+    private          EmojiPicker                    EmojiPicker    { get; set; } = null!;
     private          InputFile                      ImageInput     { get; set; } = null!;
     private          StateButton                    SendButton     { get; set; } = null!;
     private          PaginationData?                PaginationData { get; set; }
@@ -243,7 +245,7 @@
 
     private async Task ToggleEmojiPicker()
     {
-        await Global.EmojiPicker?.Open(EmojiButton, new EventCallback<EmojiResponse>(this, AddEmoji))!;
+        await EmojiPicker.Open(EmojiButton, new EventCallback<EmojiResponse>(this, AddEmoji))!;
     }
 
     private async Task AddEmoji(EmojiResponse emoji)

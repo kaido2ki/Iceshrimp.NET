@@ -90,6 +90,7 @@
                     aria-label="emoji">
                 <Icon Name="Icons.Smiley" Size="1.3rem"></Icon>
             </button>
+            <EmojiPicker @ref="EmojiPicker"/>
             @if (NoteDraft.RenoteId == null && AttachedQuote == null)
             {
                 <button class="btn" title="@Loc[L.Compose_Quote_Add]" @onclick="AddQuote" aria-label="add quote">
@@ -218,6 +219,7 @@
     private string?                  TextPlaceholder { get; set; }
     private ElementReference         Textarea        { get; set; }
     private ElementReference         EmojiButton     { get; set; }
+    private EmojiPicker              EmojiPicker     { get; set; } = null!;
     private StateButton              SendButton      { get; set; } = null!;
     private bool                     Preview         { get; set; }
     private List<EmojiResponse>      EmojiList       { get; set; } = [];
@@ -689,7 +691,7 @@
 
     private async Task ToggleEmojiPicker()
     {
-        await GlobalComponentSvc.EmojiPicker?.Open(EmojiButton, new EventCallback<EmojiResponse>(this, AddEmoji))!;
+        await EmojiPicker.Open(EmojiButton, new EventCallback<EmojiResponse>(this, AddEmoji))!;
     }
 
     private async Task AddMention() =>
