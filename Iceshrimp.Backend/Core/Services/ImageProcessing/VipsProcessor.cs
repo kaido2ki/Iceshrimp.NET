@@ -67,7 +67,7 @@ public class VipsProcessor : ImageProcessorBase, IImageProcessor,
 	public string Blurhash(byte[] buf, IImageInfo ident)
 	{
 		using var blurhashImageSource =
-			Image.ThumbnailBuffer(buf, 100, height: 100, size: Enums.Size.Down);
+			Image.ThumbnailBuffer(buf, width: 100, height: 100, size: Enums.Size.Down);
 		using var blurhashImageRotated = blurhashImageSource.Autorot();
 		using var blurhashImage = blurhashImageRotated.Interpretation == Enums.Interpretation.Srgb
 			? blurhashImageRotated
@@ -75,22 +75,29 @@ public class VipsProcessor : ImageProcessorBase, IImageProcessor,
 		using var blurhashImageFlattened = blurhashImage.HasAlpha() ? blurhashImage.Flatten() : blurhashImage;
 		using var blurhashImageActual    = blurhashImageFlattened.Cast(Enums.BandFormat.Uchar);
 
+		var width  = blurhashImageActual.Width;
+		var height = blurhashImageActual.Height;
+		var pixels = width * height;
+
+		if (width is < 1 or > 100) throw new VipsException($"Failed to compute blurhash: invalid width: {width}");
+		if (height is < 1 or > 100) throw new VipsException($"Failed to compute blurhash: invalid height: {height}");
+
 		var blurBuf = blurhashImageActual.WriteToMemory<byte>();
 		var bufLen  = blurBuf.Length;
 
-		const int expectedBufLen = 100 * 100 * 3;
+		var expectedBufLen = pixels * 3;
 		if (bufLen != expectedBufLen) throw new VipsException("Failed to compute blurhash: buffer length mismatch");
 
 		var         blurBufSpan   = blurBuf.AsSpan();
-		Span<Rgb24> blurPixels = new Rgb24[expectedBufLen];
+		Span<Rgb24> blurPixels = new Rgb24[pixels];
 
-		for (var i = 0; i < expectedBufLen; i++)
+		for (var i = 0; i < pixels; i++)
 		{
 			var baseIdx = i * 3;
 			blurPixels[i] = new Rgb24(blurBufSpan[baseIdx], blurBufSpan[baseIdx+1], blurBufSpan[baseIdx+2]);
 		}
 
-		return BlurhashHelper.Encode(blurPixels.AsSpan2D(blurhashImage.Height, blurhashImage.Width), 7, 7);
+		return BlurhashHelper.Encode(blurPixels.AsSpan2D(height, width), 7, 7);
 	}
 
 	public IImageInfo Identify(byte[] input)
