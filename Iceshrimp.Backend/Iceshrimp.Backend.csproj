@@ -22,7 +22,7 @@
     </ItemGroup>
 
     <ItemGroup>
-        <PackageReference Include="AngleSharp" Version="1.4.0" />
+        <PackageReference Include="AngleSharp" Version="1.5.2" />
         <PackageReference Include="AsyncKeyedLock" Version="8.0.2" />
         <PackageReference Include="CommunityToolkit.HighPerformance" Version="8.4.2" />
         <PackageReference Include="dotNetRdf.Core" Version="3.5.3-iceshrimp" />
