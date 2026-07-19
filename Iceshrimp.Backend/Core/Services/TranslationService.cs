@@ -42,8 +42,23 @@ public class TranslationService(
 			var translationProvider = provider.GetService<ITranslationProvider>()
 			                          ?? throw GracefulException.UnprocessableEntity("No translation plugins have been set up");
 
-			return (await translationProvider.TranslateAsync(note, lang)
-			        ?? throw GracefulException.UnprocessableEntity("There was an issue translating this note"), lang);
+			var translation = await translationProvider.TranslateAsync(note, lang)
+			        ?? throw GracefulException.UnprocessableEntity("There was an issue translating this note");
+			
+			db.Add(new NoteTranslation
+			{
+				NoteId           = note.Id,
+				NoteEditId       = null,
+				Text             = translation.TranslatedText,
+				Cw               = translation.TranslatedCw,
+				OriginalLanguage = translation.OriginalLanguage,
+				TargetLanguage   = lang,
+				PollChoices      = translation.TranslatedPoll,
+				Provider         = translationProvider.GetProviderName()
+			});
+			await db.SaveChangesAsync();
+
+			return (translation, lang);
 		}
 	}
 	
