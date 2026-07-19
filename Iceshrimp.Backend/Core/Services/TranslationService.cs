@@ -1,4 +1,5 @@
 using System.Globalization;
+using AsyncKeyedLock;
 using Iceshrimp.Backend.Core.Database;
 using Iceshrimp.Backend.Core.Database.Tables;
 using Iceshrimp.Backend.Core.Middleware;
@@ -12,6 +13,12 @@ public class TranslationService(
 	IServiceProvider provider
 ) : IScopedService
 {
+	private static readonly AsyncKeyedLocker<string> KeyedLocker = new(o =>
+	{
+		o.PoolSize        = 10;
+		o.PoolInitialFill = 2;
+	});
+	
 	public async Task<(ITranslationProvider.Translation, string outputLanguage)> TranslateAsync(Note note, string? targetLanguage)
 	{
 		var lang = CultureInfo.GetCultureInfo(targetLanguage ?? "en").ToString();
@@ -29,12 +36,15 @@ public class TranslationService(
 		                       })
 		                       .FirstOrDefaultAsync();
 		if (existing != null) return (existing, lang);
-		
-		var translationProvider = provider.GetService<ITranslationProvider>()
-		                          ?? throw GracefulException.UnprocessableEntity("No translation plugins have been set up");
 
-		return (await translationProvider.TranslateAsync(note, lang)
-		                  ?? throw GracefulException.UnprocessableEntity("There was an issue translating this note"), lang);
+		using (await KeyedLocker.LockAsync($"translations:{note.Id}:{targetLanguage}"))
+		{
+			var translationProvider = provider.GetService<ITranslationProvider>()
+			                          ?? throw GracefulException.UnprocessableEntity("No translation plugins have been set up");
+
+			return (await translationProvider.TranslateAsync(note, lang)
+			        ?? throw GracefulException.UnprocessableEntity("There was an issue translating this note"), lang);
+		}
 	}
 	
 	public async Task RemoveTranslationsAsync(Note note)
