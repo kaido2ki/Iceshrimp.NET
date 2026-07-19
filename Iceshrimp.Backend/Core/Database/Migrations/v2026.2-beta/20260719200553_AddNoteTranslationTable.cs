@@ -8,7 +8,7 @@ namespace Iceshrimp.Backend.Core.Database.Migrations
 {
     /// <inheritdoc />
     [DbContext(typeof(DatabaseContext))]
-    [Migration("20260623000958_AddNoteTranslationTable")]
+    [Migration("20260719200553_AddNoteTranslationTable")]
     public partial class AddNoteTranslationTable : Migration
     {
         /// <inheritdoc />
@@ -24,7 +24,8 @@ namespace Iceshrimp.Backend.Core.Database.Migrations
                     text = table.Column<string>(type: "text", nullable: true),
                     cw = table.Column<string>(type: "text", nullable: true),
                     originalLanguage = table.Column<string>(type: "text", nullable: false),
-                    pollChoices = table.Column<List<string>>(type: "character varying(256)[]", nullable: true)
+                    pollChoices = table.Column<List<string>>(type: "character varying(256)[]", nullable: true),
+                    provider = table.Column<string>(type: "text", nullable: false)
                 },
                 constraints: table =>
                 {
