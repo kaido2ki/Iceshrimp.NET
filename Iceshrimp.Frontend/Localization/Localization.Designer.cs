@@ -3170,5 +3170,41 @@ namespace Iceshrimp.Frontend.Localization {
                 return ResourceManager.GetString("Error_Clipboard_Copy", resourceCulture);
             }
         }
+        
+        internal static string Preferences_Wellbeing {
+            get {
+                return ResourceManager.GetString("Preferences_Wellbeing", resourceCulture);
+            }
+        }
+        
+        internal static string Preferences_Wellbeing_HideInteractionCounts {
+            get {
+                return ResourceManager.GetString("Preferences_Wellbeing_HideInteractionCounts", resourceCulture);
+            }
+        }
+        
+        internal static string Preferences_Wellbeing_HideReactions {
+            get {
+                return ResourceManager.GetString("Preferences_Wellbeing_HideReactions", resourceCulture);
+            }
+        }
+        
+        internal static string Preferences_Wellbeing_HideQuotes {
+            get {
+                return ResourceManager.GetString("Preferences_Wellbeing_HideQuotes", resourceCulture);
+            }
+        }
+        
+        internal static string Preferences_Wellbeing_HideRenotes {
+            get {
+                return ResourceManager.GetString("Preferences_Wellbeing_HideRenotes", resourceCulture);
+            }
+        }
+        
+        internal static string Preferences_Wellbeing_HideFollowCounts {
+            get {
+                return ResourceManager.GetString("Preferences_Wellbeing_HideFollowCounts", resourceCulture);
+            }
+        }
     }
 }

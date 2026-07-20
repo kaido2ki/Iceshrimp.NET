@@ -1,0 +1,79 @@
+@page "/settings/wellbeing"
+@using Iceshrimp.Assets.PhosphorIcons
+@using Iceshrimp.Frontend.Components
+@using Iceshrimp.Frontend.Core.Schemas
+@using Iceshrimp.Frontend.Core.Services
+@using Microsoft.AspNetCore.Authorization
+@using Microsoft.AspNetCore.Components.Sections
+@attribute [Authorize]
+@layout SettingsLayout
+@inject IStringLocalizer<Localization> Loc;
+@inject SettingsService                Settings;
+
+<HeadTitle Text="@Loc[L.Preferences_Wellbeing]"/>
+<SectionContent SectionName="top-bar-icon">
+    <Icon Name="Icons.Heart"/>
+</SectionContent>
+<SectionContent SectionName="top-bar">
+    @Loc[L.Preferences_Wellbeing]
+</SectionContent>
+
+<section class="body">
+    <EditForm OnSubmit="Submit" Model="Preferences">
+        <h2>@Loc[L.Common_Notes]</h2>
+        <label>
+            <InputCheckbox @bind-Value="Preferences.Wellbeing.HideInteractionCounts"/>
+            @Loc[L.Preferences_Wellbeing_HideInteractionCounts]
+        </label>
+        <label>
+            <InputCheckbox @bind-Value="Preferences.Wellbeing.HideReactions"/>
+            @Loc[L.Preferences_Wellbeing_HideReactions]
+        </label>
+
+        <h2>@Loc[L.Common_Timeline]</h2>
+        <label>
+            <InputCheckbox @bind-Value="Preferences.Wellbeing.HideQuotes"/>
+            @Loc[L.Preferences_Wellbeing_HideQuotes]
+        </label>
+        <label>
+            <InputCheckbox @bind-Value="Preferences.Wellbeing.HideRenotes"/>
+            @Loc[L.Preferences_Wellbeing_HideRenotes]
+        </label>
+
+        <h2>@Loc[L.User]</h2>
+        <label>
+            <InputCheckbox @bind-Value="Preferences.Wellbeing.HideFollowCounts"/>
+            @Loc[L.Preferences_Wellbeing_HideFollowCounts]
+        </label>
+
+        <StateButton ExtraClasses="button" @ref="@SaveButton" OnClick="Submit">
+            <Initial>@Loc[L.StateButton_SaveChanges]</Initial>
+            <Success>@Loc[L.StateButton_Saved]</Success>
+            <Loading>@Loc[L.StateButton_Loading]<LoadingSpinner/>
+            </Loading>
+            <Failed>@Loc[L.StateButton_Error]</Failed>
+        </StateButton>
+    </EditForm>
+</section>
+
+@code {
+    private StateButton       SaveButton  { get; set; } = null!;
+    private ClientPreferences Preferences { get; set; } = null!;
+
+    protected override void OnInitialized()
+    {
+        Preferences = Settings.Preferences;
+    }
+
+    private void Submit()
+    {
+        if (SaveButton.State == StateButton.StateEnum.Loading) return;
+
+        SaveButton.State = StateButton.StateEnum.Loading;
+
+        Settings.SaveClientPreferences(Preferences);
+
+        SaveButton.State = StateButton.StateEnum.Success;
+        StateHasChanged();
+    }
+}

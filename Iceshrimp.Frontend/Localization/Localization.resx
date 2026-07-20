@@ -1582,4 +1582,22 @@
     <data name="Error_Clipboard_Copy" xml:space="preserve">
         <value>Unable to copy to clipboard:</value>
     </data>
+    <data name="Preferences_Wellbeing" xml:space="preserve">
+        <value>Wellbeing</value>
+    </data>
+    <data name="Preferences_Wellbeing_HideInteractionCounts" xml:space="preserve">
+        <value>Hide interaction counts (replies, likes, renotes, reactions)</value>
+    </data>
+    <data name="Preferences_Wellbeing_HideReactions" xml:space="preserve">
+        <value>Hide emoji reactions</value>
+    </data>
+    <data name="Preferences_Wellbeing_HideQuotes" xml:space="preserve">
+        <value>Hide notes with quotes</value>
+    </data>
+    <data name="Preferences_Wellbeing_HideRenotes" xml:space="preserve">
+        <value>Hide renotes</value>
+    </data>
+    <data name="Preferences_Wellbeing_HideFollowCounts" xml:space="preserve">
+        <value>Hide followers/following counts</value>
+    </data>
 </root>
