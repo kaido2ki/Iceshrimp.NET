@@ -9,6 +9,7 @@ internal class NotificationStore : NoteMessageProvider, IAsyncDisposable
 	public event EventHandler<NotificationResponse>?          Notification;
 	private readonly StateSynchronizer                        _stateSynchronizer;
 	private readonly ApiService                               _api;
+	private readonly FilterService                            _filterService;
 	private readonly ILogger<NotificationStore>               _logger;
 	private          StreamingService                         _streamingService;
 	private          bool                                     _initialized;
@@ -16,12 +17,13 @@ internal class NotificationStore : NoteMessageProvider, IAsyncDisposable
 
 	public NotificationStore(
 		ApiService api, ILogger<NotificationStore> logger, StateSynchronizer stateSynchronizer,
-		StreamingService streamingService
+		StreamingService streamingService, FilterService filterService
 	)
 	{
 		_api                           =  api;
 		_logger                        =  logger;
 		_stateSynchronizer             =  stateSynchronizer;
+		_filterService                 =  filterService;
 		_streamingService              =  streamingService;
 		_stateSynchronizer.NoteChanged += OnNoteChanged;
 		_streamingService.Notification += OnNotification;
@@ -31,6 +33,7 @@ internal class NotificationStore : NoteMessageProvider, IAsyncDisposable
 	{
 		if (_initialized) return;
 		await _streamingService.ConnectAsync();
+		await _filterService.InitializeAsync();
 		_initialized = true;
 	}
 
@@ -42,6 +45,8 @@ internal class NotificationStore : NoteMessageProvider, IAsyncDisposable
 
 	private void OnNotification(object? _, NotificationResponse notificationResponse)
 	{
+		if (notificationResponse is { Note.Filtered: null })
+			_filterService.FilterNote(notificationResponse.Note, FilterResponse.FilterContext.Notifications);
 		var add = Notifications.TryAdd(notificationResponse.Id, notificationResponse);
 		if (add is false)
 		{
@@ -58,6 +63,8 @@ internal class NotificationStore : NoteMessageProvider, IAsyncDisposable
 			var res = await _api.Notifications.GetNotificationsAsync(pq);
 			foreach (var notification in res)
 			{
+				if (notification is { Note.Filtered: null })
+					_filterService.FilterNote(notification.Note, FilterResponse.FilterContext.Notifications);
 				var add = Notifications.TryAdd(notification.Id, notification);
 				if (add is false) _logger.LogWarning($"Duplicate notification: {notification.Id}");
 			}
@@ -73,6 +80,8 @@ internal class NotificationStore : NoteMessageProvider, IAsyncDisposable
 
 	public void OnNoteChanged(object? _, NoteBase noteResponse)
 	{
+		if (noteResponse is NoteResponse { Filtered: null } note)
+			_filterService.FilterNote(note, FilterResponse.FilterContext.Notifications);
 		var elements = Notifications.Where(p => p.Value.Note?.Id == noteResponse.Id);
 		foreach (var el in elements)
 		{
