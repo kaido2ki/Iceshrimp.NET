@@ -7,6 +7,7 @@ using Iceshrimp.Backend.Core.Configuration;
 using Iceshrimp.Backend.Core.Database;
 using Iceshrimp.Backend.Core.Database.Tables;
 using Iceshrimp.Backend.Core.Extensions;
+using Iceshrimp.Backend.Core.Helpers;
 using Iceshrimp.Backend.Core.Middleware;
 using Iceshrimp.Shared.Configuration;
 using Iceshrimp.Shared.Schemas.Web;
@@ -191,6 +192,13 @@ public class PushService(
 			{
 				// Notifier is blocked or muted, so we shouldn't deliver the notification
 				return;
+			}
+
+			if (notification.Note != null)
+			{
+				var filters = await db.Filters.Where(p => p.User == notification.Notifiee && p.Contexts.Contains(Filter.FilterContext.Notifications)).ToListAsync();
+				var filtered = FilterHelper.IsFiltered([notification.Note, notification.Note.Reply, notification.Note.Renote, notification.Note.Renote?.Renote], filters);
+				if (filtered is { filter.Action: Filter.FilterAction.Hide }) return;
 			}
 	
 			logger.LogDebug("Delivering web push notification {id} for user {userId}", notification.Id,
