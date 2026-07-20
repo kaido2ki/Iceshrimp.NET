@@ -3206,5 +3206,11 @@ namespace Iceshrimp.Frontend.Localization {
                 return ResourceManager.GetString("Preferences_Wellbeing_HideFollowCounts", resourceCulture);
             }
         }
+        
+        internal static string Note_Replies {
+            get {
+                return ResourceManager.GetString("Note_Replies", resourceCulture);
+            }
+        }
     }
 }

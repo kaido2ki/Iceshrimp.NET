@@ -11,9 +11,10 @@
 @inject MetadataService                MetadataSvc;
 @inject NavigationManager              Nav;
 @inject NoteActions                    NoteActions;
+@inject SettingsService                Settings;
 
 <div class="note-footer">
-    @if (Reactions.Count > 0)
+    @if (!Settings.Preferences.Wellbeing.HideReactions && Reactions.Count > 0)
     {
         <div class="reactions @(Indented ? "indent" : "")">
             @foreach (var reaction in Reactions)
@@ -24,7 +25,7 @@
     }
     <button class="btn" @onclick="Reply" @onclick:stopPropagation="true" aria-label="reply">
         <Icon Name="Icons.ArrowUUpLeft" Size="1.3em"/>
-        @if (Replies > 0)
+        @if (!Settings.Preferences.Wellbeing.HideInteractionCounts && Replies > 0)
         {
             <span class="reply-count">@Replies</span>
         }
@@ -32,7 +33,7 @@
     <MenuButton ButtonClass="btn" ButtonDisabled="@(!RenotePossible)" ButtonRole="renote">
         <ButtonContent>
             <Icon Name="@(RenotePossible ? Note.Renoted ? Icons.RepeatOnce : Icons.Repeat : Icons.Lock)" Size="1.3em"/>
-            @if (Renotes > 0)
+            @if (!Settings.Preferences.Wellbeing.HideInteractionCounts && Renotes > 0)
             {
                 <span class="renote-count">@Renotes</span>
             }
@@ -70,7 +71,7 @@
         {
             <Icon Name="Icons.Heart" Size="1.3em"/>
         }
-        @if (Likes > 0)
+        @if (!Settings.Preferences.Wellbeing.HideInteractionCounts && Likes > 0)
         {
             <span class="like-count">@Likes</span>
         }
@@ -78,7 +79,7 @@
     <button @ref="EmojiButton" class="btn" @onclick="ToggleEmojiPicker" @onclick:stopPropagation="true"
             aria-label="emoji picker">
         <Icon Name="Icons.Smiley" Size="1.3em"/>
-        @if (Reactions.Count > 0)
+        @if (!Settings.Preferences.Wellbeing.HideInteractionCounts && Reactions.Count > 0)
         {
             <span class="like-count">@Reactions.Sum(r => r.Count)</span>
         }

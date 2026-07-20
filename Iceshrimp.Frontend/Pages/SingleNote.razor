@@ -8,6 +8,7 @@
 @inject IStringLocalizer<Localization> Loc
 @inject ILogger<SingleNote>            Logger;
 @inject StateSynchronizer              StateSynchronizer;
+@inject SettingsService                Settings;
 @inherits ChildNoteController
 @using Iceshrimp.Assets.PhosphorIcons
 @using Iceshrimp.Frontend.Components
@@ -78,7 +79,7 @@
                     <TabbedMenu>
                         <TabPage>
                             <Title>
-                                @Loc[L.Note_ReplyCount, RootNote!.Replies]
+                                @(Settings.Preferences.Wellbeing.HideInteractionCounts ? Loc[L.Note_Replies] : Loc[L.Note_ReplyCount, RootNote!.Replies])
                             </Title>
                             <TabContent>
                                 @if (Descendants != null)
@@ -97,7 +98,7 @@
                                 }
                             </TabContent>
                         </TabPage>
-                        @if (RootNote?.Likes > 0)
+                        @if (!Settings.Preferences.Wellbeing.HideInteractionCounts && RootNote?.Likes > 0)
                         {
                             <TabPage>
                                 <Title>@Loc[L.Note_LikeCount, RootNote!.Likes]</Title>
@@ -106,7 +107,7 @@
                                 </TabContent>
                             </TabPage>
                         }
-                        @if (RootNote?.Renotes > 0)
+                        @if (!Settings.Preferences.Wellbeing.HideInteractionCounts && RootNote?.Renotes > 0)
                         {
                             <TabPage>
                                 <Title>@Loc[L.Note_RenoteCount, RootNote!.Renotes]</Title>
@@ -115,7 +116,7 @@
                                 </TabContent>
                             </TabPage>
                         }
-                        @if (RootNote?.Reactions.Count > 0)
+                        @if (!Settings.Preferences.Wellbeing.HideInteractionCounts && RootNote?.Reactions.Count > 0)
                         {
                             <TabPage>
                                 <Title>@Loc[L.Note_ReactionCount, RootNote!.Reactions.Count]</Title>
@@ -132,7 +133,6 @@
                         </TabPage>
                     </TabbedMenu>
                 </div>
-
             </div>
         </div>
     </div>

@@ -1600,4 +1600,7 @@
     <data name="Preferences_Wellbeing_HideFollowCounts" xml:space="preserve">
         <value>Hide followers/following counts</value>
     </data>
+    <data name="Note_Replies" xml:space="preserve">
+        <value>Replies</value>
+    </data>
 </root>

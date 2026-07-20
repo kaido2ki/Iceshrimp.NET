@@ -1,16 +1,22 @@
+@using Iceshrimp.Frontend.Core.Services
 @using Iceshrimp.Frontend.Core.Services.NoteStore
 @using Iceshrimp.Shared.Schemas.Web
-@inject NoteActions NoteActions;
+@inject NoteActions     NoteActions;
+@inject SettingsService Settings;
+
 <button @onclick="React" class="reaction @(Reaction.Reacted ? "reacted" : "")" title="@Reaction.Name">
     <InlineEmoji Name="@Reaction.Name" Url="@Reaction.Url" Wide="true"/>
-    <span class="count">
-        @Reaction.Count
-    </span>
+    @if (!Settings.Preferences.Wellbeing.HideInteractionCounts)
+    {
+        <span class="count">
+            @Reaction.Count
+        </span>
+    }
 </button>
 
 @code {
     [Parameter] [EditorRequired] public required NoteReactionSchema Reaction { get; set; }
-    [CascadingParameter]                         NoteBase               Note     { get; set; } = null!;
+    [CascadingParameter]                         NoteBase           Note     { get; set; } = null!;
 
     private void React()
     {
