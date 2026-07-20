@@ -9,6 +9,12 @@
 @inject IStringLocalizer<Localization> Loc;
 @inject NavigationManager              NavigationManager
 
+@if (NotificationResponse is { Type: "mention" or "reply", Note.Filtered.Hide: true })
+{
+    // Don't render mention/reply notifs that are hidden by filters
+    return;
+}
+
 <div class="notification@(NotificationResponse.Read ? " read" : "")">
     @if (NotificationResponse is not { Type: "mention" } and not { Type: "reply" })
     {
@@ -114,8 +120,8 @@
 
     @if (NotificationResponse is { Note: not null })
     {
-        <div class="@(NotificationResponse is not { Type: "mention" } and not { Type: "reply" } ? "notification-note" : "")" @onclick="MarkAsRead">
-            <NoteComponent Note="NotificationResponse.Note" AsQuote="@(NotificationResponse is not { Type: "mention" } and not { Type: "reply" })" OpenNote="true"/>
+        <div class="@(NotificationResponse is not { Type: "mention" or "reply" } ? "notification-note" : "")" @onclick="MarkAsRead">
+            <Note NoteResponse="NotificationResponse.Note" OpenNote="true"/>
         </div>
     }
 

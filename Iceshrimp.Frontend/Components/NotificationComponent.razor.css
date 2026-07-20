@@ -60,6 +60,11 @@
     margin-top: 1rem;
 }
 
+.notification-note ::deep .metadata .visibility,
+.notification-note ::deep .note-footer .btn {
+    display: none;
+}
+
 .notification ::deep .note-wrapper .ticker {
     padding: 0;
     background-color: unset;
