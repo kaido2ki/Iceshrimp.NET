@@ -204,7 +204,8 @@ public class ProfileController(
 
 		if (prevAvatarId == null) return;
 
-		user.AvatarId = null;
+		user.AvatarId       = null;
+		user.AvatarBlurhash = null;
 
 		await userSvc.UpdateLocalUserAsync(user, prevAvatarId, prevBannerId);
 	}
@@ -289,7 +290,8 @@ public class ProfileController(
 
 		if (prevBannerId == null) return;
 
-		user.BannerId = null;
+		user.BannerId       = null;
+		user.BannerBlurhash = null;
 
 		await userSvc.UpdateLocalUserAsync(user, prevAvatarId, prevBannerId);
 	}
