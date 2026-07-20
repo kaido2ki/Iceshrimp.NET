@@ -24,6 +24,7 @@ builder.Services.AddIntersectionObserver();
 builder.Services.AddSingleton<SessionService>();
 builder.Services.AddSingleton<StreamingService>();
 builder.Services.AddScoped<AuthenticationStateProvider, CustomAuthStateProvider>();
+builder.Services.AddSingleton<FilterService>();
 builder.Services.AddSingleton<JsService>();
 builder.Services.AddSingleton<ComposeService>();
 builder.Services.AddSingleton<StateService>();
