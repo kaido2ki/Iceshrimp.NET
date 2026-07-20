@@ -9,6 +9,7 @@
 @inject IStringLocalizer<Localization> Loc;
 @inject MetadataService                MetadataService
 @inject NavigationManager              Nav;
+@inject SettingsService                Settings;
 
 <div class="profile-info">
     @if (User.MovedTo != null)
@@ -252,24 +253,27 @@
             }
         </div>
     }
-    <div class="metadata">
-        <div class="section">
-            <div class="field-data">
-                @UserProfile.Followers
+    @if (!Settings.Preferences.Wellbeing.HideFollowCounts)
+    {
+        <div class="metadata">
+            <div class="section">
+                <div class="field-data">
+                    @UserProfile.Followers
+                </div>
+                <div class="field-text">
+                    @Loc[L.User_Followers]
+                </div>
             </div>
-            <div class="field-text">
-                @Loc[L.User_Followers]
+            <div class="section">
+                <div class="field-data">
+                    @UserProfile.Following
+                </div>
+                <div class="field-text">
+                    @Loc[L.User_Following]
+                </div>
             </div>
         </div>
-        <div class="section">
-            <div class="field-data">
-                @UserProfile.Following
-            </div>
-            <div class="field-text">
-                @Loc[L.User_Following]
-            </div>
-        </div>
-    </div>
+    }
 </div>
 
 @code {
