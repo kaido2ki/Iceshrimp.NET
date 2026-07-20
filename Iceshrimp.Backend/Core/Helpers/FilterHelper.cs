@@ -23,7 +23,7 @@ public static class FilterHelper
 		if (filters.Count == 0) return null;
 		if (note.Text == null && note.Cw == null) return null;
 
-		foreach (var filter in filters)
+		foreach (var filter in filters.OrderBy(p => p.Action == Filter.FilterAction.Warn))
 		{
 			var match = IsFiltered(note, filter);
 			if (match != null) return (filter, match);
