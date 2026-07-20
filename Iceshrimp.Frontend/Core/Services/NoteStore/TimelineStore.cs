@@ -196,9 +196,9 @@ internal class TimelineStore : NoteMessageProvider, IAsyncDisposable, IStreaming
 
 	public List<NoteResponse> GetIdsFromTimeline(Timeline timeline, List<string> ids)
 	{
-		List<NoteResponse> list = [];
-		list.AddRange(ids.Select(id => Timelines[timeline.Key].Timeline[id]));
-		return list;
+		return Timelines.TryGetValue(timeline.Key, out var timelineState)
+			? ids.Select(id => timelineState.Timeline.GetValueOrDefault(id)).OfType<NoteResponse>().ToList()
+			: [];
 	}
 
 	private void OnNotePublished(object? sender, NoteEvent valueTuple)
