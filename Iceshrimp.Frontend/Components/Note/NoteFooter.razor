@@ -30,38 +30,41 @@
             <span class="reply-count">@Replies</span>
         }
     </button>
-    <MenuButton ButtonClass="btn" ButtonDisabled="@(!RenotePossible)" ButtonRole="renote">
-        <ButtonContent>
-            <Icon Name="@(RenotePossible ? Note.Renoted ? Icons.RepeatOnce : Icons.Repeat : Icons.Lock)" Size="1.3em"/>
-            @if (!Settings.Preferences.Wellbeing.HideInteractionCounts && Renotes > 0)
-            {
-                <span class="renote-count">@Renotes</span>
-            }
-        </ButtonContent>
-        <Elements>
-            @if (!Note.Renoted)
-            {
-                @if (Note.Visibility == NoteVisibility.Public)
+    @if (!Settings.Preferences.Wellbeing.HideRenotes)
+    {
+        <MenuButton ButtonClass="btn" ButtonDisabled="@(!RenotePossible)" ButtonRole="renote">
+            <ButtonContent>
+                <Icon Name="@(RenotePossible ? Note.Renoted ? Icons.RepeatOnce : Icons.Repeat : Icons.Lock)" Size="1.3em"/>
+                @if (!Settings.Preferences.Wellbeing.HideInteractionCounts && Renotes > 0)
                 {
-                    <MenuElement Icon="Icons.Repeat" OnSelect="() => Renote(NoteVisibility.Public)">
-                        <Text>@Loc[L.Note_Renote]</Text>
+                    <span class="renote-count">@Renotes</span>
+                }
+            </ButtonContent>
+            <Elements>
+                @if (!Note.Renoted)
+                {
+                    @if (Note.Visibility == NoteVisibility.Public)
+                    {
+                        <MenuElement Icon="Icons.Repeat" OnSelect="() => Renote(NoteVisibility.Public)">
+                            <Text>@Loc[L.Note_Renote]</Text>
+                        </MenuElement>
+                    }
+                    <MenuElement Icon="Icons.House" OnSelect="() => Renote(NoteVisibility.Home)">
+                        <Text>@Loc[L.Note_Renote_Unlisted]</Text>
+                    </MenuElement>
+                    <MenuElement Icon="Icons.Lock" OnSelect="() => Renote(NoteVisibility.Followers)">
+                        <Text>@Loc[L.Note_Renote_Followers]</Text>
                     </MenuElement>
                 }
-                <MenuElement Icon="Icons.House" OnSelect="() => Renote(NoteVisibility.Home)">
-                    <Text>@Loc[L.Note_Renote_Unlisted]</Text>
-                </MenuElement>
-                <MenuElement Icon="Icons.Lock" OnSelect="() => Renote(NoteVisibility.Followers)">
-                    <Text>@Loc[L.Note_Renote_Followers]</Text>
-                </MenuElement>
-            }
-            else
-            {
-                <MenuElement Icon="Icons.Minus" OnSelect="Unrenote">
-                    <Text>@Loc[L.Note_Unrenote]</Text>
-                </MenuElement>
-            }
-        </Elements>
-    </MenuButton>
+                else
+                {
+                    <MenuElement Icon="Icons.Minus" OnSelect="Unrenote">
+                        <Text>@Loc[L.Note_Unrenote]</Text>
+                    </MenuElement>
+                }
+            </Elements>
+        </MenuButton>
+    }
     <button @onclick="Like" @onclick:stopPropagation="true" class="btn" aria-label="like">
         @if (IsLiked)
         {
@@ -84,10 +87,13 @@
             <span class="like-count">@Reactions.Sum(r => r.Count)</span>
         }
     </button>
-    <button class="btn @(RenotePossible ? "" : "disabled")" @onclick="@(RenotePossible ? Quote : () => { })"
-            @onclick:stopPropagation="true" aria-label="quote">
-        <Icon Name="@(RenotePossible ? Icons.Quotes : Icons.Lock)" Size="1.3em" class="@(RenotePossible ? "" : "faded")"/>
-    </button>
+    @if (!Settings.Preferences.Wellbeing.HideQuotes)
+    {
+        <button class="btn" @onclick="@(RenotePossible ? Quote : () => { })" @onclick:stopPropagation="true"
+                aria-label="quote" disabled="@(!RenotePossible)">
+            <Icon Name="@(RenotePossible ? Icons.Quotes : Icons.Lock)" Size="1.3em"/>
+        </button>
+    }
     <MenuButton ButtonClass="btn" ButtonRole="more">
         <ButtonContent>
             <Icon Name="Icons.DotsThreeOutline" Size="1.3em"/>
