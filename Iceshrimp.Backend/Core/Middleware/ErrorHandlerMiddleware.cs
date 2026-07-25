@@ -88,7 +88,8 @@ public class ErrorHandlerMiddleware(
 					var error = new MastodonErrorResponse
 					{
 						Error       = verbosity >= ExceptionVerbosity.Basic ? ce.Message : ce.StatusCode.ToString(),
-						Description = verbosity >= ExceptionVerbosity.Basic ? ce.Details : null
+						Description = verbosity >= ExceptionVerbosity.Basic ? ce.Details : null,
+						Details     = verbosity >= ExceptionVerbosity.Full ? (ce as ValidationException)?.Errors : null,
 					};
 
 					ctx.Response.ContentType = "application/json";

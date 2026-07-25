@@ -11,4 +11,8 @@ public class MastodonErrorResponse
 	[J("error_description")]
 	[JI(Condition = JsonIgnoreCondition.WhenWritingNull)]
 	public required string? Description { get; set; }
+	
+	[J("iceshrimp_details")]
+	[JI(Condition = JsonIgnoreCondition.WhenWritingNull)]
+	public IDictionary<string, string[]>? Details { get; set; }
 }
