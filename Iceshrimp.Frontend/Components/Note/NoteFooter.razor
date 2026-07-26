@@ -14,10 +14,10 @@
 @inject SettingsService                Settings;
 
 <div class="note-footer">
-    @if (!Settings.Preferences.Wellbeing.HideReactions && Reactions.Count > 0)
+    @if (Reactions.Count > 0)
     {
         <div class="reactions @(Indented ? "indent" : "")">
-            @foreach (var reaction in Reactions)
+            @foreach (var reaction in Reactions.Where(p => !Settings.Preferences.Wellbeing.HideReactions || p.Reacted))
             {
                 <NoteReaction Reaction="reaction"/>
             }
@@ -30,7 +30,7 @@
             <span class="reply-count">@Replies</span>
         }
     </button>
-    @if (!Settings.Preferences.Wellbeing.HideRenotes)
+    @if (!Settings.Preferences.Wellbeing.HideRenotes || Note.Renoted)
     {
         <MenuButton ButtonClass="btn" ButtonDisabled="@(!RenotePossible)" ButtonRole="renote">
             <ButtonContent>
