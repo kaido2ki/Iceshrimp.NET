@@ -70,6 +70,26 @@ self.addEventListener('message', (event) => {
     }
 });
 
+/**
+ * Is the client currently focused
+ * @returns {boolean}
+ */
+function isClientFocused() {
+    return clients
+        .matchAll({
+            type: 'window',
+            includeUncontrolled: true,
+        })
+        .then((windowClients) => {
+            for (const client of windowClients) {
+                if (client.focused) {
+                    return true;
+                }
+            }
+            return false;
+        });
+}
+
 self.addEventListener('push', (event) => {
     const payload = event.data.json();
     if (!("type" in payload && "id" in payload)) return;
@@ -104,7 +124,11 @@ self.addEventListener('push', (event) => {
     options.body ??= `unknown notification type ${payload.id}`;
 
     event.waitUntil(
-        self.registration.showNotification(payload.notifierName ?? payload.instanceName, options)
+        isClientFocused().then((focused) => {
+            if (!focused) {
+                return self.registration.showNotification(payload.notifierName ?? payload.instanceName, options);
+            }
+        })
     );
 });
 
