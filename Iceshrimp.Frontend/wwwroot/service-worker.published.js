@@ -123,6 +123,8 @@ self.addEventListener('push', (event) => {
 
     options.body ??= `unknown notification type ${payload.id}`;
 
+    if (payload.notePreview) options.body += `: "${payload.notePreview}"`;
+
     event.waitUntil(
         isClientFocused().then((focused) => {
             if (!focused) {
