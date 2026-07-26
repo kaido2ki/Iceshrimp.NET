@@ -79,14 +79,17 @@
             <span class="like-count">@Likes</span>
         }
     </button>
-    <button @ref="EmojiButton" class="btn" @onclick="ToggleEmojiPicker" @onclick:stopPropagation="true"
-            aria-label="emoji picker">
-        <Icon Name="Icons.Smiley" Size="1.3em"/>
-        @if (!Settings.Preferences.Wellbeing.HideInteractionCounts && Reactions.Count > 0)
-        {
-            <span class="like-count">@Reactions.Sum(r => r.Count)</span>
-        }
-    </button>
+    @if (!Settings.Preferences.Wellbeing.HideReactions)
+    {
+        <button @ref="EmojiButton" class="btn" @onclick="ToggleEmojiPicker" @onclick:stopPropagation="true"
+                aria-label="emoji picker">
+            <Icon Name="Icons.Smiley" Size="1.3em"/>
+            @if (!Settings.Preferences.Wellbeing.HideInteractionCounts && Reactions.Count > 0)
+            {
+                <span class="like-count">@Reactions.Sum(r => r.Count)</span>
+            }
+        </button>
+    }
     @if (!Settings.Preferences.Wellbeing.HideQuotes)
     {
         <button class="btn" @onclick="@(RenotePossible ? Quote : () => { })" @onclick:stopPropagation="true"
