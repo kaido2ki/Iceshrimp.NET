@@ -81,9 +81,9 @@ public static class SwaggerGenOptionsExtensions
 				return;
 			operation.RequestBody = new OpenApiRequestBody
 			{
-				Content = new Dictionary<string, IOpenApiMediaType>
+				Content = new Dictionary<string, OpenApiMediaType>
 				{
-					["application/json"] = new OpenApiMediaType
+					["application/json"] = new()
 					{
 						Examples = new Dictionary<string, IOpenApiExample>
 						{
@@ -137,37 +137,25 @@ public static class SwaggerGenOptionsExtensions
 		private static readonly OpenApiResponse MastoRes401 = new()
 		{
 			Description = "Unauthorized",
-			Content = new Dictionary<string, IOpenApiMediaType>
-			{
-				["application/json"] = new OpenApiMediaType { Example = Masto401 }
-			}
+			Content = new Dictionary<string, OpenApiMediaType> { ["application/json"] = new() { Example = Masto401 } }
 		};
 
 		private static readonly OpenApiResponse MastoRes403 = new()
 		{
 			Description = "Forbidden",
-			Content = new Dictionary<string, IOpenApiMediaType>
-			{
-				["application/json"] = new OpenApiMediaType { Example = Masto403 }
-			}
+			Content     = new Dictionary<string, OpenApiMediaType> { ["application/json"] = new() { Example = Masto403 } }
 		};
 
 		private static readonly OpenApiResponse WebRes401 = new()
 		{
 			Description = "Unauthorized",
-			Content = new Dictionary<string, IOpenApiMediaType>
-			{
-				["application/json"] = new OpenApiMediaType { Example = Web401 }
-			}
+			Content     = new Dictionary<string, OpenApiMediaType> { ["application/json"] = new() { Example = Web401 } }
 		};
 
 		private static readonly OpenApiResponse WebRes403 = new()
 		{
 			Description = "Forbidden",
-			Content = new Dictionary<string, IOpenApiMediaType>
-			{
-				["application/json"] = new OpenApiMediaType { Example = Web403 }
-			}
+			Content     = new Dictionary<string, OpenApiMediaType> { ["application/json"] = new() { Example = Web403 } }
 		};
 
 		public void Apply(OpenApiOperation operation, OperationFilterContext context)
@@ -261,9 +249,9 @@ public static class SwaggerGenOptionsExtensions
 				var res = new OpenApiResponse
 				{
 					Description = ReasonPhrases.GetReasonPhrase((int)status),
-					Content = new Dictionary<string, IOpenApiMediaType>
+					Content = new Dictionary<string, OpenApiMediaType>
 					{
-						["application/json"] = new OpenApiMediaType { Schema = schema }
+						["application/json"] = new() { Schema = schema }
 					}
 				};
 
@@ -314,7 +302,7 @@ public static class SwaggerGenOptionsExtensions
 					         .Where(p => p.StatusCode == (int)status)
 					         .SelectMany(p => p.ApiResponseFormats.Select(i => i.MediaType))
 					         .Distinct()
-					         .ToDictionary(contentType => contentType, IOpenApiMediaType (_) => openApiMediaType)
+					         .ToDictionary(contentType => contentType, _ => openApiMediaType)
 					: null;
 
 				var res = new OpenApiResponse
@@ -383,7 +371,7 @@ public static class SwaggerGenOptionsExtensions
 			return new OpenApiRequestBody
 			{
 				Content = contentTypes
-					.ToDictionary(contentType => contentType, IOpenApiMediaType (_) => new OpenApiMediaType { Schema = schema }),
+					.ToDictionary(contentType => contentType, _ => new OpenApiMediaType { Schema = schema }),
 				Required = isRequired
 			};
 		}
