@@ -210,32 +210,32 @@ public class PushService(
 	
 			var client = new WebPushClient(httpClient);
 			client.SetVapidDetails(new VapidDetails($"https://{config.Value.WebDomain}", pub, priv));
+
+			var res = new WebPushNotification
+			{
+				Id           = notification.Id,
+				NotifieeId   = notification.NotifieeId,
+				NotifieeName = notification.Notifiee.DisplayName ?? notification.Notifiee.Username,
+				InstanceName = instanceName ?? config.Value.AccountDomain,
+				Type         = (NotificationType)notification.Type,
+				IconUrl =
+					notification.Notifier?.GetAvatarUrl(config.Value)
+					?? notification.Notifiee.GetAvatarUrl(config.Value),
+				NotifierId   = notification.Notifier?.Id,
+				NotifierName = notification.Notifier?.DisplayName ?? notification.Notifier?.Username,
+				NotifierUsername =
+					notification is { Notifier.Host: not null }
+						? $"{notification.Notifier.Username}@{notification.Notifier.Host}"
+						: notification.Notifier?.Username,
+				NoteId   = notification.Note?.Id,
+				Reaction = notification.Reaction,
+				ReportId = notification.Report?.Id
+			};
 	
 			foreach (var subscription in subscriptions)
 			{
 				try
 				{
-					var res = new WebPushNotification
-					{
-						Id           = notification.Id,
-						NotifieeId   = notification.NotifieeId,
-						NotifieeName = notification.Notifiee.DisplayName ?? notification.Notifiee.Username,
-						InstanceName = instanceName ?? config.Value.AccountDomain,
-						Type         = (NotificationType)notification.Type,
-						IconUrl =
-							notification.Notifier?.GetAvatarUrl(config.Value)
-							?? notification.Notifiee.GetAvatarUrl(config.Value),
-						NotifierId   = notification.Notifier?.Id,
-						NotifierName = notification.Notifier?.DisplayName ?? notification.Notifier?.Username,
-						NotifierUsername =
-							notification is { Notifier.Host: not null }
-								? $"{notification.Notifier.Username}@{notification.Notifier.Host}"
-								: notification.Notifier?.Username,
-						NoteId   = notification.Note?.Id,
-						Reaction = notification.Reaction,
-						ReportId = notification.Report?.Id
-					};
-	
 					var sub = new WebPushSubscription
 					{
 						Endpoint = subscription.Endpoint,
