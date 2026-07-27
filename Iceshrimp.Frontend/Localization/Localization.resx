@@ -611,7 +611,10 @@
         <value>Default renote visibility</value>
     </data>
     <data name="Settings_Account_TranslationLanguage" xml:space="preserve">
-        <value>Default renote visibility</value>
+        <value>Translation language</value>
+    </data>
+    <data name="Settings_Account_TranslationLanguage_ServerDefault" xml:space="preserve">
+        <value>Server default ({0})</value>
     </data>
     <data name="Settings_Account_AllowBites" xml:space="preserve">
         <value>Allow bites from</value>

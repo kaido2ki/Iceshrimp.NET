@@ -1233,6 +1233,12 @@ namespace Iceshrimp.Frontend.Localization {
             }
         }
         
+        internal static string Settings_Account_TranslationLanguage_ServerDefault {
+            get {
+                return ResourceManager.GetString("Settings_Account_TranslationLanguage_ServerDefault", resourceCulture);
+            }
+        }
+        
         internal static string Settings_Account_AllowBites {
             get {
                 return ResourceManager.GetString("Settings_Account_AllowBites", resourceCulture);

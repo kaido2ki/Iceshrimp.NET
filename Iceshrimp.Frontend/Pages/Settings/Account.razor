@@ -52,6 +52,7 @@
                 <label>
                     @Loc[L.Settings_Account_TranslationLanguage]
                     <InputSelect @bind-Value="SettingsForm.TranslationLanguage">
+                        <option value="serverDefault">@Loc[L.Settings_Account_TranslationLanguage_ServerDefault, InstanceResponse.DefaultTranslationLanguage]</option>
                         @foreach (var language in _languages)
                         {
                             <option value="@language.Key">@language.Value</option>
@@ -169,6 +170,7 @@
 
 @code {
     private UserSettingsResponse         SettingsForm       { get; set; } = null!;
+    private InstanceResponse             InstanceResponse   { get; set; } = null!;
     private ChangePasswordRequest        PasswordForm       { get; set; } = null!;
     private string                       ConfirmPassword    { get; set; } = "";
     private State                        State              { get; set; } = State.Loading;
@@ -185,6 +187,7 @@
     protected override async Task OnInitializedAsync()
     {
         SettingsForm       = await Api.Settings.GetSettingsAsync();
+        InstanceResponse   = await Api.Instance.GetInstanceAsync();
         AttributionDomains = string.Join('\n', SettingsForm.AttributionDomains);
 
         PasswordForm = new ChangePasswordRequest { OldPassword = "", NewPassword = "" };
@@ -194,6 +197,8 @@
     private async Task Submit()
     {
         SettingsForm.AttributionDomains = AttributionDomains.Split([' ', '\n'], StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries).ToList();
+        if (SettingsForm.TranslationLanguage == "serverDefault")
+            SettingsForm.TranslationLanguage = null;
 
         try
         {
