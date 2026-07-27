@@ -50,6 +50,15 @@
                     </InputSelect>
                 </label>
                 <label>
+                    @Loc[L.Settings_Account_TranslationLanguage]
+                    <InputSelect @bind-Value="SettingsForm.TranslationLanguage">
+                        @foreach (var language in _languages)
+                        {
+                            <option value="@language.Key">@language.Value</option>
+                        }
+                    </InputSelect>
+                </label>
+                <label>
                     @Loc[L.Settings_Account_AllowBites]
                     <InputSelect @bind-Value="SettingsForm.CanBite">
                         <option value="@BiteControl.Public">@Loc[L.Settings_Account_AllowBites_Public]</option>
@@ -170,6 +179,8 @@
     private TwoFactorEnrollmentResponse? TwoFactorResponse  { get; set; }
     private string?                      OtpEnable          { get; set; }
     private string                       AttributionDomains { get; set; } = "";
+    
+    private Dictionary<string, string>   _languages = LanguageHelper.Bcp47Languages;
 
     protected override async Task OnInitializedAsync()
     {
