@@ -69,6 +69,7 @@ public class SettingsController(
 			IsExplorable            = user.IsExplorable,
 			CanBite                 = canBite,
 			AttributionDomains      = user.AttributionDomains ?? [],
+			TranslationLanguage     = user.UserProfile?.Lang
 		};
 	}
 
@@ -106,6 +107,9 @@ public class SettingsController(
 			        BiteControl.Followers => Core.Database.Tables.User.BiteControl.Followers,
 			        _                     => null
 		        }));
+
+		await db.UserProfiles.Where(p => p.UserId == user.Id)
+		        .ExecuteUpdateAsync(p => p.SetProperty(u => u.Lang, newSettings.TranslationLanguage));
 
 		await db.Users.Where(p => p.Id == user.Id)
 		        .ExecuteUpdateAsync(p => p.SetProperty(u => u.IsExplorable, newSettings.IsExplorable));

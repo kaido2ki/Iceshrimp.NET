@@ -9,6 +9,7 @@ public class UserSettingsRequest
 {
 	public NoteVisibility DefaultNoteVisibility   { get; set; }
 	public NoteVisibility DefaultRenoteVisibility { get; set; }
+	public string?        TranslationLanguage     { get; set; }
 	public BiteControl    CanBite                 { get; set; }
 
 	/// <summary>

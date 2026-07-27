@@ -13,8 +13,6 @@ public class UserProfileEntity
 	/// </summary>
 	public string? Birthday { get; set; }
 
-	//TODO: public string? Lang { get; set; }
-
 	public required List<Field> Fields { get; set; }
 
 	/// <summary>
