@@ -31,7 +31,7 @@ public class TranslationController(
 	[ProducesResults(HttpStatusCode.OK)]
 	public async Task<AkkomaTranslationEntity?> GetNoteTranslation(string id, string lang)
 	{
-		var user = HttpContext.GetUser();
+		var user = HttpContext.GetUserOrFail();
 		var note = await db.Notes
 		                   .Where(p => p.Id == id)
 		                   .IncludeCommonProperties()
@@ -42,7 +42,7 @@ public class TranslationController(
 		                   .FirstOrDefaultAsync() ??
 		           throw GracefulException.RecordNotFound();
 
-		var (translation, _) = await translationSvc.TranslateAsync(note, lang);
+		var (translation, _) = await translationSvc.TranslateAsync(note, user, lang);
 
 		return new AkkomaTranslationEntity
 		{

@@ -1,16 +1,19 @@
 using System.Globalization;
 using AsyncKeyedLock;
+using Iceshrimp.Backend.Core.Configuration;
 using Iceshrimp.Backend.Core.Database;
 using Iceshrimp.Backend.Core.Database.Tables;
 using Iceshrimp.Backend.Core.Middleware;
 using Iceshrimp.Utils.DependencyInjection;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Options;
 
 namespace Iceshrimp.Backend.Core.Services;
 
 public class TranslationService(
 	DatabaseContext db,
-	IServiceProvider provider
+	IServiceProvider provider,
+	IOptions<Config.InstanceSection> config
 ) : IScopedService
 {
 	private static readonly AsyncKeyedLocker<string> KeyedLocker = new(o =>
@@ -19,9 +22,11 @@ public class TranslationService(
 		o.PoolInitialFill = 2;
 	});
 	
-	public async Task<(ITranslationProvider.Translation, string outputLanguage)> TranslateAsync(Note note, string? targetLanguage)
+	public async Task<(ITranslationProvider.Translation, string outputLanguage)> TranslateAsync(Note note, User user, string? targetLanguage)
 	{
-		var lang = CultureInfo.GetCultureInfo(targetLanguage ?? "en").ToString();
+		var lang = CultureInfo
+		           .GetCultureInfo(targetLanguage ?? user.UserProfile?.Lang ?? config.Value.DefaultTranslationLanguage)
+		           .ToString();
 		
 		var existing = await db.NoteTranslations
 		                       .Where(p => p.NoteId == note.Id

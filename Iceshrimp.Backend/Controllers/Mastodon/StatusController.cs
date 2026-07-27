@@ -157,7 +157,7 @@ public class StatusController(
 	[Authenticate("read:statuses")]
 	public async Task<StatusTranslation> GetStatusTranslation(string id, [FromHybrid] StatusSchemas.StatusTranslationRequest request)
 	{
-		var user = HttpContext.GetUser();
+		var user = HttpContext.GetUserOrFail();
 		var note = await db.Notes
 		                   .Where(p => p.Id == id)
 		                   .IncludeCommonProperties()
@@ -168,7 +168,7 @@ public class StatusController(
 		                   .FirstOrDefaultAsync() ??
 		           throw GracefulException.RecordNotFound();
 
-		var (translation, lang) = await translationSvc.TranslateAsync(note, request.Lang);
+		var (translation, lang) = await translationSvc.TranslateAsync(note, user, request.Lang);
 
 		return new StatusTranslation
 		{
