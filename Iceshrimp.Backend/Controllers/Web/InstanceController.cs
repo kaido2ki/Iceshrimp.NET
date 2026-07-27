@@ -62,18 +62,19 @@ public class InstanceController(
 
 		return new InstanceResponse
 		{
-			AccountDomain = instanceConfig.Value.AccountDomain,
-			WebDomain     = instanceConfig.Value.WebDomain,
-			Registration  = (Registrations)securityConfig.Value.Registrations,
-			VapidKey      = vapidKey,
-			Name          = instanceName ?? instanceConfig.Value.AccountDomain,
-			IconUrl       = iconUrl,
-			BannerUrl     = bannerUrl,
-			ThemeColor    = themeColor,
-			Limits        = limits,
-			UserCount     = await db.Users.CountAsync(p => p.Host == null && !p.IsSuspended && !p.IsSystemUser),
-			Description   = description,
-			ContactEmail  = contactEmail
+			AccountDomain              = instanceConfig.Value.AccountDomain,
+			WebDomain                  = instanceConfig.Value.WebDomain,
+			Registration               = (Registrations)securityConfig.Value.Registrations,
+			VapidKey                   = vapidKey,
+			Name                       = instanceName ?? instanceConfig.Value.AccountDomain,
+			IconUrl                    = iconUrl,
+			BannerUrl                  = bannerUrl,
+			ThemeColor                 = themeColor,
+			Limits                     = limits,
+			UserCount                  = await db.Users.CountAsync(p => p.Host == null && !p.IsSuspended && !p.IsSystemUser),
+			Description                = description,
+			ContactEmail               = contactEmail,
+			DefaultTranslationLanguage = instanceConfig.Value.DefaultTranslationLanguage
 		};
 	}
 
