@@ -193,12 +193,42 @@
     private async Task CopyLink()
     {
         var instance = await MetadataSvc.Instance.Value;
-        await Js.InvokeVoidAsync("navigator.clipboard.writeText", $"https://{instance.WebDomain}/notes/{Note.Id}");
+        var content  = $"https://{instance.WebDomain}/notes/{Note.Id}";
+        try
+        {
+            await Js.InvokeVoidAsync("navigator.clipboard.writeText", content);
+        }
+        catch (JSException)
+        {
+            await GlobalComponentSvc.NoticeDialog?.Display(Loc[L.Error_Clipboard_Copy] + "\n" + content, NoticeDialog.NoticeType.Error)!;
+        }
     }
 
-    private void CopyLinkRemote() => Js.InvokeVoidAsync("navigator.clipboard.writeText", Note.Url);
+    private async Task CopyLinkRemote()
+    {
+        var content = Note.Url;
+        try
+        {
+            await Js.InvokeVoidAsync("navigator.clipboard.writeText", content);
+        }
+        catch (JSException)
+        {
+            await GlobalComponentSvc.NoticeDialog?.Display(Loc[L.Error_Clipboard_Copy] + "\n" + content, NoticeDialog.NoticeType.Error)!;
+        }
+    }
 
-    private void CopyContents() => Js.InvokeVoidAsync("navigator.clipboard.writeText", Note.Text);
+    private async Task CopyContents()
+    {
+        var content = Note.Text;
+        try
+        {
+            await Js.InvokeVoidAsync("navigator.clipboard.writeText", content);
+        }
+        catch (JSException)
+        {
+            await GlobalComponentSvc.NoticeDialog?.Display(Loc[L.Error_Clipboard_Copy] + "\n" + content, NoticeDialog.NoticeType.Error)!;
+        }
+    }
 
     private void Share() => JsSvc.ShareAsync($"Note by {Note.User.DisplayName ?? Note.User.Username}", Note.Url);
 

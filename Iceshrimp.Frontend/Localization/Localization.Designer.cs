@@ -3164,5 +3164,11 @@ namespace Iceshrimp.Frontend.Localization {
                 return ResourceManager.GetString("Emojis_Recent", resourceCulture);
             }
         }
+        
+        internal static string Error_Clipboard_Copy {
+            get {
+                return ResourceManager.GetString("Error_Clipboard_Copy", resourceCulture);
+            }
+        }
     }
 }

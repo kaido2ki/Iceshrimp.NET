@@ -12,6 +12,7 @@
 @using Microsoft.AspNetCore.Components.Sections
 @attribute [Authorize]
 @inject ApiService                     Api;
+@inject GlobalComponentSvc             Global;
 @inject IJSRuntime                     Js;
 @inject IStringLocalizer<Localization> Loc;
 @inject NavigationManager              Nav;
@@ -66,7 +67,15 @@
             Encoder       = JavaScriptEncoder.UnsafeRelaxedJsonEscaping,
             WriteIndented = true
         };
-        await Js.InvokeVoidAsync("navigator.clipboard.writeText", JsonSerializer.Serialize(document.RootElement, options));
+        var content = JsonSerializer.Serialize(document.RootElement, options);
+        try
+        {
+            await Js.InvokeVoidAsync("navigator.clipboard.writeText", content);
+        }
+        catch (JSException)
+        {
+            await Global.NoticeDialog?.Display(Loc[L.Error_Clipboard_Copy] + "\n" + content, NoticeDialog.NoticeType.Error)!;
+        }
     }
 
     protected override async Task OnInitializedAsync()

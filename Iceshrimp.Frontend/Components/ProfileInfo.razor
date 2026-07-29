@@ -484,24 +484,83 @@
 
     private async Task CopyLink()
     {
-        await Js.InvokeVoidAsync("navigator.clipboard.writeText", $"https://{_instance?.WebDomain}/@{User.Username}" + (User.Host != null ? $"@{User.Host}" : ""));
+        var content = $"https://{_instance?.WebDomain}/@{User.Username}" + (User.Host != null ? $"@{User.Host}" : "");
+        try
+        {
+            await Js.InvokeVoidAsync("navigator.clipboard.writeText", content);
+        }
+        catch (JSException)
+        {
+            await GlobalComponentSvc.NoticeDialog?.Display(Loc[L.Error_Clipboard_Copy] + "\n" + content, NoticeDialog.NoticeType.Error)!;
+        }
     }
 
-    private void CopyLinkRemote()
+    private async Task CopyLinkRemote()
     {
-        if (UserProfile.Url != null)
-            Js.InvokeVoidAsync("navigator.clipboard.writeText", UserProfile.Url);
+        var content = UserProfile.Url;
+        try
+        {
+            await Js.InvokeVoidAsync("navigator.clipboard.writeText", content);
+        }
+        catch (JSException)
+        {
+            await GlobalComponentSvc.NoticeDialog?.Display(Loc[L.Error_Clipboard_Copy] + "\n" + content, NoticeDialog.NoticeType.Error)!;
+        }
     }
 
-    private void CopyUsername() => Js.InvokeVoidAsync("navigator.clipboard.writeText", $"@{User.Username}" + (User.Host != null ? $"@{User.Host}" : ""));
+    private async Task CopyUsername()
+    {
+        var content = $"@{User.Username}" + (User.Host != null ? $"@{User.Host}" : "");
+        try
+        {
+            await Js.InvokeVoidAsync("navigator.clipboard.writeText", content);
+        }
+        catch (JSException)
+        {
+            await GlobalComponentSvc.NoticeDialog?.Display(Loc[L.Error_Clipboard_Copy] + "\n" + content, NoticeDialog.NoticeType.Error)!;
+        }
+    }
 
     private void Share() => JsSvc.ShareAsync(User.DisplayName ?? User.Username, UserProfile.Url ?? $"https://{_instance?.WebDomain}/@{User.Username}" + (User.Host != null ? $"@{User.Host}" : ""));
 
-    private void CopyAtomFeed() => Js.InvokeVoidAsync("navigator.clipboard.writeText", $"https://{_instance?.WebDomain}/users/{User.Id}/feed.atom");
+    private async Task CopyAtomFeed()
+    {
+        var content = $"https://{_instance?.WebDomain}/users/{User.Id}/feed.atom";
+        try
+        {
+            await Js.InvokeVoidAsync("navigator.clipboard.writeText", content);
+        }
+        catch (JSException)
+        {
+            await GlobalComponentSvc.NoticeDialog?.Display(Loc[L.Error_Clipboard_Copy] + "\n" + content, NoticeDialog.NoticeType.Error)!;
+        }
+    }
 
-    private void CopyJsonFeed() => Js.InvokeVoidAsync("navigator.clipboard.writeText", $"https://{_instance?.WebDomain}/users/{User.Id}/feed.json");
-    
-    private void CopyRssFeed() => Js.InvokeVoidAsync("navigator.clipboard.writeText", $"https://{_instance?.WebDomain}/users/{User.Id}/feed.rss");
+    private async Task CopyJsonFeed()
+    {
+        var content = $"https://{_instance?.WebDomain}/users/{User.Id}/feed.json";
+        try
+        {
+            await Js.InvokeVoidAsync("navigator.clipboard.writeText", content);
+        }
+        catch (JSException)
+        {
+            await GlobalComponentSvc.NoticeDialog?.Display(Loc[L.Error_Clipboard_Copy] + "\n" + content, NoticeDialog.NoticeType.Error)!;
+        }
+    }
+
+    private async Task CopyRssFeed()
+    {
+        var content = $"https://{_instance?.WebDomain}/users/{User.Id}/feed.rss";
+        try
+        {
+            await Js.InvokeVoidAsync("navigator.clipboard.writeText", content);
+        }
+        catch (JSException)
+        {
+            await GlobalComponentSvc.NoticeDialog?.Display(Loc[L.Error_Clipboard_Copy] + "\n" + content, NoticeDialog.NoticeType.Error)!;
+        }
+    }
 
     private async Task RefetchUser() =>
         await GlobalComponentSvc.ConfirmDialog?.Confirm(new EventCallback<bool>(this, RefetchUserCallback), Loc[L.User_RefetchDialog_Question, User.DisplayName ?? User.Username])!;

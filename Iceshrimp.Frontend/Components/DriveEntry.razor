@@ -227,7 +227,18 @@
 
     private void OpenFile() => Js.InvokeVoidAsync("open", File!.Url, "_blank");
 
-    private void CopyFileLink() => Js.InvokeVoidAsync("navigator.clipboard.writeText", File!.Url);
+    private async Task CopyFileLink()
+    {
+        var content = File!.Url;
+        try
+        {
+            await Js.InvokeVoidAsync("navigator.clipboard.writeText", content);
+        }
+        catch (JSException)
+        {
+            await Global.NoticeDialog?.Display(Loc[L.Error_Clipboard_Copy] + "\n" + content, NoticeDialog.NoticeType.Error)!;
+        }
+    }
 
     private async Task DeleteFile() =>
         await Global.ConfirmDialog?.Confirm(new EventCallback<bool>(this, DeleteFileCallback), Loc[L.Drive_DeleteDialog_Question, File!.Filename], Icons.Trash, Loc[L.Common_Delete])!;

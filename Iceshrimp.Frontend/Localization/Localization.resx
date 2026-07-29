@@ -1579,4 +1579,7 @@
     <data name="Emojis_Recent" xml:space="preserve">
         <value>Recently used</value>
     </data>
+    <data name="Error_Clipboard_Copy" xml:space="preserve">
+        <value>Unable to copy to clipboard:</value>
+    </data>
 </root>
