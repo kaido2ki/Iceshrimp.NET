@@ -211,6 +211,20 @@ public class PushService(
 			var client = new WebPushClient(httpClient);
 			client.SetVapidDetails(new VapidDetails($"https://{config.Value.WebDomain}", pub, priv));
 
+			const int notePreviewLength = 128;
+			string?   notePreview       = null;
+
+			if (!string.IsNullOrWhiteSpace(notification.Note?.Cw))
+			{
+				var text = notification.Note.Cw.Trim();
+				notePreview = text.Length > notePreviewLength ? text[..notePreviewLength] + '…' : text;
+			}
+			else if (!string.IsNullOrWhiteSpace(notification.Note?.Text))
+			{
+				var text = notification.Note.Text.Trim();
+				notePreview = text.Length > notePreviewLength ? text[..notePreviewLength] + '…' : text;
+			}
+
 			var res = new WebPushNotification
 			{
 				Id           = notification.Id,
@@ -227,9 +241,10 @@ public class PushService(
 					notification is { Notifier.Host: not null }
 						? $"{notification.Notifier.Username}@{notification.Notifier.Host}"
 						: notification.Notifier?.Username,
-				NoteId   = notification.Note?.Id,
-				Reaction = notification.Reaction,
-				ReportId = notification.Report?.Id
+				NoteId      = notification.Note?.Id,
+				NotePreview = notePreview,
+				Reaction    = notification.Reaction,
+				ReportId    = notification.Report?.Id
 			};
 	
 			foreach (var subscription in subscriptions)

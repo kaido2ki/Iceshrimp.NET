@@ -12,6 +12,7 @@ public class WebPushNotification
     public required string?          NotifierName     { get; set; }
     public required string?          NotifierUsername { get; set; }
     public required string?          NoteId           { get; set; }
+    public required string?          NotePreview      { get; set; }
     public required string?          Reaction         { get; set; }
     public required string?          ReportId         { get; set; }
 }
