@@ -243,7 +243,7 @@ public class PushService(
 						: notification.Notifier?.Username,
 				NoteId      = notification.Note?.Id,
 				NotePreview = notePreview,
-				Reaction    = notification.Reaction,
+				Reaction    = notification.Reaction?.Split('@', 2).FirstOrDefault(),
 				ReportId    = notification.Report?.Id
 			};
 	
