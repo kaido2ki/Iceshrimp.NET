@@ -1,3 +1,15 @@
+## v2026.1.2-beta
+This is a security hotfix release. It's identical to v2026.1.1-beta, except for the security mitigations listed below. Upgrading is strongly recommended for all server operators.
+
+### Backend
+- When LibVips is used for image processing, unfuzzed / untrusted load/save operations are now disabled by default. The formats JPEG-XL, JPEG-2000 and SVG can be reenabled with configuration options respectively.
+
+### Miscellaneous
+- Dependency versions have been updated
+
+### Attribution
+This release was made possible by project contributors: Laura Hausmann
+
 ## v2026.1.1-beta
 This is a security hotfix release. It's identical to v2026.1-beta, except for the security mitigations listed below. Upgrading is strongly recommended for all server operators.
 
