@@ -72,7 +72,7 @@
 
     <!-- If the build flag BundleNativeDeps is set, reference the LibVips native dependecy -->
     <ItemGroup Condition=" '$(BundleNativeDeps)' == 'true' ">
-        <PackageReference Include="NetVips.Native" Version="8.18.0-iceshrimp" />
+        <PackageReference Include="NetVips.Native" Version="8.18.4-iceshrimp" />
     </ItemGroup>
 
     <!-- This makes sure configuration.ini & the preloaded AS contexts are added to the assembly as embedded resources -->
