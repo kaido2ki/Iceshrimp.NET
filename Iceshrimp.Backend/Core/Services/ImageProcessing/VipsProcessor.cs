@@ -4,6 +4,7 @@ using Iceshrimp.Backend.Core.Helpers;
 using NetVips;
 using Iceshrimp.MimeTypes;
 using Iceshrimp.Utils.DependencyInjection;
+using Microsoft.Extensions.Options;
 using SixLabors.ImageSharp.PixelFormats;
 using Enums = NetVips.Enums;
 
@@ -22,12 +23,32 @@ public class VipsProcessor : ImageProcessorBase, IImageProcessor,
 	public static bool Predicate(Config ctx) =>
 		ctx.Storage.MediaProcessing.ImageProcessor == Configuration.Enums.ImageProcessor.LibVips;
 
-	public VipsProcessor(ILogger<VipsProcessor> logger) : base("LibVips", 0)
+	public VipsProcessor(
+		ILogger<VipsProcessor> logger, IOptions<Config.MediaProcessingSection> config
+	) : base("LibVips", 0)
 	{
 		_logger = logger;
 
 		//TODO: Implement something similar to https://github.com/lovell/sharp/blob/da655a1859744deec9f558effa5c9981ef5fd6d3/lib/utility.js#L153C5-L158
 		NetVips.NetVips.Concurrency = 1;
+
+		// Blocks unfuzzed/untrusted load/save operations
+		NetVips.NetVips.BlockUntrusted = true;
+
+		// Allows unfuzzed/untrusted JPEG-XL load/save operations
+		if (config.Value.VipsAllowUntrustedJxl)
+		{
+			Operation.Block("VipsForeignLoadJxl", false);
+			Operation.Block("VipsForeignSaveJxl", false);
+		}
+
+		// Allows unfuzzed/untrusted JPEG-2000 load operations
+		if (config.Value.VipsAllowUntrustedJ2k)
+			Operation.Block("VipsForeignLoadJp2k", false);
+
+		// Allows unfuzzed/untrusted SVG load operations
+		if (config.Value.VipsAllowUntrustedSvg)
+			Operation.Block("VipsForeignLoadSvg", false);
 
 		// We want to know when we have a memory leak
 		NetVips.NetVips.Leak = true;

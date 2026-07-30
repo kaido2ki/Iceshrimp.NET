@@ -208,6 +208,7 @@ public sealed class Config : IServiceConfiguration
 	}
 
 	[ConfigurationSection("Storage:MediaProcessing")]
+	[SuppressMessage("ReSharper", "InconsistentNaming")]
 	public sealed class MediaProcessingSection : IValidatableObject
 	{
 		public ImagePipelineSection ImagePipeline { get; init; } = new();
@@ -219,6 +220,10 @@ public sealed class Config : IServiceConfiguration
 		public          bool                 FailIfImageExceedsMaxRes { get; init; } = false;
 
 		[Range(0, 128)] public int ImageProcessorConcurrency { get; init; } = 8;
+
+		public bool VipsAllowUntrustedJxl { get; init; } = false;
+		public bool VipsAllowUntrustedJ2k { get; init; } = false;
+		public bool VipsAllowUntrustedSvg { get; init; } = false;
 
 		public int MaxResolutionPx => MaxResolutionMpx * 1000 * 1000;
 
@@ -273,6 +278,18 @@ public sealed class Config : IServiceConfiguration
 				// @formatter:off
 				if (formats.Any(p => p.Format is ImageFormatEnum.Avif or ImageFormatEnum.Jxl))
 					return [new ValidationResult("ImageSharp does not support AVIF or JXL. Please choose a different format, or switch to LibVips.")];
+				// @formatter:on
+			}
+
+			if (ImageProcessor == Enums.ImageProcessor.LibVips)
+			{
+				// @formatter:off
+				if (formats.Any(p => p.Format is ImageFormatEnum.Jxl) && !VipsAllowUntrustedJxl)
+				{
+					return [new ValidationResult("While LibVips supports JPEG-XL, libjxl is marked as untrusted and is therefore disabled by default. " +
+					                             "To enable it, set the option VipsAllowUntrustedJxl in the [Storage:MediaProcessing] section to true. " +
+					                             "Note that doing so may introduce denial of service or remote code execution vulnerabilities.")];
+				}
 				// @formatter:on
 			}
 
