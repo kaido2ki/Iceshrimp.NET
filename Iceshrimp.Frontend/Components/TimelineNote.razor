@@ -3,27 +3,23 @@
 @using Iceshrimp.Shared.Schemas.Web
 @inject NavigationManager Nav;
 
-@if (Note.Filtered is { Hide: true }) { }
-else
-{
-    <div class="note-container" id="@Note.Id">
-        @if (Note is { Filtered: null, Reply: not null })
-        {
-            <div class="ancestor-wrapper">
-                <div class="note-indent">
-                    <UserAvatar User="@Note.Reply.User" OnClick="OpenReplyProfile"/>
-                    <Line></Line>
-                </div>
-                <div class="note">
-                    <NoteComponent Note="Note.Reply" Indented="true" OpenNote="true"/>
-                </div>
+<div class="note-container" id="@Note.Id">
+    @if (Note is { Filtered: null, Reply: not null })
+    {
+        <div class="ancestor-wrapper">
+            <div class="note-indent">
+                <UserAvatar User="@Note.Reply.User" OnClick="OpenReplyProfile"/>
+                <Line></Line>
             </div>
-        }
-        <div class="link-wrapper">
-            <Note NoteResponse="Note" OpenNote="true"/>
+            <div class="note">
+                <NoteComponent Note="Note.Reply" Indented="true" OpenNote="true"/>
+            </div>
         </div>
+    }
+    <div class="link-wrapper">
+        <Note NoteResponse="Note" OpenNote="true"/>
     </div>
-}
+</div>
 
 @code {
     [Parameter] [EditorRequired] public required NoteResponse Note { get; set; }

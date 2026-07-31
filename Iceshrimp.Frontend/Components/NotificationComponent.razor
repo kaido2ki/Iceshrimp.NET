@@ -9,12 +9,6 @@
 @inject IStringLocalizer<Localization> Loc;
 @inject NavigationManager              NavigationManager
 
-@if (NotificationResponse is { Type: NotificationType.Mention or NotificationType.Reply, Note.Filtered.Hide: true })
-{
-    // Don't render mention/reply notifs that are hidden by filters
-    return;
-}
-
 <div class="notification@(NotificationResponse.Read ? " read" : "")">
     @if (NotificationResponse is not { Type: NotificationType.Mention } and not { Type: NotificationType.Reply })
     {

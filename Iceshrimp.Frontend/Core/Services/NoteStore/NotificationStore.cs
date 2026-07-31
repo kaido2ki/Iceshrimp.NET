@@ -47,6 +47,10 @@ internal class NotificationStore : NoteMessageProvider, IAsyncDisposable
 	{
 		if (notificationResponse is { Note.Filtered: null })
 			_filterService.FilterNote(notificationResponse.Note, FilterResponse.FilterContext.Notifications);
+
+		if (notificationResponse is { Note.Filtered.Hide: true })
+			return;
+
 		var add = Notifications.TryAdd(notificationResponse.Id, notificationResponse);
 		if (add is false)
 		{
@@ -65,9 +69,15 @@ internal class NotificationStore : NoteMessageProvider, IAsyncDisposable
 			{
 				if (notification is { Note.Filtered: null })
 					_filterService.FilterNote(notification.Note, FilterResponse.FilterContext.Notifications);
+
+				if (notification is { Note.Filtered.Hide: true })
+					continue;
+				
 				var add = Notifications.TryAdd(notification.Id, notification);
 				if (add is false) _logger.LogWarning($"Duplicate notification: {notification.Id}");
 			}
+
+			res.RemoveAll(p => p is { Note.Filtered.Hide: true });
 
 			return res;
 		}

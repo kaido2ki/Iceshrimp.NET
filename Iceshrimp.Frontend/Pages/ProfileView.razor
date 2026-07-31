@@ -139,7 +139,7 @@
         if (notes is not null && notes.Count > 0)
         {
             MinId = notes.Last().Id;
-            UserNotes.AddRange(notes);
+            UserNotes.AddRange(notes.Where(p => p is { Filtered: not { Hide: true }}));
             StateHasChanged();
         }
     }
@@ -151,7 +151,7 @@
         if (notes is not null && notes.Count > 0)
         {
             PinnedMinId = notes.Last().Id;
-            UserPinned.AddRange(notes);
+            UserPinned.AddRange(notes.Where(p => p is { Filtered: not { Hide: true }}));
             StateHasChanged();
         }
     }

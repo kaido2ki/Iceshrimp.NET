@@ -120,9 +120,22 @@ internal class TimelineStore : NoteMessageProvider, IAsyncDisposable, IStreaming
 
 			foreach (var note in res)
 			{
+				if (timeline.Enum == TimelineEnum.Home && note.Filtered == null)
+					_filterService.FilterNote(note, FilterResponse.FilterContext.Home);
+				else if (timeline.Enum is TimelineEnum.Local or TimelineEnum.Social or TimelineEnum.Bubble
+				                          or TimelineEnum.Global or TimelineEnum.Remote or TimelineEnum.Tag
+				         && note.Filtered == null)
+					_filterService.FilterNote(note, FilterResponse.FilterContext.Public);
+				else if (note.Filtered == null)
+					_filterService.FilterNote(note, null);
+
+				if (note is { Filtered.Hide: true }) continue;
+
 				var add = Timelines[timeline.Key].Timeline.TryAdd(note.Id, note);
 				if (add is false) _logger.LogWarning($"Duplicate note: {note.Id}");
 			}
+
+			res.RemoveAll(p => p.Filtered is { Hide: true });
 
 			return res;
 		}
