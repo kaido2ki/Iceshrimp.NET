@@ -6,13 +6,15 @@ namespace Iceshrimp.Frontend.Core.Services;
 internal class FilterService : IDisposable
 {
     private readonly ApiService       _api;
+    private readonly SessionService   _session;
     private readonly StreamingService _streaming;
 
     private List<FilterResponse>? Filters { get; set; }
 
-    public FilterService(ApiService api, StreamingService streaming)
+    public FilterService(ApiService api, SessionService session, StreamingService streaming)
     {
         _api       = api;
+        _session   = session;
         _streaming = streaming;
 
         _streaming.FilterAdded   += OnFilterAdded;
@@ -52,7 +54,8 @@ internal class FilterService : IDisposable
                 Id      = filtered.Value.Item1.Id,
                 Name    = filtered.Value.Item1.Name,
                 Keyword = filtered.Value.Item2,
-                Hide    = filtered.Value.Item1.Action == FilterResponse.FilterAction.Hide
+                Hide = filtered.Value.Item1.Action == FilterResponse.FilterAction.Hide
+                       && note.User.Id != _session.Current?.Id
             };
         }
     }
