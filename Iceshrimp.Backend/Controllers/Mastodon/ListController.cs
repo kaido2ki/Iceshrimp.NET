@@ -65,6 +65,25 @@ public class ListController(DatabaseContext db, UserRenderer userRenderer, Event
 		       throw GracefulException.RecordNotFound();
 	}
 
+	[HttpGet("/api/v1/accounts/{id}/lists")]
+	[Authorize("read:lists")]
+	[ProducesResults(HttpStatusCode.OK)]
+	public async Task<IEnumerable<ListEntity>> GetListsContainingUser(string id)
+	{
+		var user = HttpContext.GetUserOrFail();
+
+		return await db.UserLists
+		               .Where(p => p.User == user
+		                           && p.UserListMembers.Any(u => u.UserId == id))
+		               .Select(p => new ListEntity
+		               {
+			               Id        = p.Id,
+			               Title     = p.Name,
+			               Exclusive = p.HideFromHomeTl
+		               })
+		               .ToListAsync();
+	}
+
 	[HttpPost]
 	[Authorize("write:lists")]
 	[ProducesResults(HttpStatusCode.OK)]
