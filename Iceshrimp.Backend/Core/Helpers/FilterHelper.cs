@@ -26,7 +26,14 @@ public static class FilterHelper
 		foreach (var filter in filters.OrderBy(p => p.Action == Filter.FilterAction.Warn))
 		{
 			var match = IsFiltered(note, filter);
-			if (match != null) return (filter, match);
+			if (match == null) continue;
+
+			if (note.User != filter.User || filter.Action != Filter.FilterAction.Hide) return (filter, match);
+
+			// If the note owner is the same as the filter owner and the action is hide we need to change the action to warn on a clone otherwise notes in the same batch may have the wrong action
+			var f = filter.Clone(filter.User);
+			f.Action = Filter.FilterAction.Warn;
+			return (f, match);
 		}
 
 		return null;
