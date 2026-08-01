@@ -5,12 +5,13 @@
 @using Microsoft.AspNetCore.Components.Authorization
 @using Microsoft.AspNetCore.Components.Sections
 @inherits LayoutComponentBase
-@inject ApiService        Api;
-@inject IJSRuntime        Js;
-@inject MetadataService   Metadata;
-@inject NavigationManager Nav;
-@inject SessionService    Session;
-@inject SettingsService   Settings;
+@inject ApiService          Api;
+@inject IJSRuntime          Js;
+@inject ILogger<MainLayout> Logger;
+@inject MetadataService     Metadata;
+@inject NavigationManager   Nav;
+@inject SessionService      Session;
+@inject SettingsService     Settings;
 
 <HeadContent>
     @if (!string.IsNullOrWhiteSpace(Settings.Preferences.CustomCss))
@@ -52,20 +53,30 @@
 @code {
     protected override async Task OnInitializedAsync()
     {
-        if (Session.Current != null)
+        if (Session.Current == null)
+            return;
+
+        var res = await Api.Auth.GetAuthStatusAsync();
+        if (res.Status != AuthStatusEnum.Authenticated)
         {
-            var res = await Api.Auth.GetAuthStatusAsync();
-            if (res.Status != AuthStatusEnum.Authenticated)
-            {
-                var id = Session.Current.Id;
-                Session.EndSession();
-                Session.DeleteUser(id);
-                Nav.NavigateTo("/login");
-            }
+            var id = Session.Current.Id;
+            Session.EndSession();
+            Session.DeleteUser(id);
+            Nav.NavigateTo("/login");
         }
 
-        var module = (IJSInProcessObjectReference)await Js.InvokeAsync<IJSObjectReference>("import", "./push.js");
-        var subscription = await module.InvokeAsync<PushSubscriptionJson?>("setupPush", (await Metadata.Instance.Value).VapidKey);
+        PushSubscriptionJson? subscription;
+        try
+        {
+            var module = (IJSInProcessObjectReference)await Js.InvokeAsync<IJSObjectReference>("import", "./push.js");
+            subscription = await module.InvokeAsync<PushSubscriptionJson?>("setupPush", (await Metadata.Instance.Value).VapidKey);
+        }
+        catch (JSException e)
+        {
+            Logger.LogError("Failed to setup push notifications: {Message}", e.Message);
+            return;
+        }
+
         if (subscription == null) return;
 
         try
@@ -74,7 +85,7 @@
         }
         catch (ApiException e)
         {
-            Console.WriteLine($"Failed to subscribe to push notifications: {e.Response?.Message ?? e.Response?.StatusCode.ToString() ?? "HTTP error"}");
+            Logger.LogWarning("Failed to subscribe to push notifications: {Message}", e.Response?.Message ?? e.Response?.StatusCode.ToString() ?? "HTTP error");
         }
     }
 }
