@@ -53,8 +53,13 @@ internal class HtmlParser(
 						return text;
 				}
 
-				if (el.TextContent == href && (href.StartsWith("http://") || href.StartsWith("https://")))
+				if (el.TextContent == href && (href.StartsWith("http://") || href.StartsWith("https://"))) {
+					// Some MFM parsers don't parse links with non-ASCII characters correctly, marking them as links explicitly.
+					if (Encoding.UTF8.GetByteCount(href) != href.Length)
+						return $"<{href}>";
+
 					return href;
+				}
 
 				return $"[{el.TextContent}]({href})";
 			}
