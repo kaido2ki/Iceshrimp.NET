@@ -93,6 +93,12 @@
     color: var(--danger-color);
 }
 
+@media screen and (600px <= width) {
+    .top-bar ::deep .mobile-back {
+        display: none;
+    }
+}
+
 /* Medium */
 @media screen and (width < 840px) {
     .top-bar ::deep .action .label {

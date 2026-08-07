@@ -17,6 +17,9 @@
 
 <HeadTitle Text="@(Report != null ? Loc[L.Moderation_Report_From, Report.Reporter.DisplayName ?? Report.Reporter.Username] : Loc[L.Moderation_Reports])"/>
 <SectionContent SectionName="top-bar-icon">
+    <a class="action mobile-back" href="/mod/reports">
+        <Icon Name="Icons.ArrowLeft"/>
+    </a>
     <Icon Name="Icons.WarningCircle"/>
 </SectionContent>
 <SectionContent SectionName="top-bar">
