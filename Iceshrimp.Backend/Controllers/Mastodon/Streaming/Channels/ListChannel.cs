@@ -6,6 +6,7 @@ using Iceshrimp.Backend.Controllers.Mastodon.Schemas.Entities;
 using Iceshrimp.Backend.Core.Database;
 using Iceshrimp.Backend.Core.Database.Tables;
 using Iceshrimp.Backend.Core.Helpers;
+using Iceshrimp.Shared.Configuration;
 using Microsoft.EntityFrameworkCore;
 
 namespace Iceshrimp.Backend.Controllers.Mastodon.Streaming.Channels;
@@ -137,9 +138,10 @@ public class ListChannel(WebSocketConnection connection) : IChannel
 			var rendered     = EnforceRenoteReplyVisibility(intermediate, wrapped);
 
 			var lists    = _members.Where(p => p.Value.Contains(note.UserId)).Select(p => p.Key);
-			var messages = RenderMessage(lists, "update", JsonSerializer.Serialize(rendered));
+			var messages = RenderMessage(lists, "update",
+			                             JsonSerializer.Serialize(rendered, JsonSerialization.Options));
 			foreach (var message in messages)
-				await connection.SendMessageAsync(JsonSerializer.Serialize(message));
+				await connection.SendMessageAsync(JsonSerializer.Serialize(message, JsonSerialization.Options));
 		}
 		catch (Exception e)
 		{
@@ -162,9 +164,10 @@ public class ListChannel(WebSocketConnection connection) : IChannel
 			var rendered     = EnforceRenoteReplyVisibility(intermediate, wrapped);
 
 			var lists    = _members.Where(p => p.Value.Contains(note.UserId)).Select(p => p.Key);
-			var messages = RenderMessage(lists, "status.update", JsonSerializer.Serialize(rendered));
+			var messages = RenderMessage(lists, "status.update",
+			                             JsonSerializer.Serialize(rendered, JsonSerialization.Options));
 			foreach (var message in messages)
-				await connection.SendMessageAsync(JsonSerializer.Serialize(message));
+				await connection.SendMessageAsync(JsonSerializer.Serialize(message, JsonSerialization.Options));
 		}
 		catch (Exception e)
 		{
@@ -182,7 +185,7 @@ public class ListChannel(WebSocketConnection connection) : IChannel
 			var lists    = _members.Where(p => p.Value.Contains(note.UserId)).Select(p => p.Key);
 			var messages = RenderMessage(lists, "status.update", note.Id);
 			foreach (var message in messages)
-				await connection.SendMessageAsync(JsonSerializer.Serialize(message));
+				await connection.SendMessageAsync(JsonSerializer.Serialize(message, JsonSerialization.Options));
 		}
 		catch (Exception e)
 		{

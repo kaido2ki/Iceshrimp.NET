@@ -4,6 +4,7 @@ using Iceshrimp.Backend.Controllers.Mastodon.Schemas.Entities;
 using Iceshrimp.Backend.Core.Database;
 using Iceshrimp.Backend.Core.Database.Tables;
 using Iceshrimp.Backend.Core.Extensions;
+using Iceshrimp.Shared.Configuration;
 using Microsoft.EntityFrameworkCore;
 
 namespace Iceshrimp.Backend.Controllers.Mastodon.Streaming.Channels;
@@ -111,12 +112,13 @@ public class DirectChannel(WebSocketConnection connection) : IChannel
 
 			var message = new StreamingUpdateMessage
 			{
-				Stream  = [Name],
-				Event   = "conversation",
-				Payload = JsonSerializer.Serialize(await RenderConversationAsync(note, wrapped, scope))
+				Stream = [Name],
+				Event  = "conversation",
+				Payload = JsonSerializer.Serialize(await RenderConversationAsync(note, wrapped, scope),
+				                                   JsonSerialization.Options)
 			};
 
-			await connection.SendMessageAsync(JsonSerializer.Serialize(message));
+			await connection.SendMessageAsync(JsonSerializer.Serialize(message, JsonSerialization.Options));
 		}
 		catch (Exception e)
 		{
@@ -135,12 +137,13 @@ public class DirectChannel(WebSocketConnection connection) : IChannel
 			await using var scope = connection.GetAsyncServiceScope();
 			var message = new StreamingUpdateMessage
 			{
-				Stream  = [Name],
-				Event   = "conversation",
-				Payload = JsonSerializer.Serialize(await RenderConversationAsync(note, wrapped, scope))
+				Stream = [Name],
+				Event  = "conversation",
+				Payload = JsonSerializer.Serialize(await RenderConversationAsync(note, wrapped, scope),
+				                                   JsonSerialization.Options)
 			};
 
-			await connection.SendMessageAsync(JsonSerializer.Serialize(message));
+			await connection.SendMessageAsync(JsonSerializer.Serialize(message, JsonSerialization.Options));
 		}
 		catch (Exception e)
 		{

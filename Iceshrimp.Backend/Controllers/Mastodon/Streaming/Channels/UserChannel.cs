@@ -4,6 +4,7 @@ using Iceshrimp.Backend.Controllers.Mastodon.Schemas.Entities;
 using Iceshrimp.Backend.Core.Database;
 using Iceshrimp.Backend.Core.Database.Tables;
 using Iceshrimp.Backend.Core.Middleware;
+using Iceshrimp.Shared.Configuration;
 
 namespace Iceshrimp.Backend.Controllers.Mastodon.Streaming.Channels;
 
@@ -116,9 +117,9 @@ public class UserChannel(WebSocketConnection connection, bool notificationsOnly)
 			{
 				Stream  = [Name],
 				Event   = "update",
-				Payload = JsonSerializer.Serialize(rendered)
+				Payload = JsonSerializer.Serialize(rendered, JsonSerialization.Options)
 			};
-			await connection.SendMessageAsync(JsonSerializer.Serialize(message));
+			await connection.SendMessageAsync(JsonSerializer.Serialize(message, JsonSerialization.Options));
 		}
 		catch (Exception e)
 		{
@@ -142,9 +143,9 @@ public class UserChannel(WebSocketConnection connection, bool notificationsOnly)
 			{
 				Stream  = [Name],
 				Event   = "status.update",
-				Payload = JsonSerializer.Serialize(rendered)
+				Payload = JsonSerializer.Serialize(rendered, JsonSerialization.Options)
 			};
-			await connection.SendMessageAsync(JsonSerializer.Serialize(message));
+			await connection.SendMessageAsync(JsonSerializer.Serialize(message, JsonSerialization.Options));
 		}
 		catch (Exception e)
 		{
@@ -164,7 +165,7 @@ public class UserChannel(WebSocketConnection connection, bool notificationsOnly)
 				Event   = "delete",
 				Payload = note.Id
 			};
-			await connection.SendMessageAsync(JsonSerializer.Serialize(message));
+			await connection.SendMessageAsync(JsonSerializer.Serialize(message, JsonSerialization.Options));
 		}
 		catch (Exception e)
 		{
@@ -200,9 +201,9 @@ public class UserChannel(WebSocketConnection connection, bool notificationsOnly)
 			{
 				Stream  = [Name],
 				Event   = "notification",
-				Payload = JsonSerializer.Serialize(rendered)
+				Payload = JsonSerializer.Serialize(rendered, JsonSerialization.Options)
 			};
-			await connection.SendMessageAsync(JsonSerializer.Serialize(message));
+			await connection.SendMessageAsync(JsonSerializer.Serialize(message, JsonSerialization.Options));
 		}
 		catch (Exception e)
 		{

@@ -2,6 +2,7 @@ using System.Text.Json;
 using Iceshrimp.Backend.Controllers.Mastodon.Renderers;
 using Iceshrimp.Backend.Controllers.Mastodon.Schemas.Entities;
 using Iceshrimp.Backend.Core.Database.Tables;
+using Iceshrimp.Shared.Configuration;
 
 namespace Iceshrimp.Backend.Controllers.Mastodon.Streaming.Channels;
 
@@ -101,9 +102,9 @@ public class PublicChannel(
 			{
 				Stream  = [Name],
 				Event   = "update",
-				Payload = JsonSerializer.Serialize(rendered)
+				Payload = JsonSerializer.Serialize(rendered, JsonSerialization.Options)
 			};
-			await connection.SendMessageAsync(JsonSerializer.Serialize(message));
+			await connection.SendMessageAsync(JsonSerializer.Serialize(message, JsonSerialization.Options));
 		}
 		catch (Exception e)
 		{
@@ -128,9 +129,9 @@ public class PublicChannel(
 			{
 				Stream  = [Name],
 				Event   = "status.update",
-				Payload = JsonSerializer.Serialize(rendered)
+				Payload = JsonSerializer.Serialize(rendered, JsonSerialization.Options)
 			};
-			await connection.SendMessageAsync(JsonSerializer.Serialize(message));
+			await connection.SendMessageAsync(JsonSerializer.Serialize(message, JsonSerialization.Options));
 		}
 		catch (Exception e)
 		{
@@ -150,7 +151,7 @@ public class PublicChannel(
 				Event   = "delete",
 				Payload = note.Id
 			};
-			await connection.SendMessageAsync(JsonSerializer.Serialize(message));
+			await connection.SendMessageAsync(JsonSerializer.Serialize(message, JsonSerialization.Options));
 		}
 		catch (Exception e)
 		{
