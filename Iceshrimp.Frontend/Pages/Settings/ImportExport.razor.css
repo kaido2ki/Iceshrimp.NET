@@ -17,7 +17,7 @@
     word-break: break-word;
 }
 
-@media (max-width: 1000px) {
+@media screen and (width < 600px) {
     .export {
         align-items: start;
         flex-direction: column;

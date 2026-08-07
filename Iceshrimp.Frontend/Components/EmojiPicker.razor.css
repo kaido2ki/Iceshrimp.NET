@@ -76,7 +76,7 @@ details + .header,
     object-fit: contain;
 }
 
-@media (max-width: 1000px) {
+@media screen and (width < 600px) {
     .emoji-picker {
         position-area: none;
         top: 0;

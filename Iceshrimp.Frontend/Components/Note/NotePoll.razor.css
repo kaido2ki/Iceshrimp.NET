@@ -85,7 +85,7 @@
     font-size: 0.7em;
 }
 
-@media (max-width: 1000px) {
+@media screen and (width < 600px) {
     .poll-options label {
         padding: 0.5rem 0.5rem;
     }

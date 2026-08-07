@@ -160,7 +160,7 @@
     justify-content: space-around;
 }
 
-@media (min-width: 1001px) {
+@media screen and (600px <= width) {
     .sidebar {
         display: flex;
         opacity: 1;
@@ -173,7 +173,7 @@
     }
 }
 
-@media (max-width: 1000px) {
+@media screen and (width < 600px) {
     .sidebar {
         position: fixed;
         height: 100vh;

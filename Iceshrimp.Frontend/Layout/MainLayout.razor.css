@@ -25,16 +25,6 @@
 
 }
 
-@media (max-width: 1000px) {
-    .widget-panel {
-        display: none;
-    }
-
-    .main {
-        margin-bottom: 5rem;
-    }
-}
-
 .top-bar {
     background-color: var(--background-color);
     border-bottom: 0.05rem var(--border-color) solid;
@@ -103,8 +93,20 @@
     color: var(--danger-color);
 }
 
-@media (max-width: 1000px) {
+/* Medium */
+@media screen and (width < 840px) {
     .top-bar ::deep .action .label {
         display: none;
+    }
+
+    .widget-panel {
+        display: none;
+    }
+}
+
+/* Small */
+@media screen and (width < 600px) {
+    .main {
+        margin-bottom: 5rem;
     }
 }

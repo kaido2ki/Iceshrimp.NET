@@ -8,7 +8,7 @@
     line-height: 1;
 }
 
-@media (max-width: 1000px) {
+@media screen and (width < 600px) {
     .dropdown-element {
         margin: 0.5em 0.25em;
     }

@@ -21,11 +21,10 @@
     }
 }
 
-@media (max-width: 1000px) {
+@media screen and (width < 600px) {
     .name {
         max-width: 20rem;
     }
-
 }
 
 .identifier {

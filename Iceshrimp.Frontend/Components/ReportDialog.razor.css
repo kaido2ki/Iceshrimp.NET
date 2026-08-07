@@ -48,7 +48,7 @@
     text-align: left;
 }
 
-@media (max-width: 1000px) {
+@media screen and (width < 600px) {
     .modal {
         min-height: 100vh;
         padding-top: 0;

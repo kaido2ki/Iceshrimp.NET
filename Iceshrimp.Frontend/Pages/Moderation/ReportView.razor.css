@@ -63,7 +63,7 @@ details summary {
     max-width: 45rem;
     background-color: var(--foreground-color);
     padding: 1.5rem 1.5rem 1rem; /* top, left-right, bottom*/
-    @media (max-width: 1000px) {
+    @media screen and (width < 600px) {
         padding: 1.5rem 1rem 1rem;
     }
     border-radius: 0.75rem;
@@ -80,7 +80,7 @@ details summary {
     margin-top: 5rem;
 }
 
-@media (max-width: 640px) {
+@media screen and (width < 600px) {
     .field {
         flex-direction: column;
 

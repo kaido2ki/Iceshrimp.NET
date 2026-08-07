@@ -37,7 +37,7 @@
     padding-left: 1rem;
 }
 
-@media(max-width: 1000px){
+@media screen and (width < 600px) {
     .sidebar {
         display: none;
     }

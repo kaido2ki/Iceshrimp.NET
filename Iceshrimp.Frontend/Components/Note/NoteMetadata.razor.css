@@ -79,7 +79,7 @@
     color: var(--danger-color);
 }
 
-@media (max-width: 1000px) {
+@media screen and (width < 600px) {
     .metadata {
         flex-basis: 25%;
         

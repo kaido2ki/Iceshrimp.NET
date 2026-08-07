@@ -27,7 +27,7 @@
     cursor: auto;
 }
 
-@media (max-width: 1000px) {
+@media screen and (width < 600px) {
     .menu {
         top: unset;
         bottom: 0;

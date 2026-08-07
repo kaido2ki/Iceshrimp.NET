@@ -118,7 +118,7 @@
     display: none;
 }
 
-@media (max-width: 1000px) {
+@media screen and (width < 600px) {
     .compose {
         max-width: unset;
         min-height: 100vh;

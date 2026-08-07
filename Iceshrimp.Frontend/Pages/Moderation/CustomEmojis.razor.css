@@ -36,7 +36,7 @@
     display: none;
 }
 
-@media (max-width: 1000px) {
+@media screen and (width < 600px) {
     .emoji-list {
         flex-direction: column;
     }

@@ -96,7 +96,7 @@
     cursor: pointer;
 }
 
-@media screen and (max-width: 1000px) {
+@media screen and (width < 600px) {
     .cw-button {
         font-size: 1em;
     }
