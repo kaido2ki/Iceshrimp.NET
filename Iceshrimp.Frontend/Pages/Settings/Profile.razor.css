@@ -1,7 +1,25 @@
-.field, .new-field {
+.field {
     display: flex;
     flex-direction: row;
     align-items: center;
+    gap: 0.5rem;
+    margin: 0.5rem 0;
+}
+
+.pronouns-field {
+    align-items: end;
+}
+
+.pronouns-field label {
+    flex-grow: 1;
+    margin: 0;
+}
+
+@media screen and (width < 600px) {
+    .custom-field {
+        flex-direction: column;
+        margin: 1rem 0;
+    }
 }
 
 .loading {
@@ -17,14 +35,6 @@
     .icon-wrapper {
         padding: 0;
     }
-}
-
-.user-fields {
-    
-}
-
-.language-label {
-    text-wrap: nowrap;
 }
 
 .title {

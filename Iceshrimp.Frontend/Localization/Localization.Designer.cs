@@ -3242,5 +3242,11 @@ namespace Iceshrimp.Frontend.Localization {
                 return ResourceManager.GetString("Settings_Profile_EditBanner", resourceCulture);
             }
         }
+        
+        internal static string Settings_Profile_Heading_About_Username {
+            get {
+                return ResourceManager.GetString("Settings_Profile_Heading_About_Username", resourceCulture);
+            }
+        }
     }
 }

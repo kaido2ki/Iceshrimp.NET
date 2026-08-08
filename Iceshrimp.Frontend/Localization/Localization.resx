@@ -872,7 +872,7 @@
         <value>Pronouns</value>
     </data>
     <data name="Settings_Profile_Fields" xml:space="preserve">
-        <value>Profile fields</value>
+        <value>Custom fields</value>
     </data>
     <data name="Common_Value" xml:space="preserve">
         <value>Value</value>
@@ -1617,5 +1617,8 @@
     </data>
     <data name="Settings_Profile_EditBanner" xml:space="preserve">
         <value>Edit banner</value>
+    </data>
+    <data name="Settings_Profile_Heading_About_Username" xml:space="preserve">
+        <value>About {0}</value>
     </data>
 </root>

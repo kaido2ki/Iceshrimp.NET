@@ -27,11 +27,11 @@
     @Loc[L.Settings_Profile]
 </SectionContent>
 
-<div class="body">
+<section class="body">
     @if (State is State.Loaded)
     {
-        <div class="section">
-            <h2>@Loc[L.Settings_Profile_Heading_Images]</h2>
+        <section class="section">
+            <h3>@Loc[L.Settings_Profile_Heading_Images]</h3>
             @if (Banner != null)
             {
                 <img class="banner" src="@Banner.Url" alt="@Banner.Description" title="@Banner.Description"/>
@@ -61,80 +61,88 @@
                     </button>
                 }
             </div>
-        </div>
-        <div class="section">
-            <h3>@Loc[L.User_DisplayName]</h3><input class="input" @bind="@UserProfile.DisplayName"/>
-        </div>
-        <div class="section">
-            <h3>@Loc[L.User_Bio]</h3><textarea class="input" @ref="Description" @bind="@UserProfile.Description" rows="5"></textarea>
+        </section>
+
+        <section>
+            <h3>
+                @Loc[L.Settings_Profile_Heading_About_Username, Session.Current?.Username ?? L.User]
+            </h3>
+            <label>
+                @Loc[L.User_DisplayName]
+                <input class="full-width" @bind="@UserProfile.DisplayName" placeholder="@Session.Current?.Username"/>
+            </label>
+            <label>
+                @Loc[L.User_Bio]
+                <textarea class="full-width" @ref="Description" @bind="@UserProfile.Description" rows="5"></textarea>
+            </label>
             <button @ref="EmojiButton" class="button" title="@Loc[L.Common_Emojis]" @onclick="ToggleEmojiPicker"
                     aria-label="emoji">
                 <Icon Name="Icons.Smiley" Size="1.3rem"></Icon>
             </button>
-        </div>
-        <div class="section">
-            <h3>@Loc[L.User_Birthday]</h3>
-            <label>
+            <div class="field pronouns-field">
+                <label>
+                    @Loc[L.User_Birthday]
+                    <input type="date" class="full-width" @bind="@Birthday" disabled="@(!SetBirthday)"/>
+                </label>
                 <input type="checkbox" @bind="@SetBirthday">
-                @Loc[L.Common_Enable]
-            </label>
-            <input type="date" class="input" @bind="@Birthday" disabled="@(!SetBirthday)"/>
-        </div>
-        <div class="section">
-            <h3>@Loc[L.User_Location]</h3><input class="input" @bind="@UserProfile.Location"/>
-        </div>
-        <div class="user-fields">
-            <h3>@Loc[L.User_Pronouns]</h3>
-            <div class="fields">
-                @foreach (var entry in Pronouns)
-                {
-                    <div class="field">
-                        <label class="language-label">@(_languages.GetValueOrDefault(entry.Language) ?? entry.Language.ToUpper())</label>
-                        <input class="input" placeholder="@Loc[L.User_Pronouns]" @bind="@entry.Value"/>
-                    </div>
-                }
             </div>
-        </div>
+            <label>
+                @Loc[L.User_Location]
+                <input class="full-width" @bind="@UserProfile.Location"/>
+            </label>
+        </section>
 
-        <div class="new-field">
-            <InputSelect @bind-Value="@PronounsLanguage">
-                @foreach (var language in _languages.Where(l => !Pronouns.Select(p => p.Language).Contains(l.Key)))
-                {
-                    <option value="@language.Key">@language.Value</option>
-                }
-            </InputSelect>
-            <input class="input" placeholder="@Loc[L.User_Pronouns]" @bind="@PronounsValue"/>
-            <button class="button" title="@Loc[L.Common_Add]" @onclick="AddPronouns">
-                <Icon Name="Icons.Plus"/>
-            </button>
-        </div>
+        <section>
+            <h3>@Loc[L.User_Pronouns]</h3>
+            @foreach (var entry in Pronouns)
+            {
+                <div class="field pronouns-field">
+                    <label>
+                        @(_languages.GetValueOrDefault(entry.Language) ?? entry.Language.ToUpper())
+                        <input class="full-width" placeholder="@Loc[L.User_Pronouns]" @bind="@entry.Value"/>
+                    </label>
+                    <button class="button" title="@Loc[L.Common_Remove]" @onclick="() => DeletePronouns(entry)">
+                        <Icon Name="Icons.Trash"/>
+                    </button>
+                </div>
+            }
+            <div class="field">
+                <InputSelect @bind-Value="@PronounsLanguage">
+                    @foreach (var language in _languages.Where(l => !Pronouns.Select(p => p.Language).Contains(l.Key)))
+                    {
+                        <option value="@language.Key">@language.Value</option>
+                    }
+                </InputSelect>
+                <button @onclick="AddPronouns" class="button" disabled="@(PronounsLanguage == "")">
+                    <Icon Name="Icons.Plus"/>
+                    @Loc[L.Common_Add]
+                </button>
+            </div>
+        </section>
 
-        <div class="user-fields">
+        <section>
             <h3>@Loc[L.Settings_Profile_Fields]</h3>
             <div class="fields">
                 @foreach (var entry in UserProfile.Fields)
                 {
-                    <div class="field">
-                        <input class="input" placeholder="@Loc[L.Common_Name]" @bind="@entry.Name" maxlength="@Limits.MaxProfileFieldNameLength"/>
-                        <input class="input" placeholder="@Loc[L.Common_Value]" @bind="@entry.Value" maxlength="@Limits.MaxProfileFieldValueLength"/>
+                    <div class="field custom-field">
+                        <input placeholder="@Loc[L.Common_Name]" @bind="@entry.Name" maxlength="@Limits.MaxProfileFieldNameLength"/>
+                        <input class="full-width" placeholder="@Loc[L.Common_Value]" @bind="@entry.Value" maxlength="@Limits.MaxProfileFieldValueLength"/>
                         <button class="button" title="@Loc[L.Common_Remove]" @onclick="() => DeleteField(entry)">
                             <Icon Name="Icons.Trash"/>
                         </button>
                     </div>
                 }
             </div>
-        </div>
 
-        @if (UserProfile.Fields.Count < Limits.MaxProfileFields)
-        {
-            <div class="new-field">
-                <input class="input" placeholder="@Loc[L.Common_Name]" @bind="@FieldName"/>
-                <input class="input" placeholder="@Loc[L.Common_Value]" @bind="@FieldValue"/>
-                <button class="button" title="@Loc[L.Common_Add]" @onclick="AddField">
+            @if (UserProfile.Fields.Count < Limits.MaxProfileFields)
+            {
+                <button @onclick="AddField" class="button">
                     <Icon Name="Icons.Plus"/>
+                    @Loc[L.Common_Add]
                 </button>
-            </div>
-        }
+            }
+        </section>
 
         <div class="section">
             <h3>@Loc[L.Common_Other]</h3>
@@ -173,7 +181,7 @@
     {
         <div class="loading"><LoadingSpinner Scale="2" /></div>
     }
-</div>
+</section>
 
 <dialog closedby="none" class="modal" @ref="ImageDialog">
     @if (WaitingImg)
@@ -242,8 +250,6 @@
 @code {
     private UserProfileEntity UserProfile { get; set; } = null!;
     private State             State       { get; set; } = State.Loading;
-    private string            FieldName   { get; set; } = "";
-    private string            FieldValue  { get; set; } = "";
     private StateButton       SaveButton  { get; set; } = null!;
     private ElementReference  ImageDialog { get; set; }
     private string            ImageAlt    { get; set; } = "";
@@ -260,7 +266,6 @@
 
     private List<UserPronouns>         Pronouns         { get; set; } = [];
     private string                     PronounsLanguage { get; set; } = "";
-    private string                     PronounsValue    { get; set; } = "";
     private Dictionary<string, string> _languages = LanguageHelper.Bcp47Languages;
 
     private class UserPronouns
@@ -307,9 +312,7 @@
 
     private void AddField()
     {
-        UserProfile.Fields.Add(new UserProfileEntity.Field { Name = FieldName, Value = FieldValue });
-        FieldName  = "";
-        FieldValue = "";
+        UserProfile.Fields.Add(new UserProfileEntity.Field { Name = "", Value = "" });
     }
 
     private void DeleteField(UserProfileEntity.Field field)
@@ -319,10 +322,15 @@
 
     private void AddPronouns()
     {
-        Pronouns.Add(new UserPronouns { Language = PronounsLanguage, Value = PronounsValue });
+        if (PronounsLanguage == "") return;
+        Pronouns.Add(new UserPronouns { Language = PronounsLanguage, Value = "" });
         PronounsLanguage = "";
-        PronounsValue    = "";
         Pronouns = Pronouns.OrderBy(p => p.Language).ToList();
+    }
+
+    private void DeletePronouns(UserPronouns pronouns)
+    {
+        Pronouns.Remove(pronouns);
     }
 
     private async Task SaveChanges()
@@ -337,6 +345,14 @@
                 UserProfile.Birthday = Birthday.ToString("yyyy-MM-dd");
 
             UserProfile.Pronouns = Pronouns.Where(p => !string.IsNullOrWhiteSpace(p.Value)).ToDictionary(p => p.Language, p => p.Value.Trim());
+
+            UserProfile.Fields.RemoveAll(p => string.IsNullOrWhiteSpace(p.Name) || string.IsNullOrWhiteSpace(p.Value));
+
+            foreach (var field in UserProfile.Fields)
+            {
+                field.Name  = field.Name.Trim();
+                field.Value = field.Value.Trim();
+            }
 
             await Api.Profile.UpdateProfileAsync(UserProfile);
             await Session.UpdateCurrentUserAsync();
