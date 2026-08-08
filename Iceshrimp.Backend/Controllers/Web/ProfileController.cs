@@ -141,18 +141,7 @@ public class ProfileController(
 		                   .FirstOrDefaultAsync(p => p.UserId == user.Id && p.UserAvatar != null)
 		           ?? throw GracefulException.RecordNotFound();
 
-		return new DriveFileResponse
-		{
-			Id           = file.Id,
-			Url          = file.RawAccessUrl,
-			ThumbnailUrl = file.RawThumbnailAccessUrl,
-			Filename     = file.Name,
-			ContentType  = file.Type,
-			Sensitive    = file.IsSensitive,
-			Description  = file.Comment,
-			IsAvatar     = file.UserAvatar != null,
-			IsBanner     = file.UserBanner != null
-		};
+		return RenderDriveFile(file);
 	}
 
 	/// <summary>
@@ -163,7 +152,7 @@ public class ProfileController(
 	[HttpPost("avatar")]
 	[ProducesResults(HttpStatusCode.OK)]
 	[ProducesErrors(HttpStatusCode.BadRequest)]
-	public async Task UpdateAvatar(IFormFile file, [FromQuery] string? altText)
+	public async Task<DriveFileResponse> UpdateAvatar(IFormFile file, [FromQuery] string? altText)
 	{
 		var user = HttpContext.GetUserOrFail();
 
@@ -178,7 +167,7 @@ public class ProfileController(
 			Filename    = file.FileName,
 			IsSensitive = false,
 			MimeType    = file.ContentType,
-			Comment     = altText 
+			Comment     = altText?.Trim()
 		};
 
 		var avatar = await driveSvc.StoreFileAsync(file.OpenReadStream(), user, rq);
@@ -188,6 +177,8 @@ public class ProfileController(
 		user.AvatarBlurhash = avatar.Blurhash;
 
 		await userSvc.UpdateLocalUserAsync(user, prevAvatarId, prevBannerId);
+
+		return RenderDriveFile(avatar);
 	}
 
 	/// <summary>
@@ -227,18 +218,7 @@ public class ProfileController(
 		                   .FirstOrDefaultAsync(p => p.UserId == user.Id && p.UserBanner != null)
 		           ?? throw GracefulException.RecordNotFound();
 
-		return new DriveFileResponse
-		{
-			Id           = file.Id,
-			Url          = file.RawAccessUrl,
-			ThumbnailUrl = file.RawThumbnailAccessUrl,
-			Filename     = file.Name,
-			ContentType  = file.Type,
-			Sensitive    = file.IsSensitive,
-			Description  = file.Comment,
-			IsAvatar     = file.UserAvatar != null,
-			IsBanner     = file.UserBanner != null
-		};
+		return RenderDriveFile(file);
 	}
 
 	/// <summary>
@@ -249,7 +229,7 @@ public class ProfileController(
 	[HttpPost("banner")]
 	[ProducesResults(HttpStatusCode.OK)]
 	[ProducesErrors(HttpStatusCode.BadRequest)]
-	public async Task UpdateBanner(IFormFile file, [FromQuery] string? altText)
+	public async Task<DriveFileResponse> UpdateBanner(IFormFile file, [FromQuery] string? altText)
 	{
 		var user = HttpContext.GetUserOrFail();
 
@@ -264,7 +244,7 @@ public class ProfileController(
 			Filename    = file.FileName,
 			IsSensitive = false,
 			MimeType    = file.ContentType,
-			Comment     = altText
+			Comment     = altText?.Trim()
 		};
 
 		var banner = await driveSvc.StoreFileAsync(file.OpenReadStream(), user, rq);
@@ -274,6 +254,8 @@ public class ProfileController(
 		user.BannerBlurhash = banner.Blurhash;
 
 		await userSvc.UpdateLocalUserAsync(user, prevAvatarId, prevBannerId);
+
+		return RenderDriveFile(banner);
 	}
 
 	/// <summary>
@@ -294,5 +276,21 @@ public class ProfileController(
 		user.BannerBlurhash = null;
 
 		await userSvc.UpdateLocalUserAsync(user, prevAvatarId, prevBannerId);
+	}
+
+	private DriveFileResponse RenderDriveFile(DriveFile file)
+	{
+		return new DriveFileResponse
+		{
+			Id           = file.Id,
+			Url          = file.RawAccessUrl,
+			ThumbnailUrl = file.RawThumbnailAccessUrl,
+			Filename     = file.Name,
+			ContentType  = file.Type,
+			Sensitive    = file.IsSensitive,
+			Description  = file.Comment,
+			IsAvatar     = file.UserAvatar != null,
+			IsBanner     = file.UserBanner != null
+		};
 	}
 }

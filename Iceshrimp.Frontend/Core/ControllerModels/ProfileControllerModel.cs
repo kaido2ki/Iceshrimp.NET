@@ -16,8 +16,8 @@ internal class ProfileControllerModel(ApiClient api)
 	public Task<DriveFileResponse?> GetAvatarAsync() =>
 		api.CallNullableAsync<DriveFileResponse>(HttpMethod.Get, "/profile/avatar");
 
-	public Task UpdateAvatarAsync(IBrowserFile file, string? altText) =>
-		api.CallAsync(HttpMethod.Post, "/profile/avatar",
+	public Task<DriveFileResponse> UpdateAvatarAsync(IBrowserFile file, string? altText) =>
+		api.CallAsync<DriveFileResponse>(HttpMethod.Post, "/profile/avatar",
 		              altText != null ? QueryString.Create("altText", altText) : QueryString.Empty, file);
 
 	public Task DeleteAvatarAsync() =>
@@ -26,8 +26,8 @@ internal class ProfileControllerModel(ApiClient api)
 	public Task<DriveFileResponse?> GetBannerAsync() =>
 		api.CallNullableAsync<DriveFileResponse>(HttpMethod.Get, "/profile/banner");
 
-	public Task UpdateBannerAsync(IBrowserFile file, string? altText) =>
-		api.CallAsync(HttpMethod.Post, "/profile/banner",
+	public Task<DriveFileResponse> UpdateBannerAsync(IBrowserFile file, string? altText) =>
+		api.CallAsync<DriveFileResponse>(HttpMethod.Post, "/profile/banner",
 		              altText != null ? QueryString.Create("altText", altText) : QueryString.Empty, file);
 
 	public Task DeleteBannerAsync() =>
