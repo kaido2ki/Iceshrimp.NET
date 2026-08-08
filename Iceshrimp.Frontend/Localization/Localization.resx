@@ -850,9 +850,6 @@
     <data name="Settings_Profile" xml:space="preserve">
         <value>Profile</value>
     </data>
-    <data name="Settings_Profile_BannerAlt" xml:space="preserve">
-        <value>Set alt text for your banner</value>
-    </data>
     <data name="Settings_Profile_NewBannerAlt" xml:space="preserve">
         <value>Set alt text for your new banner</value>
     </data>
@@ -861,9 +858,6 @@
     </data>
     <data name="Settings_Profile_NewAvatarAlt" xml:space="preserve">
         <value>Set alt text for your new avatar</value>
-    </data>
-    <data name="Settings_Profile_AvatarAlt" xml:space="preserve">
-        <value>Set alt text for your avatar</value>
     </data>
     <data name="User_DisplayName" xml:space="preserve">
         <value>Display Name</value>
@@ -1608,5 +1602,20 @@
     </data>
     <data name="Note_Replies" xml:space="preserve">
         <value>Replies</value>
+    </data>
+    <data name="Settings_Profile_Heading_Images" xml:space="preserve">
+        <value>Images</value>
+    </data>
+    <data name="Settings_Profile_UploadAvatar" xml:space="preserve">
+        <value>Upload avatar</value>
+    </data>
+    <data name="Settings_Profile_EditAvatar" xml:space="preserve">
+        <value>Edit avatar</value>
+    </data>
+    <data name="Settings_Profile_UploadBanner" xml:space="preserve">
+        <value>Upload banner</value>
+    </data>
+    <data name="Settings_Profile_EditBanner" xml:space="preserve">
+        <value>Edit banner</value>
     </data>
 </root>

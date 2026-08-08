@@ -54,3 +54,14 @@
     aspect-ratio: 21/9;
     border-radius: 1rem;
 }
+
+.banner + .avatar {
+    margin-top: -4.5rem;
+    margin-left: 1rem;
+}
+
+@media screen and (600px <= width) {
+    .modal .banner {
+        max-width: 70vw;
+    }
+}

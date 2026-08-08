@@ -1707,12 +1707,6 @@ namespace Iceshrimp.Frontend.Localization {
             }
         }
         
-        internal static string Settings_Profile_BannerAlt {
-            get {
-                return ResourceManager.GetString("Settings_Profile_BannerAlt", resourceCulture);
-            }
-        }
-        
         internal static string Settings_Profile_NewBannerAlt {
             get {
                 return ResourceManager.GetString("Settings_Profile_NewBannerAlt", resourceCulture);
@@ -1728,12 +1722,6 @@ namespace Iceshrimp.Frontend.Localization {
         internal static string Settings_Profile_NewAvatarAlt {
             get {
                 return ResourceManager.GetString("Settings_Profile_NewAvatarAlt", resourceCulture);
-            }
-        }
-        
-        internal static string Settings_Profile_AvatarAlt {
-            get {
-                return ResourceManager.GetString("Settings_Profile_AvatarAlt", resourceCulture);
             }
         }
         
@@ -3222,6 +3210,36 @@ namespace Iceshrimp.Frontend.Localization {
         internal static string Note_Replies {
             get {
                 return ResourceManager.GetString("Note_Replies", resourceCulture);
+            }
+        }
+        
+        internal static string Settings_Profile_Heading_Images {
+            get {
+                return ResourceManager.GetString("Settings_Profile_Heading_Images", resourceCulture);
+            }
+        }
+        
+        internal static string Settings_Profile_UploadAvatar {
+            get {
+                return ResourceManager.GetString("Settings_Profile_UploadAvatar", resourceCulture);
+            }
+        }
+        
+        internal static string Settings_Profile_EditAvatar {
+            get {
+                return ResourceManager.GetString("Settings_Profile_EditAvatar", resourceCulture);
+            }
+        }
+        
+        internal static string Settings_Profile_UploadBanner {
+            get {
+                return ResourceManager.GetString("Settings_Profile_UploadBanner", resourceCulture);
+            }
+        }
+        
+        internal static string Settings_Profile_EditBanner {
+            get {
+                return ResourceManager.GetString("Settings_Profile_EditBanner", resourceCulture);
             }
         }
     }

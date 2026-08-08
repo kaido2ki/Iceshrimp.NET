@@ -831,9 +831,6 @@ Fournir ces journaux aux développeurs sur demande peut aider au débogage.</val
     <data name="Settings_Profile" xml:space="preserve">
         <value>Profil</value>
     </data>
-    <data name="Settings_Profile_BannerAlt" xml:space="preserve">
-        <value>Définir le texte alternatif de votre bannière</value>
-    </data>
     <data name="Settings_Profile_NewBannerAlt" xml:space="preserve">
         <value>Définir le texte alternatif de votre nouvelle bannière</value>
     </data>
@@ -842,9 +839,6 @@ Fournir ces journaux aux développeurs sur demande peut aider au débogage.</val
     </data>
     <data name="Settings_Profile_NewAvatarAlt" xml:space="preserve">
         <value>Définir le texte alternatif de votre nouvel avatar</value>
-    </data>
-    <data name="Settings_Profile_AvatarAlt" xml:space="preserve">
-        <value>Définir le texte alternatif de votre avatar</value>
     </data>
     <data name="User_DisplayName" xml:space="preserve">
         <value>Nom d'affichage</value>

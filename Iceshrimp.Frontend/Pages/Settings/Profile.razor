@@ -31,38 +31,36 @@
     @if (State is State.Loaded)
     {
         <div class="section">
-            <h3>@Loc[L.User_Banner]</h3>
+            <h2>@Loc[L.Settings_Profile_Heading_Images]</h2>
             @if (Banner != null)
             {
                 <img class="banner" src="@Banner.Url" alt="@Banner.Description" title="@Banner.Description"/>
-                <label>
-                    <input type="checkbox" @bind="@DelBanner">
-                    @Loc[L.Common_Remove]
-                </label>
             }
-            <InputFile class="input" OnChange="OnBannerFileChange" accept="image/*" disabled="@DelBanner"/>
-            @if (Banner != null || BannerFile != null)
-            {
-                <label for="banner-alt">@Loc[BannerFile != null ? L.Settings_Profile_NewBannerAlt : L.Settings_Profile_BannerAlt]</label>
-                <textarea class="input alt-text" @bind="UserProfile.BannerAlt" id="banner-alt" rows="3" placeholder="@Loc[L.Common_AltText]" disabled="@DelBanner"></textarea>
-            }
-        </div>
-        <div class="section">
-            <h3>@Loc[L.User_Avatar]</h3>
-            @if (Avatar != null)
-            {
-                <img class="avatar" src="@Avatar.Url" alt="@Avatar.Description" title="@Avatar.Description"/>
-                <label>
-                    <input type="checkbox" @bind="@DelAvatar">
-                    @Loc[L.Common_Remove]
-                </label>
-            }
-            <InputFile class="input" OnChange="OnAvatarFileChange" accept="image/*" disabled="@DelAvatar"/>
-            @if (Avatar != null || AvatarFile != null)
-            {
-                <label for="avatar-alt">@Loc[AvatarFile != null ? L.Settings_Profile_NewAvatarAlt : L.Settings_Profile_AvatarAlt]</label>
-                <textarea class="input alt-text" @bind="UserProfile.AvatarAlt" id="avatar-alt" rows="3" placeholder="@Loc[L.Common_AltText]" disabled="@DelAvatar"></textarea>
-            }
+            <img class="avatar" src="@(Avatar?.Url ?? $"/identicon/{Session.Current!.Id}")" alt="@Avatar?.Description" title="@Avatar?.Description"/>
+            <div class="button-group">
+                <button @onclick="OpenUploadAvatarDialogAsync" class="button">
+                    <Icon Name="Icons.Upload"/>
+                    @Loc[L.Settings_Profile_UploadAvatar]
+                </button>
+                @if (Avatar != null)
+                {
+                    <button @onclick="OpenEditAvatarDialogAsync" class="button">
+                        <Icon Name="Icons.PencilLine"/>
+                        @Loc[L.Settings_Profile_EditAvatar]
+                    </button>
+                }
+                <button @onclick="OpenUploadBannerDialogAsync" class="button">
+                    <Icon Name="Icons.Upload"/>
+                    @Loc[L.Settings_Profile_UploadBanner]
+                </button>
+                @if (Banner != null)
+                {
+                    <button @onclick="OpenEditBannerDialogAsync" class="button">
+                        <Icon Name="Icons.PencilLine"/>
+                        @Loc[L.Settings_Profile_EditBanner]
+                    </button>
+                }
+            </div>
         </div>
         <div class="section">
             <h3>@Loc[L.User_DisplayName]</h3><input class="input" @bind="@UserProfile.DisplayName"/>
@@ -177,16 +175,81 @@
     }
 </div>
 
+<dialog closedby="none" class="modal" @ref="ImageDialog">
+    @if (WaitingImg)
+    {
+        <LoadingSpinner Scale="1.5"/>
+    }
+    else
+    {
+        <div class="dialog-header">
+            @switch (ImageState)
+            {
+                case ImageDialogState.UploadAvatar:
+                    @Loc[L.Settings_Profile_UploadAvatar]
+                    break;
+                case ImageDialogState.EditAvatar:
+                    @Loc[L.Settings_Profile_EditAvatar]
+                    break;
+                case ImageDialogState.UploadBanner:
+                    @Loc[L.Settings_Profile_UploadBanner]
+                    break;
+                case ImageDialogState.EditBanner:
+                    @Loc[L.Settings_Profile_EditBanner]
+                    break;
+                default:
+                    break;
+            }
+        </div>
+        @switch (ImageState)
+        {
+            case ImageDialogState.UploadAvatar or ImageDialogState.UploadBanner:
+                <InputFile class="input" OnChange="OnImageFileChange" accept="image/*"/>
+                break;
+            case ImageDialogState.EditAvatar when Avatar != null:
+                <img class="avatar" src="@Avatar?.Url" alt="@Avatar?.Description" title="@Avatar?.Description"/>
+                break;
+            case ImageDialogState.EditBanner when Banner != null:
+                <img class="banner" src="@Banner.Url" alt="@Banner.Description" title="@Banner.Description"/>
+                break;
+            default:
+                break;
+        }
+        <textarea class="input" @bind="@ImageAlt" placeholder="@Loc[L.Common_AltText]" rows="5"></textarea>
+        <div class="dialog-footer button-group">
+            @if (ImageState is ImageDialogState.UploadAvatar or ImageDialogState.UploadBanner)
+            {
+                <button @onclick="UploadImage" class="button primary-button" disabled="@(ImageState is ImageDialogState.UploadAvatar or ImageDialogState.UploadBanner && ImageFile == null)">
+                    @Loc[L.Dialog_Submit]
+                </button>
+            }
+            else
+            {
+                <button @onclick="EditImage" class="button primary-button" disabled="@(ImageState is ImageDialogState.UploadAvatar or ImageDialogState.UploadBanner && ImageFile == null)">
+                    @Loc[L.Dialog_Submit]
+                </button>
+                <button @onclick="DeleteImage" class="button danger">
+                    @Loc[L.Common_Delete]
+                </button>
+            }
+            <button @onclick="() => Js.CloseDialogAsync(ImageDialog)" class="button">
+                @Loc[L.Dialog_Cancel]
+            </button>
+        </div>
+    }
+</dialog>
+
 @code {
     private UserProfileEntity UserProfile { get; set; } = null!;
     private State             State       { get; set; } = State.Loading;
     private string            FieldName   { get; set; } = "";
     private string            FieldValue  { get; set; } = "";
     private StateButton       SaveButton  { get; set; } = null!;
-    private IBrowserFile?     AvatarFile  { get; set; }
-    private bool              DelAvatar   { get; set; }
-    private IBrowserFile?     BannerFile  { get; set; }
-    private bool              DelBanner   { get; set; }
+    private ElementReference  ImageDialog { get; set; }
+    private string            ImageAlt    { get; set; } = "";
+    private IBrowserFile?     ImageFile   { get; set; }
+    private ImageDialogState  ImageState  { get; set; }
+    private bool              WaitingImg  { get; set; }
     private DateTime          Birthday    { get; set; } = DateTime.Now;
     private bool              SetBirthday { get; set; }
     private ElementReference  Description { get; set; }
@@ -204,6 +267,14 @@
     {
         public required string Language { get; set; }
         public required string Value    { get; set; }
+    }
+
+    private enum ImageDialogState
+    {
+        UploadAvatar,
+        EditAvatar,
+        UploadBanner,
+        EditBanner,
     }
 
     protected override async Task OnInitializedAsync()
@@ -267,28 +338,6 @@
 
             UserProfile.Pronouns = Pronouns.Where(p => !string.IsNullOrWhiteSpace(p.Value)).ToDictionary(p => p.Language, p => p.Value.Trim());
 
-            if (DelAvatar)
-            {
-                await Api.Profile.DeleteAvatarAsync();
-                UserProfile.AvatarAlt = null;
-            }
-            else if (AvatarFile != null)
-            {
-                await Api.Profile.UpdateAvatarAsync(AvatarFile, UserProfile.AvatarAlt);
-                UserProfile.AvatarAlt = null;
-            }
-
-            if (DelBanner)
-            {
-                await Api.Profile.DeleteBannerAsync();
-                UserProfile.BannerAlt = null;
-            }
-            else if (BannerFile != null)
-            {
-                await Api.Profile.UpdateBannerAsync(BannerFile, UserProfile.BannerAlt);
-                UserProfile.BannerAlt = null;
-            }
-
             await Api.Profile.UpdateProfileAsync(UserProfile);
             await Session.UpdateCurrentUserAsync();
             StateHasChanged();
@@ -302,16 +351,135 @@
         }
     }
 
-    private void OnAvatarFileChange(InputFileChangeEventArgs e)
+    private Task OpenUploadAvatarDialogAsync() =>
+        OpenImageDialog(ImageDialogState.UploadAvatar, "");
+
+    private Task OpenEditAvatarDialogAsync() =>
+        OpenImageDialog(ImageDialogState.EditAvatar, Avatar?.Description ?? "");
+
+    private Task OpenUploadBannerDialogAsync() =>
+        OpenImageDialog(ImageDialogState.UploadBanner, "");
+
+    private Task OpenEditBannerDialogAsync() =>
+        OpenImageDialog(ImageDialogState.EditBanner, Banner?.Description ?? "");
+
+    private async Task OpenImageDialog(ImageDialogState state, string alt)
     {
-        AvatarFile            = e.GetMultipleFiles().First(p => p.ContentType.StartsWith("image/"));
-        UserProfile.AvatarAlt = "";
+        ImageState = state;
+        ImageFile  = null;
+        ImageAlt   = alt;
+        WaitingImg = false;
+
+        await Js.ShowDialogAsync(ImageDialog);
     }
 
-    private void OnBannerFileChange(InputFileChangeEventArgs e)
+    private void OnImageFileChange(InputFileChangeEventArgs e)
     {
-        BannerFile            = e.GetMultipleFiles().First(p => p.ContentType.StartsWith("image/"));
-        UserProfile.BannerAlt = "";
+        ImageFile = e.GetMultipleFiles().First(p => p.ContentType.StartsWith("image/"));
+        ImageAlt = "";
+    }
+
+    private async Task UploadImage()
+    {
+        if (ImageFile == null || ImageState is ImageDialogState.EditAvatar or ImageDialogState.EditBanner) return;
+
+        WaitingImg = true;
+
+        var alt = string.IsNullOrWhiteSpace(ImageAlt) ? null : ImageAlt.Trim();
+
+        try
+        {
+            if (ImageState == ImageDialogState.UploadAvatar)
+            {
+                Avatar                = await Api.Profile.UpdateAvatarAsync(ImageFile, alt);
+                UserProfile.AvatarAlt = alt;
+            }
+            else
+            {
+                Banner                = await Api.Profile.UpdateBannerAsync(ImageFile, alt);
+                UserProfile.BannerAlt = alt;
+            }
+        }
+        catch (ApiException e)
+        {
+            await GlobalComponentSvc.NoticeDialog?.DisplayApiError(e)!;
+        }
+
+        await Js.CloseDialogAsync(ImageDialog);
+
+        WaitingImg = false;
+        StateHasChanged();
+    }
+
+    private async Task EditImage()
+    {
+        if (ImageState is ImageDialogState.UploadAvatar or ImageDialogState.UploadBanner) return;
+
+        WaitingImg = true;
+
+        var alt = string.IsNullOrWhiteSpace(ImageAlt) ? null : ImageAlt.Trim();
+
+        try
+        {
+            // This isn't the most ideal solution but I don't think having a dedicated endpoint for this is better
+            var profile = await Api.Profile.GetProfileAsync();
+
+            if (ImageState == ImageDialogState.EditAvatar)
+            {
+                profile.AvatarAlt     = alt;
+                Avatar?.Description   = alt;
+                UserProfile.AvatarAlt = alt;
+            }
+            else
+            {
+                profile.BannerAlt     = alt;
+                Banner?.Description   = alt;
+                UserProfile.BannerAlt = alt;
+            }
+
+            await Api.Profile.UpdateProfileAsync(profile);
+        }
+        catch (ApiException e)
+        {
+            await GlobalComponentSvc.NoticeDialog?.DisplayApiError(e)!;
+        }
+
+        await Js.CloseDialogAsync(ImageDialog);
+
+        WaitingImg = false;
+        StateHasChanged();
+    }
+
+    private async Task DeleteImage()
+    {
+        if (ImageState is ImageDialogState.UploadAvatar or ImageDialogState.UploadBanner) return;
+
+        WaitingImg = true;
+
+        try
+        {
+            if (ImageState == ImageDialogState.EditAvatar)
+            {
+                await Api.Profile.DeleteAvatarAsync();
+                Avatar                = null;
+                UserProfile.AvatarAlt = null;
+            }
+            else
+            {
+                await Api.Profile.DeleteBannerAsync();
+                Banner                = null;
+                UserProfile.BannerAlt = null;
+            }
+        }
+        catch (ApiException e)
+        {
+            await GlobalComponentSvc.NoticeDialog?.DisplayApiError(e)!;
+        }
+
+        await Js.CloseDialogAsync(ImageDialog);
+
+        WaitingImg = false;
+        StateHasChanged();
     }
 
     private async Task ToggleEmojiPicker()
