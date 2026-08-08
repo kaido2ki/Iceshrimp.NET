@@ -269,16 +269,17 @@ input, textarea, select {
     background-color: var(--foreground-color);
     border: solid var(--border-color) 0.05rem;
     outline: none;
-    max-width: 50em;
-    border-radius: 0.5em;
-    padding: 0.5em;
-    padding-inline: 1em;
-    margin: 0.5em;
+    border-radius: 0.5rem;
+    padding: 0.5rem;
+    padding-inline: 1rem;
+}
+
+input.full-width, textarea.full-width, label.full-width {
+    width: 100%;
 }
 
 input[type="checkbox"] {
     display: inline;
-    margin: unset;
     padding: unset;
     vertical-align: middle;
 }
@@ -288,7 +289,7 @@ label:has(>input), label:has(>select), label:has(>textarea) {
     margin: 0.5rem 0;
 }
 
-label.inline-label:has(>input), label.inline-label:has(>select), label.inline-label:has(>textarea) {
+label.inline-label {
     display: inline-block;
     margin: unset;
 }
@@ -298,10 +299,22 @@ select:after {
 }
 
 textarea {
-    min-height: 5em;
-    max-height: 100%;
-    min-width: 100%;
-    max-width: 100%;
+    min-height: 4lh;
+    max-height: 10lh;
+    resize: none;
+    field-sizing: content;
+}
+
+textarea.resize {
+    resize: both;
+}
+
+textarea.resize-h {
+    resize: horizontal;
+}
+
+textarea.resize-v {
+    resize: vertical;
 }
 
 a {
