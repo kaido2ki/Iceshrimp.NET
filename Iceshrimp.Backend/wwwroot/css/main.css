@@ -237,6 +237,10 @@ button {
     user-select: none;
 }
 
+.button.danger {
+    color: var(--danger-color);
+}
+
 a.button {
     cursor: pointer;
     width: fit-content;
