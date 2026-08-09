@@ -13,7 +13,7 @@ namespace Iceshrimp.Backend.Core.Services;
 public class TranslationService(
 	DatabaseContext db,
 	IServiceProvider provider,
-	IOptions<Config.InstanceSection> config
+	IOptionsSnapshot<Config.TranslationSection> config
 ) : IScopedService
 {
 	private static readonly AsyncKeyedLocker<string> KeyedLocker = new(o =>

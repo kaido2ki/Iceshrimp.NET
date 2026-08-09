@@ -29,6 +29,7 @@ public class InstanceController(
 	UserRenderer userRenderer,
 	IOptions<Config.InstanceSection> instanceConfig,
 	IOptionsSnapshot<Config.SecuritySection> securityConfig,
+	IOptionsSnapshot<Config.TranslationSection> translationConfig,
 	MetaService meta,
 	InstanceService instanceSvc
 ) : ControllerBase
@@ -74,7 +75,7 @@ public class InstanceController(
 			UserCount                  = await db.Users.CountAsync(p => p.Host == null && !p.IsSuspended && !p.IsSystemUser),
 			Description                = description,
 			ContactEmail               = contactEmail,
-			DefaultTranslationLanguage = instanceConfig.Value.DefaultTranslationLanguage
+			DefaultTranslationLanguage = translationConfig.Value.DefaultTranslationLanguage
 		};
 	}
 

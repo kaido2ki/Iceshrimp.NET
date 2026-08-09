@@ -45,7 +45,6 @@ public sealed class Config : IServiceConfiguration
 		[Required]         public string  AccountDomain              { get; init; } = null!;
 		[Range(1, 100000)] public int     CharacterLimit             { get; init; } = 8192;
 		public                    string? RedirectIndexTo            { get; init; }
-		public                    string  DefaultTranslationLanguage { get; init; } = "en";
 
 		public string? AdditionalDomains
 		{
@@ -54,6 +53,12 @@ public sealed class Config : IServiceConfiguration
 		}
 
 		public string[] AdditionalDomainsArray { get; private init; } = [];
+	}
+	
+	[ConfigurationSection("Translation")]
+	public sealed class TranslationSection
+	{
+		public string DefaultTranslationLanguage { get; init; } = "en";
 	}
 
 	[ConfigurationSection("Security")]
