@@ -44,11 +44,25 @@ public class TranslationService(
 
 		using (await KeyedLocker.LockAsync($"translations:{note.Id}:{targetLanguage}"))
 		{
+			existing = await db.NoteTranslations
+			                       .Where(p => p.NoteId == note.Id
+			                                   && p.TargetLanguage == lang
+			                                   && p.NoteEditId == null)
+			                       .Select(p => new ITranslationProvider.Translation
+			                       {
+				                       TranslatedText   = p.Text ?? "",
+				                       TranslatedCw     = p.Cw ?? "",
+				                       OriginalLanguage = p.OriginalLanguage,
+				                       TranslatedPoll   = p.PollChoices
+			                       })
+			                       .FirstOrDefaultAsync();
+
+			if (existing != null) return (existing, lang);
+			
 			var translationProvider = provider.GetService<ITranslationProvider>()
 			                          ?? throw GracefulException.UnprocessableEntity("No translation plugins have been set up");
 
-			var translation = await translationProvider.TranslateAsync(note, lang)
-			        ?? throw GracefulException.UnprocessableEntity("There was an issue translating this note");
+			var translation = await translationProvider.TranslateAsync(note, lang);
 			
 			db.Add(new NoteTranslation
 			{
