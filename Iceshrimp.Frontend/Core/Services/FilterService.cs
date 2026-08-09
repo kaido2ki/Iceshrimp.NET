@@ -3,6 +3,9 @@ using Iceshrimp.Shared.Schemas.Web;
 
 namespace Iceshrimp.Frontend.Core.Services;
 
+/// <summary>
+/// This service is used to filter all notes that are streamed to the frontend through <see cref="StreamingService"/>. These notes are not filtered on the backend as they are rendered once and sent out to every applicable connected client at the same time for performance reasons.
+/// </summary>
 internal class FilterService : IDisposable
 {
     private readonly ApiService       _api;
