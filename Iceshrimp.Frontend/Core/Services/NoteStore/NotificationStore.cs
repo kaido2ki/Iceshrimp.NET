@@ -11,17 +11,22 @@ internal class NotificationStore : NoteMessageProvider, IAsyncDisposable
 	private readonly ApiService                               _api;
 	private readonly FilterService                            _filterService;
 	private readonly ILogger<NotificationStore>               _logger;
+	private readonly SessionService                           _sessionService;
+	private readonly SettingsService                          _settingsService;
 	private          StreamingService                         _streamingService;
 	private          bool                                     _initialized;
 	private          SortedList<string, NotificationResponse> Notifications { get; set; } = new();
 
 	public NotificationStore(
 		ApiService api, ILogger<NotificationStore> logger, StateSynchronizer stateSynchronizer,
-		StreamingService streamingService, FilterService filterService
+		SessionService sessionService, SettingsService settingsService, StreamingService streamingService,
+		FilterService filterService
 	)
 	{
 		_api                           =  api;
 		_logger                        =  logger;
+		_sessionService                =  sessionService;
+		_settingsService               =  settingsService;
 		_stateSynchronizer             =  stateSynchronizer;
 		_filterService                 =  filterService;
 		_streamingService              =  streamingService;
@@ -78,6 +83,12 @@ internal class NotificationStore : NoteMessageProvider, IAsyncDisposable
 			}
 
 			res.RemoveAll(p => p is { Note.Filtered.Hide: true });
+
+			if (_settingsService.Preferences.Wellbeing.HideRenotes)
+				res.RemoveAll(p => p.Type == NotificationType.Renote);
+
+			if (_settingsService.Preferences.Wellbeing.HideReactions)
+				res.RemoveAll(p => p.Type == NotificationType.Reaction);
 
 			return res;
 		}

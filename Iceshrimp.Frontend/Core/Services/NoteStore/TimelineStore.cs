@@ -13,17 +13,22 @@ internal class TimelineStore : NoteMessageProvider, IAsyncDisposable, IStreaming
 	private          Dictionary<string, TimelineState> Timelines { get; set; } = new();
 	private readonly ApiService                        _api;
 	private readonly ILogger<TimelineStore>            _logger;
+	private readonly SessionService                    _sessionService;
+	private readonly SettingsService                   _settingsService;
 	private readonly StateSynchronizer                 _stateSynchronizer;
 	private readonly StreamingService                  _streamingService;
 	private readonly FilterService                     _filterService;
 
 	public TimelineStore(
 		ApiService api, ILogger<TimelineStore> logger, StateSynchronizer stateSynchronizer,
-		StreamingService streamingService, FilterService filterService
+		SessionService sessionService, SettingsService settingsService, StreamingService streamingService,
+		FilterService filterService
 	)
 	{
 		_api                            =  api;
 		_logger                         =  logger;
+		_sessionService                 =  sessionService;
+		_settingsService                =  settingsService;
 		_stateSynchronizer              =  stateSynchronizer;
 		_streamingService               =  streamingService;
 		_filterService                  =  filterService;
@@ -134,6 +139,12 @@ internal class TimelineStore : NoteMessageProvider, IAsyncDisposable, IStreaming
 
 			res.RemoveAll(p => p.Filtered is { Hide: true });
 
+			if (_settingsService.Preferences.Wellbeing.HideRenotes)
+				res.RemoveAll(p => p.RenoteId != null && p.User.Id != _sessionService.Current?.Id);
+
+			if (_settingsService.Preferences.Wellbeing.HideQuotes)
+				res.RemoveAll(p => p.QuoteId != null && p.User.Id != _sessionService.Current?.Id);
+
 			return res;
 		}
 		catch (Exception e)
@@ -208,9 +219,17 @@ internal class TimelineStore : NoteMessageProvider, IAsyncDisposable, IStreaming
 
 	public List<NoteResponse> GetIdsFromTimeline(Timeline timeline, List<string> ids)
 	{
-		return Timelines.TryGetValue(timeline.Key, out var timelineState)
+		var list = Timelines.TryGetValue(timeline.Key, out var timelineState)
 			? ids.Select(id => timelineState.Timeline.GetValueOrDefault(id)).OfType<NoteResponse>().ToList()
 			: [];
+
+		if (_settingsService.Preferences.Wellbeing.HideRenotes)
+			list.RemoveAll(p => p.RenoteId != null && p.User.Id != _sessionService.Current?.Id);
+
+		if (_settingsService.Preferences.Wellbeing.HideQuotes)
+			list.RemoveAll(p => p.QuoteId != null && p.User.Id != _sessionService.Current?.Id);
+
+		return list;
 	}
 
 	private void OnNotePublished(object? sender, NoteEvent valueTuple)
