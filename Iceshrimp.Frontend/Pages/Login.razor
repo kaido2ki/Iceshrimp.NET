@@ -188,7 +188,7 @@
     {
         var preferences = Settings.Preferences;
         preferences.CustomCss = "";
-        Settings.Preferences  = preferences;
+        Settings.SaveClientPreferences(preferences);
         Navigation.Refresh(true);
     }
 

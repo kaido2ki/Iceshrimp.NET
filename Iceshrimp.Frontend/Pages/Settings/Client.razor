@@ -4,6 +4,7 @@
 @using Iceshrimp.Frontend.Components
 @using Iceshrimp.Frontend.Core.Services
 @using Iceshrimp.Frontend.Core.Miscellaneous
+@using Iceshrimp.Frontend.Core.Schemas
 @using Microsoft.AspNetCore.Authorization
 @using Microsoft.AspNetCore.Components.Sections
 @attribute [Authorize]
@@ -61,9 +62,9 @@
 </div>
 
 @code {
-    private StateButton                    SaveButton  { get; set; } = null!;
-    private Core.Schemas.ClientPreferences Preferences { get; set; } = null!;
-    private string                         Theme       { get; set; } = "";
+    private StateButton       SaveButton  { get; set; } = null!;
+    private ClientPreferences Preferences { get; set; } = null!;
+    private string            Theme       { get; set; } = "";
 
     protected override void OnInitialized()
     {
@@ -77,7 +78,7 @@
 
         SaveButton.State = StateButton.StateEnum.Loading;
 
-        Settings.Preferences = Preferences;
+        Settings.SaveClientPreferences(Preferences);
         LocalStorage.SetItemAsString("theme", Theme);
 
         SaveButton.State = StateButton.StateEnum.Success;
