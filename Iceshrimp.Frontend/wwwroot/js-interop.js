@@ -94,3 +94,15 @@ export function togglePopover(element, source) {
 export function hidePopover(element) {
     element.hidePopover();
 }
+
+/**
+ * Close push notifications
+ * @param {string | null} id Specific notification ID or all notifications
+ * @returns {Promise<void>}
+ */
+export async function closeNotifications(id) {
+    const reg = await navigator.serviceWorker.getRegistration();
+
+    const notifs = await reg.getNotifications(id ? {tag: id} : null);
+    notifs.forEach(n => n.close());
+}

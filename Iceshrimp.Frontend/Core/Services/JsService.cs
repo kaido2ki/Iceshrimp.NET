@@ -92,6 +92,13 @@ public class JsService
     public ValueTask HidePopoverAsync(ElementReference element) =>
         Module!.InvokeVoidAsync("hidePopover", element);
 
+    /// <summary>
+    /// Close push notifications
+    /// </summary>
+    /// <param name="id">Specific notification ID or all notifications</param>
+    public ValueTask CloseNotificationsAsync(string? id) =>
+        Module!.InvokeVoidAsync("closeNotifications", id);
+
     public enum ScrollBehavior
     {
         Auto,

@@ -6,6 +6,7 @@
 @using Iceshrimp.Frontend.Core.Services
 @inject ApiService                     Api;
 @inject GlobalComponentSvc             Global;
+@inject JsService                      Js;
 @inject IStringLocalizer<Localization> Loc;
 @inject NavigationManager              NavigationManager
 
@@ -151,11 +152,13 @@
         {
             await Api.Notifications.MarkNotificationAsReadAsync(NotificationResponse.Id);
             StateHasChanged();
+            await Js.CloseNotificationsAsync(NotificationResponse.Id);
         }
         catch (ApiException)
         {
             NotificationResponse.Read = false;
         }
+        catch (JSException) { }
     }
 
     private async Task BiteBack()

@@ -1,3 +1,4 @@
+using System.Runtime.InteropServices.JavaScript;
 using Iceshrimp.Frontend.Core.Miscellaneous;
 using Iceshrimp.Frontend.Core.Services.NoteStore;
 using Iceshrimp.Shared.Schemas.Web;
@@ -75,6 +76,15 @@ public partial class NotificationList : IDisposable
 			await Api.Notifications.MarkAllNotificationsAsReadAsync();
 		}
 		catch (ApiException)
+		{
+			return;
+		}
+
+		try
+		{
+			await Js.CloseNotificationsAsync(null);
+		}
+		catch (JSException)
 		{
 			return;
 		}
