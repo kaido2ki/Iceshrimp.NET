@@ -16,7 +16,6 @@ export function setupObserver(dotNetObjectReference) {
  */
 export function addEntry(element) {
     observer.observe(element);
-    console.debug("Added to observer: ", element);
 }
 
 /**
@@ -25,7 +24,6 @@ export function addEntry(element) {
  */
 export function removeEntry(element) {
     observer.unobserve(element);
-    console.debug(`Removed ${element} from observer`);
 }
 
 /**
@@ -36,7 +34,7 @@ export function removeEntry(element) {
 function observe(entries, observer) {
     for (const entry of entries) {
         const id = entry.target.getAttributeNames().find(a => a.startsWith("_bl_")).substring(4);
-        console.debug(`Observed ${id}`);
-        dotnet.invokeMethod("Observe", id, entry);
+
+        dotnet.invokeMethodAsync("Observe", id, entry.intersectionRatio, entry.isIntersecting);
     }
 }

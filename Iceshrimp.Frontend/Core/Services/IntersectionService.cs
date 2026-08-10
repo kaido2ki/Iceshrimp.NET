@@ -1,5 +1,4 @@
 using System.Collections.Concurrent;
-using System.Text.Json.Serialization;
 using Microsoft.AspNetCore.Components;
 using Microsoft.JSInterop;
 
@@ -7,21 +6,21 @@ namespace Iceshrimp.Frontend.Core.Services;
 
 internal class IntersectionService : IDisposable
 {
-    private readonly ILogger<IntersectionService>               _logger;
-    private readonly DotNetObjectReference<IntersectionService> _dotNetObjectReference;
+    private readonly ILogger<IntersectionService> _logger;
 
     private Lazy<Task<IJSObjectReference>>              Module  { get; init; }
     private ConcurrentDictionary<string, Action<Entry>> Entries { get; set; }
 
     public IntersectionService(IJSRuntime js, ILogger<IntersectionService> logger)
     {
-        _logger                = logger;
-        _dotNetObjectReference = DotNetObjectReference.Create(this);
+        _logger = logger;
+
+        var dotNetObjectReference = DotNetObjectReference.Create(this);
 
         Module = new Lazy<Task<IJSObjectReference>>(async () =>
         {
             var module = await js.InvokeAsync<IJSObjectReference>("import", "/Core/Services/IntersectionService.js");
-            await module.InvokeVoidAsync("setupObserver", _dotNetObjectReference);
+            await module.InvokeVoidAsync("setupObserver", dotNetObjectReference);
             return module;
         });
         Entries = new ConcurrentDictionary<string, Action<Entry>>();
@@ -46,7 +45,6 @@ internal class IntersectionService : IDisposable
         catch (JSException)
         {
             _logger.LogWarning("Failed to add {element} to observer", element.Id);
-            throw;
         }
     }
 
@@ -68,11 +66,11 @@ internal class IntersectionService : IDisposable
     /// This should only be called from JS.
     /// </summary>
     [JSInvokable("Observe")]
-    public void ObserveFromJs(string id, Entry entry)
+    public void ObserveFromJs(string id, double intersectionRatio, bool isIntersecting)
     {
         if (Entries.TryGetValue(id, out var action))
         {
-            _logger.LogInformation("{a} {b}", entry.IsIntersecting, entry.IntersectionRatio);
+            var entry = new Entry { IntersectionRatio = intersectionRatio, IsIntersecting = isIntersecting };
             action.Invoke(entry);
         }
     }
@@ -87,10 +85,7 @@ internal class IntersectionService : IDisposable
 
     public class Entry
     {
-        [JsonPropertyName("intersectionRatio")]
         public double IntersectionRatio { get; set; }
-
-        [JsonPropertyName("isIntersecting")]
-        public bool IsIntersecting { get; set; }
+        public bool   IsIntersecting    { get; set; }
     }
 }
