@@ -54,11 +54,11 @@
         else
         {
             <WarningBanner>@Loc[L.Settings_Migration_Warning]</WarningBanner>
-            <div class="section">
-                <h3>@Loc[L.Settings_Migration_MigrateToHeader]</h3>
+            <details class="card">
+                <summary>@Loc[L.Settings_Migration_MigrateToHeader]</summary>
                 <WarningBanner>@Loc[L.Settings_Migration_MigrateToWarning]</WarningBanner>
-                <input class="input" placeholder="@("@new@example.com")" autocomplete="off" @bind="@MoveTo" @oninput="() => ResetButtonState(MoveButton)"/>
-                <StateButton OnClick="Migrate" ExtraClasses="button" @ref="MoveButton">
+                <input class="full-width" placeholder="@("@new@example.com")" autocomplete="off" @bind="@MoveTo" @oninput="() => ResetButtonState(MoveButton)"/>
+                <StateButton OnClick="Migrate" ExtraClasses="card-button danger" @ref="MoveButton">
                     <Initial>
                         <Icon Name="Icons.AirplaneTakeoff"/>
                         @Loc[L.Settings_Migration_StateButton_Initial]
@@ -73,9 +73,10 @@
                         <Icon Name="Icons.Check"/>
                     </Success>
                 </StateButton>
-            </div>
-            <div class="section">
-                <h3>@Loc[L.Settings_Migration_AliasHeader]</h3>
+            </details>
+
+            <details class="card">
+                <summary>@Loc[L.Settings_Migration_AliasHeader]</summary>
                 <WarningBanner>@Loc[L.Settings_Migration_AliasWarning]</WarningBanner>
                 <div class="aliases">
                     @foreach (var alias in Status.Aliases)
@@ -88,24 +89,23 @@
                         </div>
                     }
                 </div>
-                <div class="new-alias">
-                    <input class="input" placeholder="@("@old@example.com")" autocomplete="off" @bind="@Alias" @oninput="() => ResetButtonState(AliasButton)"/>
-                    <StateButton OnClick="AddAlias" ExtraClasses="button" @ref="AliasButton">
-                        <Initial>
-                            <Icon Name="Icons.Plus"/>
-                        </Initial>
-                        <Loading>
-                            <LoadingSpinner/>
-                        </Loading>
-                        <Failed>
-                            <Icon Name="Icons.Warning"/>
-                        </Failed>
-                        <Success>
-                            <Icon Name="Icons.Check"/>
-                        </Success>
-                    </StateButton>
-                </div>
-            </div>
+                <input class="full-width" placeholder="@("@old@example.com")" autocomplete="off" @bind="@Alias" @oninput="() => ResetButtonState(AliasButton)"/>
+                <StateButton OnClick="AddAlias" ExtraClasses="card-button" @ref="AliasButton">
+                    <Initial>
+                        <Icon Name="Icons.Plus"/>
+                        @Loc[L.Common_Add]
+                    </Initial>
+                    <Loading>
+                        <LoadingSpinner/>
+                    </Loading>
+                    <Failed>
+                        <Icon Name="Icons.Warning"/>
+                    </Failed>
+                    <Success>
+                        <Icon Name="Icons.Check"/>
+                    </Success>
+                </StateButton>
+            </details>
         }
     </div>
 }

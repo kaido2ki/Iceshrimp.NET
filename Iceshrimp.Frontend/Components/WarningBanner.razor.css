@@ -1,6 +1,6 @@
 .warning-banner {
     padding: 0.5rem 1rem;
-    margin: 1rem auto;
+    margin: 1rem 0;
     background-color: var(--warning-color);
     color: contrast-color(var(--warning-color));
     border-radius: 0.5rem;

@@ -1,25 +1,7 @@
-.export {
-    display: flex;
-    column-gap: 1rem;
-    row-gap: 0.5rem;
-    align-items: center;
-}
-
-.export + .export {
-    margin-top: 1rem;
-}
-
-.export .download {
+.download {
     display: flex;
     gap: 0.5rem;
     align-items: center;
     text-wrap: wrap;
     word-break: break-word;
-}
-
-@media screen and (width < 600px) {
-    .export {
-        align-items: start;
-        flex-direction: column;
-    }
 }

@@ -24,10 +24,72 @@
 </SectionContent>
 
 <div class="body">
-    <h3>@Loc[L.Settings_Data_Blocking]</h3>
+    <details class="card">
+        <summary>@Loc[L.Settings_Data_Import]</summary>
 
-    <div class="export">
-        <StateButton OnClick="ExportBlockingAsync" ExtraClasses="button" @ref="ExportBlockingButton">
+        <h3>@Loc[L.Settings_Data_Blocking]</h3>
+        <InputFile OnChange="OnBlockingFileChange" accept="text/csv"/>
+        <StateButton OnClick="ImportBlockingAsync" ExtraClasses="card-button danger" @ref="ImportBlockingButton"
+                     Disabled="@(ImportBlockingFile == null)">
+            <Initial>
+                <Icon Name="Icons.Upload"/>
+                @Loc[L.Settings_Data_Import]
+            </Initial>
+            <Loading>
+                <LoadingSpinner/>
+            </Loading>
+            <Failed>
+                <Icon Name="Icons.Warning"/>
+            </Failed>
+            <Success>
+                <Icon Name="Icons.Check"/>
+            </Success>
+        </StateButton>
+
+        <h3>@Loc[L.Settings_Data_Muting]</h3>
+        <InputFile OnChange="OnMutingFileChange" accept="text/csv"/>
+        <StateButton OnClick="ImportMutingAsync" ExtraClasses="card-button" @ref="ImportMutingButton"
+                     Disabled="@(ImportMutingFile == null)">
+            <Initial>
+                <Icon Name="Icons.Upload"/>
+                @Loc[L.Settings_Data_Import]
+            </Initial>
+            <Loading>
+                <LoadingSpinner/>
+            </Loading>
+            <Failed>
+                <Icon Name="Icons.Warning"/>
+            </Failed>
+            <Success>
+                <Icon Name="Icons.Check"/>
+            </Success>
+        </StateButton>
+
+        <h3>@Loc[L.Settings_Data_Following]</h3>
+        <InputFile OnChange="OnFollowingFileChange" accept="text/csv"/>
+        <StateButton OnClick="ImportFollowingAsync" ExtraClasses="card-button" @ref="ImportFollowingButton"
+                     Disabled="@(ImportFollowingFile == null)">
+            <Initial>
+                <Icon Name="Icons.Upload"/>
+                @Loc[L.Settings_Data_Import]
+            </Initial>
+            <Loading>
+                <LoadingSpinner/>
+            </Loading>
+            <Failed>
+                <Icon Name="Icons.Warning"/>
+            </Failed>
+            <Success>
+                <Icon Name="Icons.Check"/>
+            </Success>
+        </StateButton>
+    </details>
+
+    <details class="card">
+        <summary>@Loc[L.Settings_Data_Export]</summary>
+
+        <h3>@Loc[L.Settings_Data_Blocking]</h3>
+        <StateButton OnClick="ExportBlockingAsync" ExtraClasses="card-button" @ref="ExportBlockingButton">
             <Initial>
                 <Icon Name="Icons.Download"/>
                 @Loc[L.Settings_Data_Export]
@@ -50,32 +112,9 @@
                 <a href="@ExportBlockingFile.Url" download="@ExportBlockingFile.Filename">@ExportBlockingFile.Filename</a>
             </span>
         }
-    </div>
 
-    <div class="export">
-        <StateButton OnClick="ImportBlockingAsync" ExtraClasses="button" @ref="ImportBlockingButton"
-                     Disabled="@(ImportBlockingFile == null)">
-            <Initial>
-                <Icon Name="Icons.Upload"/>
-                @Loc[L.Settings_Data_Import]
-            </Initial>
-            <Loading>
-                <LoadingSpinner/>
-            </Loading>
-            <Failed>
-                <Icon Name="Icons.Warning"/>
-            </Failed>
-            <Success>
-                <Icon Name="Icons.Check"/>
-            </Success>
-        </StateButton>
-        <InputFile OnChange="OnBlockingFileChange" accept="text/csv"/>
-    </div>
-
-    <h3>@Loc[L.Settings_Data_Muting]</h3>
-    
-    <div class="export">
-        <StateButton OnClick="ExportMutingAsync" ExtraClasses="button" @ref="ExportMutingButton">
+        <h3>@Loc[L.Settings_Data_Muting]</h3>
+        <StateButton OnClick="ExportMutingAsync" ExtraClasses="card-button" @ref="ExportMutingButton">
             <Initial>
                 <Icon Name="Icons.Download"/>
                 @Loc[L.Settings_Data_Export]
@@ -98,32 +137,9 @@
                 <a href="@ExportMutingFile.Url" download="@ExportMutingFile.Filename">@ExportMutingFile.Filename</a>
             </span>
         }
-    </div>
-    
-    <div class="export">
-        <StateButton OnClick="ImportMutingAsync" ExtraClasses="button" @ref="ImportMutingButton"
-                     Disabled="@(ImportMutingFile == null)">
-            <Initial>
-                <Icon Name="Icons.Upload"/>
-                @Loc[L.Settings_Data_Import]
-            </Initial>
-            <Loading>
-                <LoadingSpinner/>
-            </Loading>
-            <Failed>
-                <Icon Name="Icons.Warning"/>
-            </Failed>
-            <Success>
-                <Icon Name="Icons.Check"/>
-            </Success>
-        </StateButton>
-        <InputFile OnChange="OnMutingFileChange" accept="text/csv"/>
-    </div>
 
-    <h3>@Loc[L.Settings_Data_Following]</h3>
-    
-    <div class="export">
-        <StateButton OnClick="ExportFollowingAsync" ExtraClasses="button" @ref="ExportFollowingButton">
+        <h3>@Loc[L.Settings_Data_Following]</h3>
+        <StateButton OnClick="ExportFollowingAsync" ExtraClasses="card-button" @ref="ExportFollowingButton">
             <Initial>
                 <Icon Name="Icons.Download"/>
                 @Loc[L.Settings_Data_Export]
@@ -146,27 +162,7 @@
                 <a href="@ExportFollowingFile.Url" download="@ExportFollowingFile.Filename">@ExportFollowingFile.Filename</a>
             </span>
         }
-    </div>
-    
-    <div class="export">
-        <StateButton OnClick="ImportFollowingAsync" ExtraClasses="button" @ref="ImportFollowingButton"
-                     Disabled="@(ImportFollowingFile == null)">
-            <Initial>
-                <Icon Name="Icons.Upload"/>
-                @Loc[L.Settings_Data_Import]
-            </Initial>
-            <Loading>
-                <LoadingSpinner/>
-            </Loading>
-            <Failed>
-                <Icon Name="Icons.Warning"/>
-            </Failed>
-            <Success>
-                <Icon Name="Icons.Check"/>
-            </Success>
-        </StateButton>
-        <InputFile OnChange="OnFollowingFileChange" accept="text/csv"/>
-    </div>
+    </details>
 </div>
 
 @code {
