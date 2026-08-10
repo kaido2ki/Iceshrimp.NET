@@ -98,7 +98,7 @@
             {
                 <div class="field pronouns-field">
                     <label>
-                        @(_languages.GetValueOrDefault(entry.Language) ?? entry.Language.ToUpper())
+                        @(LocaleHelper.Languages.GetValueOrDefault(entry.Language) ?? entry.Language.ToUpper())
                         <input class="full-width" placeholder="@Loc[L.User_Pronouns]" @bind="@entry.Value"/>
                     </label>
                     <button class="button" title="@Loc[L.Common_Remove]" @onclick="() => DeletePronouns(entry)">
@@ -108,7 +108,7 @@
             }
             <div class="field">
                 <InputSelect @bind-Value="@PronounsLanguage">
-                    @foreach (var language in _languages.Where(l => !Pronouns.Select(p => p.Language).Contains(l.Key)))
+                    @foreach (var language in LocaleHelper.Languages.Where(l => !Pronouns.Select(p => p.Language).Contains(l.Key)))
                     {
                         <option value="@language.Key">@language.Value</option>
                     }
@@ -264,9 +264,8 @@
     private DriveFileResponse? Avatar { get; set; }
     private DriveFileResponse? Banner { get; set; }
 
-    private List<UserPronouns>         Pronouns         { get; set; } = [];
-    private string                     PronounsLanguage { get; set; } = "";
-    private Dictionary<string, string> _languages = LanguageHelper.Bcp47Languages;
+    private List<UserPronouns> Pronouns         { get; set; } = [];
+    private string             PronounsLanguage { get; set; } = "";
 
     private class UserPronouns
     {

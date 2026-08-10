@@ -240,7 +240,7 @@
                     <Icon Name="Icons.IdentificationCard" Size="1.3em"/>
                     @Loc[L.User_Pronouns]
                 </span>
-                <span class="field-value">@string.Join(", ", UserProfile.Pronouns.Select(p => $"{p.Value} ({_languages.GetValueOrDefault(p.Key) ?? p.Key.ToUpper()})"))</span>
+                <span class="field-value">@string.Join(", ", UserProfile.Pronouns.Select(p => $"{p.Value} ({LocaleHelper.Languages.GetValueOrDefault(p.Key) ?? p.Key.ToUpper()})"))</span>
             </div>
         }
     </div>
@@ -285,8 +285,6 @@
     private StateButton       MemoButton  { get; set; } = null!;
     private bool              CanShare    { get; set; }
     private InstanceResponse? _instance;
-
-    private Dictionary<string, string> _languages = LanguageHelper.Bcp47Languages;
 
     private void EditProfile() => Nav.NavigateTo("/settings/profile");
 

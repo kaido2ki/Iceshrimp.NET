@@ -5,7 +5,6 @@ using Iceshrimp.Frontend.Core.Schemas;
 namespace Iceshrimp.Frontend.Core.Miscellaneous;
 
 public class LocaleHelper(ISyncLocalStorageService localStorage)
-
 {
     public static (CultureInfo Culture, string DisplayName)[] AvailableCultures { get; } =
     [
@@ -37,4 +36,10 @@ public class LocaleHelper(ISyncLocalStorageService localStorage)
         var language = localStorage.GetItem<ClientPreferences>("preferences")?.Language ?? "followBrowser";
         return IsValidLanguage(language) ? ResolveCulture(language) : CultureInfo.CurrentUICulture;
     }
+
+    public static readonly Dictionary<string, string> Languages =
+        CultureInfo.GetCultures(CultureTypes.NeutralCultures)
+                   .Where(c => !c.Equals(CultureInfo.InvariantCulture))
+                   .DistinctBy(c => c.TwoLetterISOLanguageName)
+                   .ToDictionary(c => c.TwoLetterISOLanguageName, c => c.NativeName);
 }

@@ -107,7 +107,7 @@
                         @Loc[L.User_Pronouns]
                     </span>
                     <span class="field-value">
-                        @string.Join(", ", UserProfile.Pronouns.Select(p => $"{p.Value} ({LanguageHelper.Bcp47Languages[p.Key]})"))
+                        @string.Join(", ", UserProfile.Pronouns.Select(p => $"{p.Value} ({LocaleHelper.Languages.GetValueOrDefault(p.Key) ?? p.Key.ToUpper()})"))
                     </span>
                 </div>
             }
