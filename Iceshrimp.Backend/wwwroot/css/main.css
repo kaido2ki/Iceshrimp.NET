@@ -379,6 +379,20 @@ details > summary {
     border-radius: 0.75rem;
 }
 
+details.card {
+    display: block;
+}
+
+details.card:open > summary {
+    margin-bottom: 1rem;
+}
+
+details.card::details-content {
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+}
+
 .card h1, .card h2, .card h3, .card h4, .card h5, .card h6, .card p {
     margin: 0;
 }
@@ -393,9 +407,8 @@ details > summary {
     display: inline-flex;
     align-items: center;
     gap: 0.25em;
-    height: 2em;
     margin: 0;
-    padding: 0.75em;
+    padding: 0.5em;
     background-color: var(--foreground-color);
     color: var(--notice-color);
     border: 0.1rem solid var(--foreground-color);
