@@ -61,12 +61,12 @@
     }
     @if (NoteDraft.Cw != null)
     {
-        <input @bind="NoteDraft.Cw" @bind:event="oninput" class="input cw-field" placeholder="Content Warning"
+        <input @bind="NoteDraft.Cw" @bind:event="oninput" class="full-width cw-field" placeholder="@Loc[L.Note_Cw]"
                aria-label="content warning"/>
         <hr class="separator"/>
     }
-    <textarea @ref="Textarea" @bind="NoteDraft.Text" @bind:event="oninput" class="textarea"
-              placeholder="@Loc[TextPlaceholder ?? L.Compose_BodyPlaceholder_Note]" rows="5"
+    <textarea @ref="Textarea" @bind="NoteDraft.Text" @bind:event="oninput" class="full-width"
+              placeholder="@Loc[TextPlaceholder ?? L.Compose_BodyPlaceholder_Note]"
               cols="35" autofocus="autofocus" aria-label="note text"
               data-quote="@((NoteDraft.RenoteId != null || AttachedQuote != null).ToString())"></textarea>
     <div class="footer">
@@ -143,7 +143,7 @@
                 @foreach (var entry in PollChoices)
                 {
                     <div class="choice">
-                        <input class="input" placeholder="@Loc[L.Compose_Poll_ChoicePlaceholder]" @bind="@entry.Value"/>
+                        <input class="full-width" placeholder="@Loc[L.Compose_Poll_ChoicePlaceholder]" @bind="@entry.Value"/>
                         <button class="button" title="@Loc[L.Common_Delete]" @onclick="() => DeletePollChoice(entry)">
                             <Icon Name="Icons.Trash"/>
                         </button>
@@ -151,12 +151,10 @@
                 }
                 @if (PollChoices.Count < 10)
                 {
-                    <div class="choice">
-                        <input class="input" placeholder="@Loc[L.Compose_Poll_ChoicePlaceholder]" @bind="@PollEntry"/>
-                        <button class="button" title="@Loc[L.Common_Add]" @onclick="AddPollChoice">
-                            <Icon Name="Icons.Plus"/>
-                        </button>
-                    </div>
+                    <button class="button" title="@Loc[L.Common_Add]" @onclick="AddPollChoice">
+                        <Icon Name="Icons.Plus"/>
+                        @Loc[L.Common_Add]
+                    </button>
                 }
             </div>
             <label class="inline-label">
@@ -177,10 +175,10 @@
                     case PollExpire.Never:
                         break;
                     case PollExpire.ExpiresAt:
-                        <input type="datetime-local" class="input" @bind="PollExpireTime"/>
+                        <input type="datetime-local" @bind="PollExpireTime"/>
                         break;
                     case PollExpire.ExpiresAfter:
-                        <input type="number" class="input" placeholder="@Loc[L.Compose_Poll_Duration]"
+                        <input type="number" placeholder="@Loc[L.Compose_Poll_Duration]"
                                min="@(PollExpiresAft == PollExpireAfter.Minutes ? 5 : 1)" @bind="PollExpireLen"/>
                         <select @bind="PollExpiresAft">
                             <option value="@PollExpireAfter.Minutes">@Loc[L.Duration_Minutes]</option>
@@ -227,7 +225,6 @@
     private int                      UploadingFiles  { get; set; }
     private string?                  AttachedQuote   { get; set; }
     private List<Choice>             PollChoices     { get; set; } = [];
-    private string                   PollEntry       { get; set; } = "";
     private PollExpire               PollExpires     { get; set; }
     private DateTime                 PollExpireTime  { get; set; }
     private int                      PollExpireLen   { get; set; }
@@ -365,7 +362,6 @@
         {
             NoteDraft.Poll = new PollRequest { ExpiresAt = note.Poll.ExpiresAt, Choices = note.Poll.Choices.Select(x => x.Value).ToList(), Multiple = note.Poll.Multiple };
             PollChoices    = note.Poll.Choices.Select(x => new Choice {Value = x.Value}).ToList();
-            PollEntry      = "";
             PollExpires    = note.Poll.ExpiresAt is null ? PollExpire.Never : PollExpire.ExpiresAt;
             PollExpireTime = note.Poll.ExpiresAt ?? DateTime.Now;
             PollExpireLen  = ((note.Poll.ExpiresAt ?? DateTime.Now) - DateTime.Now).Days;
@@ -563,8 +559,7 @@
                 Multiple  = false,
                 Choices   = []
             };
-            PollChoices    = [];
-            PollEntry      = "";
+            PollChoices    = [new Choice { Value = "" }];
             PollExpires    = PollExpire.Never;
             PollExpireTime = DateTime.Now;
             PollExpireLen  = 7;
@@ -624,9 +619,7 @@
 
     private void AddPollChoice()
     {
-        if (string.IsNullOrWhiteSpace(PollEntry)) return;
-        PollChoices.Add(new Choice { Value = PollEntry });
-        PollEntry = "";
+        PollChoices.Add(new Choice { Value = "" });
     }
 
     private void DeletePollChoice(Choice choice)

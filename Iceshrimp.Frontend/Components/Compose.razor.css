@@ -3,15 +3,10 @@
     max-width: 45rem;
 }
 
-.compose input {
-    margin: 0;
-    padding: 0.5em;
-}
-
 .compose textarea {
-    margin: 0;
-    padding: 0.5em;
-    resize: vertical;
+    padding: unset;
+    background-color: var(--background-color);
+    border: none;
 }
 
 .poll .choice {
@@ -99,6 +94,7 @@ input[type="number"] {
     justify-content: space-between;
     flex-wrap: wrap;
     gap: 0.2rem;
+    margin-top: 0.5rem;
 }
 
 .footer .buttons {
@@ -112,25 +108,11 @@ input[type="number"] {
     margin-left: auto;
 }
 
-.textarea {
-    display: block;
-    background-color: var(--background-color);
-    border: none;
-    outline: none;
-    padding: unset;
-}
-
-.input {
-    display: block;
-    background-color: var(--background-color);
-    border: none;
-    outline: none;
-}
-
 .cw-field {
     padding: unset;
     margin-bottom: 0.5rem;
-    width: 100%;
+    background-color: var(--background-color);
+    border: none;
 }
 
 ::deep {
@@ -141,7 +123,7 @@ input[type="number"] {
         border-radius: 0.5rem;
         padding: 0.5rem 0.75rem;
         background: var(--accent-color);
-        color: var(--font-color);
+        color: contrast-color(var(--accent-primary-color));
         float: right;
         > .icon-wrapper {
             padding-left: 0.5rem;

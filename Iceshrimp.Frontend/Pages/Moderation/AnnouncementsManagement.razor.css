@@ -32,30 +32,10 @@
     gap: 0.2rem;
 }
 
-.footer .buttons {
-    display: flex;
-    align-items: center;
-    flex-wrap: wrap;
-    gap: 0.2rem;
-}
-
 .input {
-    display: block;
-    margin: 0;
-    padding: 0.5em;
+    padding: unset;
     background-color: var(--background-color);
     border: none;
-    outline: none;
-}
-
-.textarea {
-    display: block;
-    margin: 0;
-    padding: 0.5em;
-    background-color: var(--background-color);
-    border: none;
-    outline: none;
-    resize: vertical;
 }
 
 .separator {
@@ -73,7 +53,7 @@
         border-radius: 0.5rem;
         padding: 0.5rem 0.75rem;
         background: var(--accent-color);
-        color: var(--font-color);
+        color: contrast-color(var(--accent-primary-color));
         float: right;
         > .icon-wrapper {
             padding-left: 0.5rem;
