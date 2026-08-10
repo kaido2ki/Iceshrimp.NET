@@ -29,8 +29,8 @@
 @if (State is State.Loaded)
 {
     <div class="body">
-        <div class="section">
-            <h1>@Loc[L.Settings]</h1>
+        <section>
+            <h1>@Loc[L.Settings_Account_Heading_Preferences]</h1>
             <EditForm OnSubmit="Submit" Model="SettingsForm">
                 <label>
                     @Loc[L.Settings_Account_DefaultNoteVisibility]
@@ -99,7 +99,7 @@
                     @Loc[L.Settings_Account_AttributionDomains]
                     <a href="https://blog.joinmastodon.org/2024/07/highlighting-journalism-on-mastodon/"
                        target="_blank">(@Loc[L.Common_MoreInfo])</a>
-                    <InputTextArea @bind-Value="AttributionDomains" placeholder="example.org"/>
+                    <InputTextArea @bind-Value="AttributionDomains" class="full-width" placeholder="example.org"/>
                 </label>
                 <StateButton ExtraClasses="button" @ref="@SaveButton" OnClick="Submit">
                     <Initial>@Loc[L.StateButton_SaveChanges]</Initial>
@@ -109,9 +109,9 @@
                     <Failed>@Loc[L.StateButton_Error]</Failed>
                 </StateButton>
             </EditForm>
-        </div>
+        </section>
         
-        <h1>@Loc[L.Settings_Account_Password]</h1>
+        <h1>@Loc[L.Settings_Account_Heading_UpdatePassword]</h1>
         <EditForm OnSubmit="ChangePassword" Model="PasswordForm">
             <label for="old-password">@Loc[L.Settings_Account_Password_Old]</label>
             <InputText @bind-Value="PasswordForm.OldPassword" type="password" class="input" id="old-password" required/>

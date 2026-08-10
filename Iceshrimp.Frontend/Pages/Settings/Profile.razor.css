@@ -15,9 +15,10 @@
     margin: 0;
 }
 
-@media screen and (width < 600px) {
+@media screen and (width < 840px) {
     .custom-field {
         flex-direction: column;
+        align-items: start;
         margin: 1rem 0;
     }
 }
@@ -29,14 +30,6 @@
     padding-top: 25vh;
 }
 
-.button {
-    padding: 0.75rem;
-    margin: 0.2rem;
-    .icon-wrapper {
-        padding: 0;
-    }
-}
-
 .title {
     font-size: 0.9rem;
 }
@@ -45,8 +38,8 @@
     color: color-mix(in srgb, var(--font-color) 50%, transparent);
 }
 
-.input.alt-text {
-    resize: none;
+textarea.alt-text {
+    margin-top: 0.5rem;
 }
 
 .avatar {
@@ -70,8 +63,8 @@
     margin-left: 1rem;
 }
 
-@media screen and (600px <= width) {
-    .modal .banner {
+@media screen and (840px <= width) {
+    .modal {
         max-width: 70vw;
     }
 }

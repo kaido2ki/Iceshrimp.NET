@@ -1317,9 +1317,9 @@ namespace Iceshrimp.Frontend.Localization {
             }
         }
         
-        internal static string Settings_Account_Password {
+        internal static string Settings_Account_Heading_UpdatePassword {
             get {
-                return ResourceManager.GetString("Settings_Account_Password", resourceCulture);
+                return ResourceManager.GetString("Settings_Account_Heading_UpdatePassword", resourceCulture);
             }
         }
         
@@ -3246,6 +3246,18 @@ namespace Iceshrimp.Frontend.Localization {
         internal static string Settings_Profile_Heading_About_Username {
             get {
                 return ResourceManager.GetString("Settings_Profile_Heading_About_Username", resourceCulture);
+            }
+        }
+        
+        internal static string Settings_Account_Heading_Preferences {
+            get {
+                return ResourceManager.GetString("Settings_Account_Heading_Preferences", resourceCulture);
+            }
+        }
+        
+        internal static string Preferences_Heading_UI {
+            get {
+                return ResourceManager.GetString("Preferences_Heading_UI", resourceCulture);
             }
         }
     }

@@ -30,8 +30,11 @@
 <section class="body">
     @if (State is State.Loaded)
     {
-        <section class="section">
-            <h3>@Loc[L.Settings_Profile_Heading_Images]</h3>
+        <h1>
+            @Loc[L.Settings_Profile_Heading_About_Username, Session.Current?.Username ?? L.User]
+        </h1>
+        <section>
+            <h2>@Loc[L.Settings_Profile_Heading_Images]</h2>
             @if (Banner != null)
             {
                 <img class="banner" src="@Banner.Url" alt="@Banner.Description" title="@Banner.Description"/>
@@ -64,9 +67,7 @@
         </section>
 
         <section>
-            <h3>
-                @Loc[L.Settings_Profile_Heading_About_Username, Session.Current?.Username ?? L.User]
-            </h3>
+            <h2>@Loc[L.Common_Description]</h2>
             <label>
                 @Loc[L.User_DisplayName]
                 <input class="full-width" @bind="@UserProfile.DisplayName" placeholder="@Session.Current?.Username"/>
@@ -93,7 +94,7 @@
         </section>
 
         <section>
-            <h3>@Loc[L.User_Pronouns]</h3>
+            <h2>@Loc[L.User_Pronouns]</h2>
             @foreach (var entry in Pronouns)
             {
                 <div class="field pronouns-field">
@@ -121,12 +122,12 @@
         </section>
 
         <section>
-            <h3>@Loc[L.Settings_Profile_Fields]</h3>
+            <h2>@Loc[L.Settings_Profile_Fields]</h2>
             <div class="fields">
                 @foreach (var entry in UserProfile.Fields)
                 {
                     <div class="field custom-field">
-                        <input placeholder="@Loc[L.Common_Name]" @bind="@entry.Name" maxlength="@Limits.MaxProfileFieldNameLength"/>
+                        <input class="full-width" placeholder="@Loc[L.Common_Name]" @bind="@entry.Name" maxlength="@Limits.MaxProfileFieldNameLength"/>
                         <input class="full-width" placeholder="@Loc[L.Common_Value]" @bind="@entry.Value" maxlength="@Limits.MaxProfileFieldValueLength"/>
                         <button class="button" title="@Loc[L.Common_Remove]" @onclick="() => DeleteField(entry)">
                             <Icon Name="Icons.Trash"/>
@@ -145,7 +146,7 @@
         </section>
 
         <div class="section">
-            <h3>@Loc[L.Common_Other]</h3>
+            <h2>@Loc[L.Common_Other]</h2>
             <label>
                 <input type="checkbox" @bind="@UserProfile.IsBot" @bind:after="AutomatedAccountToggle">
                 @Loc[L.Settings_Profile_IsBot]
@@ -223,7 +224,7 @@
             default:
                 break;
         }
-        <textarea class="input" @bind="@ImageAlt" placeholder="@Loc[L.Common_AltText]" rows="5"></textarea>
+        <textarea class="full-width alt-text" @bind="@ImageAlt" placeholder="@Loc[L.Common_AltText]" rows="5"></textarea>
         <div class="dialog-footer button-group">
             @if (ImageState is ImageDialogState.UploadAvatar or ImageDialogState.UploadBanner)
             {
@@ -291,6 +292,9 @@
                 Birthday    = DateTime.Parse(UserProfile.Birthday);
                 SetBirthday = true;
             }
+
+            if (UserProfile.Fields.Count == 0)
+                AddField();
 
             State  = State.Loaded;
 

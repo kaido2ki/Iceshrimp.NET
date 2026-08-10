@@ -636,7 +636,7 @@ Fournir ces journaux aux développeurs sur demande peut aider au débogage.</val
     <data name="Common_MoreInfo" xml:space="preserve">
         <value>Plus d'informations</value>
     </data>
-    <data name="Settings_Account_Password" xml:space="preserve">
+    <data name="Settings_Account_Heading_UpdatePassword" xml:space="preserve">
         <value>Mettre à jour le mot de passe</value>
     </data>
     <data name="Settings_Account_Password_Old" xml:space="preserve">

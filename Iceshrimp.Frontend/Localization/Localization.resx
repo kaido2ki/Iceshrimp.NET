@@ -655,7 +655,7 @@
     <data name="Common_MoreInfo" xml:space="preserve">
         <value>More info</value>
     </data>
-    <data name="Settings_Account_Password" xml:space="preserve">
+    <data name="Settings_Account_Heading_UpdatePassword" xml:space="preserve">
         <value>Update password</value>
     </data>
     <data name="Settings_Account_Password_Old" xml:space="preserve">
@@ -1620,5 +1620,11 @@
     </data>
     <data name="Settings_Profile_Heading_About_Username" xml:space="preserve">
         <value>About {0}</value>
+    </data>
+    <data name="Settings_Account_Heading_Preferences" xml:space="preserve">
+        <value>Account preferences</value>
+    </data>
+    <data name="Preferences_Heading_UI" xml:space="preserve">
+        <value>User interface</value>
     </data>
 </root>
