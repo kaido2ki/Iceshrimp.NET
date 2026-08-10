@@ -1,15 +1,12 @@
 @using Iceshrimp.Shared.Schemas.Web
-@using Ljbc1994.Blazor.IntersectionObserver
-@using Ljbc1994.Blazor.IntersectionObserver.API
-@using Ljbc1994.Blazor.IntersectionObserver.Components
 @inject IJSRuntime Js
 @if (_init) // FIXME: We need to wait for the Component to render once before initializing the Intersection Observer.
     // With the <IntersectionObserver> Component this is AFAIK only possible by not rendering it until then.
     // The proper fix for this is to change to the Service Pattern.
     // But that requires the IntersectionObserver Library to be modified to return what element an observation update is for.
 {
-    <IntersectionObserve Options="new IntersectionObserverOptions { Root = Scroller, RootMargin = Margin }" OnChange="@(entry => Change(entry))">
-        <div class="tgt" @ref="context.Ref.Current">
+    @* <IntersectionObserve Options="new IntersectionObserverOptions { Root = Scroller, RootMargin = Margin }" OnChange="@(entry => Change(entry))"> *@
+        <div class="tgt">
             @if (_isIntersecting)
             {
                 <TimelineNote Note="Note"/>
@@ -19,7 +16,7 @@
                 <div class="placeholder" style="height: @(Height ?? 150)px"></div>
             }
         </div>
-    </IntersectionObserve>
+    // </IntersectionObserve>
 }
 
 @code {
@@ -49,21 +46,21 @@
         }
     }
 
-    private async Task Change(IntersectionObserverEntry entry)
-    {
-        if (entry.IsIntersecting == false)
-        {
-            Height          = await GetHeight();
-            _isIntersecting = false;
-            StateHasChanged();
-            return;
-        }
-
-        if (entry.IsIntersecting)
-        {
-            _isIntersecting = true;
-        }
-    }
+    // private async Task Change(IntersectionObserverEntry entry)
+    // {
+    //     if (entry.IsIntersecting == false)
+    //     {
+    //         Height          = await GetHeight();
+    //         _isIntersecting = false;
+    //         StateHasChanged();
+    //         return;
+    //     }
+    //
+    //     if (entry.IsIntersecting)
+    //     {
+    //         _isIntersecting = true;
+    //     }
+    // }
 
     private async Task<int?> GetHeight()
     {

@@ -1,5 +1,3 @@
-using Ljbc1994.Blazor.IntersectionObserver;
-using Ljbc1994.Blazor.IntersectionObserver.API;
 using Microsoft.AspNetCore.Components;
 using Microsoft.AspNetCore.Components.Rendering;
 using Microsoft.JSInterop;
@@ -8,12 +6,10 @@ namespace Iceshrimp.Frontend.Components;
 
 public class LazyComponent : ComponentBase, IAsyncDisposable
 {
-	[Inject]                     private         IIntersectionObserverService ObserverService { get; set; } = null!;
 	[Inject]                     private         IJSInProcessRuntime          Js              { get; set; } = null!;
 	[Inject]                     private         ILogger<LazyComponent>       Logger          { get; set; } = null!;
 	[Parameter] [EditorRequired] public required RenderFragment               ChildContent    { get; set; } = default!;
 	[Parameter]                  public          float?                       InitialHeight   { get; set; }
-	private                                      IntersectionObserver?        Observer        { get; set; }
 	public                                       ElementReference             Target          { get; private set; }
 	public                                       bool                         Visible         { get; private set; }
 	private                                      float?                       Height          { get; set; }
@@ -79,30 +75,27 @@ public class LazyComponent : ComponentBase, IAsyncDisposable
 	{
 		if (firstRender)
 		{
-			Observer = await ObserverService.Create(OnIntersect);
-			await Observer.Observe(Target);
 		}
 	}
 
-	private void OnIntersect(IList<IntersectionObserverEntry> entries)
-	{
-		var entry = entries.First();
-		if (Visible && entry.IsIntersecting is false)
-		{
-			Height  = Js.Invoke<float>("getHeight", Target);
-			Visible = false;
-			StateHasChanged();
-		}
-
-		if (Visible is false && entry.IsIntersecting)
-		{
-			Visible = true;
-			StateHasChanged();
-		}
-	}
+	// private void OnIntersect(IList<IntersectionObserverEntry> entries)
+	// {
+	// 	var entry = entries.First();
+	// 	if (Visible && entry.IsIntersecting is false)
+	// 	{
+	// 		Height  = Js.Invoke<float>("getHeight", Target);
+	// 		Visible = false;
+	// 		StateHasChanged();
+	// 	}
+	//
+	// 	if (Visible is false && entry.IsIntersecting)
+	// 	{
+	// 		Visible = true;
+	// 		StateHasChanged();
+	// 	}
+	// }
 
 	public async ValueTask DisposeAsync()
 	{
-		if (Observer != null) await Observer.Dispose();
 	}
 }

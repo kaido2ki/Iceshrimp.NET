@@ -25,7 +25,6 @@
     <ItemGroup>
         <PackageReference Include="AngleSharp" Version="1.5.2" />
         <PackageReference Include="Blazored.LocalStorage" Version="4.5.0" />
-        <PackageReference Include="BlazorIntersectionObserver" Version="3.1.0" />
         <PackageReference Include="Iceshrimp.Assets.Branding" Version="1.1.0" />
         <PackageReference Include="Iceshrimp.Assets.Emoji" Version="1.4.0" />
         <PackageReference Include="Iceshrimp.MfmSharp" Version="1.3.1" />
