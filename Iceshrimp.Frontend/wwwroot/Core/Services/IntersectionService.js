@@ -33,6 +33,7 @@ export function removeEntry(element) {
  */
 function observe(entries, observer) {
     for (const entry of entries) {
+        // Blazor adds a valueless _bl_{id} attribute to elements with a @ref which matches ElementReference.Id
         const id = entry.target.getAttributeNames().find(a => a.startsWith("_bl_")).substring(4);
 
         dotnet.invokeMethodAsync("Observe", id, entry.intersectionRatio, entry.isIntersecting);
