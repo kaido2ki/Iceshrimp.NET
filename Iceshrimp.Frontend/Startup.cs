@@ -19,6 +19,7 @@ builder.Services.AddLocalization();
 builder.Logging.AddInMemoryLogger(builder.Configuration);
 builder.Services.AddSingleton<ApiClient>();
 builder.Services.AddSingleton<ApiService>();
+builder.Services.AddSingleton<IntersectionService>();
 builder.Services.AddSingleton<SessionService>();
 builder.Services.AddSingleton<StreamingService>();
 builder.Services.AddScoped<AuthenticationStateProvider, CustomAuthStateProvider>();

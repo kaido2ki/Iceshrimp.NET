@@ -1,50 +1,63 @@
-@* <IntersectionObserve OnChange="entry => OnChange(entry)"> *@
-    <div class="@Class @(Hide ? "hidden" : "")" style="@Style">
-        @if (_state is State.Loading or State.Init)
-        {
-            <LoadingSpinner />
-        }
-        else
-        {
-            <button class="button" @onclick="Manual">Load more</button>
-        }
-    </div>
-@* </IntersectionObserve> *@
+@using Iceshrimp.Frontend.Core.Services
+@inject GlobalComponentSvc  Global;
+@inject IntersectionService Observer;
+@implements IAsyncDisposable
+
+<div @ref="Ref" class="@Class @(Hide ? "hidden" : "")" style="@Style">
+    @if (_state is State.Loading or State.Init)
+    {
+        <LoadingSpinner/>
+    }
+    else
+    {
+        <button class="button" @onclick="Manual">Load more</button>
+    }
+</div>
 
 @code {
-    [Parameter] [EditorRequired] public EventCallback IntersectionChange { get; set; }
-    [Parameter] [EditorRequired] public EventCallback ManualLoad         { get; set; }
-    [Parameter]                  public string?       Class              { get; set; }
-    [Parameter]                  public bool          RequireReset       { get; init; }
-    [Parameter]                  public string?       Style              { get; set; }
-    [Parameter]                  public bool          Hide               { get; set; }
-    public                              bool          Visible            { get; private set; }
-    private                             State         _state;
+    [Parameter] [EditorRequired] public EventCallback    IntersectionChange { get; set; }
+    [Parameter] [EditorRequired] public EventCallback    ManualLoad         { get; set; }
+    [Parameter]                  public string?          Class              { get; set; }
+    [Parameter]                  public bool             RequireReset       { get; init; }
+    [Parameter]                  public string?          Style              { get; set; }
+    [Parameter]                  public bool             Hide               { get; set; }
+    private                             ElementReference Ref                { get; set; }
+    public                              bool             Visible            { get; private set; }
+    private                             State            _state;
 
-    // private async Task OnChange(IntersectionObserverEntry entry)
-    // {
-    //     if (entry.IsIntersecting)
-    //     {
-    //         Visible = true;
-    //         switch (_state)
-    //         {
-    //             case State.Loading:
-    //                 return;
-    //             case State.Waiting or State.Init:
-    //                 _state = State.Loading;
-    //                 await IntersectionChange.InvokeAsync();
-    //                 break;
-    //         }
-    //
-    //         if (!RequireReset)
-    //         {
-    //             _state = State.Waiting;
-    //         }
-    //     } else if (entry.IsIntersecting == false)
-    //     {
-    //         Visible = false;
-    //     }
-    // }
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        if (firstRender)
+        {
+            await Observer.ObserveAsync(Ref, OnChange);
+        }
+    }
+
+    private async void OnChange(IntersectionService.Entry entry)
+    {
+        Console.WriteLine("Scrollend");
+        if (entry.IsIntersecting)
+        {
+            Visible = true;
+            switch (_state)
+            {
+                case State.Loading:
+                    return;
+                case State.Waiting or State.Init:
+                    _state = State.Loading;
+                    await IntersectionChange.InvokeAsync();
+                    break;
+            }
+    
+            if (!RequireReset)
+            {
+                _state = State.Waiting;
+            }
+        } else if (entry.IsIntersecting == false)
+        {
+            Visible = false;
+        }
+    }
 
     private async Task Manual()
     {
@@ -61,5 +74,10 @@
     public void Reset()
     {
         _state = State.Waiting;
+    }
+
+    public async ValueTask DisposeAsync()
+    {
+        await Observer.UnobserveAsync(Ref);
     }
 }

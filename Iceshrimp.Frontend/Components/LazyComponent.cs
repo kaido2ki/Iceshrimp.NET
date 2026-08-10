@@ -1,3 +1,4 @@
+using Iceshrimp.Frontend.Core.Services;
 using Microsoft.AspNetCore.Components;
 using Microsoft.AspNetCore.Components.Rendering;
 using Microsoft.JSInterop;
@@ -6,13 +7,14 @@ namespace Iceshrimp.Frontend.Components;
 
 public class LazyComponent : ComponentBase, IAsyncDisposable
 {
-	[Inject]                     private         IJSInProcessRuntime          Js              { get; set; } = null!;
-	[Inject]                     private         ILogger<LazyComponent>       Logger          { get; set; } = null!;
-	[Parameter] [EditorRequired] public required RenderFragment               ChildContent    { get; set; } = default!;
-	[Parameter]                  public          float?                       InitialHeight   { get; set; }
-	public                                       ElementReference             Target          { get; private set; }
-	public                                       bool                         Visible         { get; private set; }
-	private                                      float?                       Height          { get; set; }
+	[Inject]                     private         IntersectionService    Observer      { get; set; } = null!;
+	[Inject]                     private         IJSInProcessRuntime    Js            { get; set; } = null!;
+	[Inject]                     private         ILogger<LazyComponent> Logger        { get; set; } = null!;
+	[Parameter] [EditorRequired] public required RenderFragment         ChildContent  { get; set; } = default!;
+	[Parameter]                  public          float?                 InitialHeight { get; set; }
+	public                                       ElementReference       Target        { get; private set; }
+	public                                       bool                   Visible       { get; private set; }
+	private                                      float?                 Height        { get; set; }
 	// private                                      bool                         minHeightSet = false;
 
 	protected override void OnInitialized()
@@ -75,27 +77,28 @@ public class LazyComponent : ComponentBase, IAsyncDisposable
 	{
 		if (firstRender)
 		{
+			await Observer.ObserveAsync(Target, OnIntersect);
 		}
 	}
 
-	// private void OnIntersect(IList<IntersectionObserverEntry> entries)
-	// {
-	// 	var entry = entries.First();
-	// 	if (Visible && entry.IsIntersecting is false)
-	// 	{
-	// 		Height  = Js.Invoke<float>("getHeight", Target);
-	// 		Visible = false;
-	// 		StateHasChanged();
-	// 	}
-	//
-	// 	if (Visible is false && entry.IsIntersecting)
-	// 	{
-	// 		Visible = true;
-	// 		StateHasChanged();
-	// 	}
-	// }
+	private void OnIntersect(IntersectionService.Entry entry)
+	{
+		if (Visible && !entry.IsIntersecting)
+		{
+			Height  = Js.Invoke<float>("getHeight", Target);
+			Visible = false;
+			StateHasChanged();
+		}
+	
+		if (!Visible && entry.IsIntersecting)
+		{
+			Visible = true;
+			StateHasChanged();
+		}
+	}
 
 	public async ValueTask DisposeAsync()
 	{
+		await Observer.UnobserveAsync(Target);
 	}
 }

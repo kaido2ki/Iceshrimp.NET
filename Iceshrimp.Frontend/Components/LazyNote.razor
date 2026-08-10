@@ -1,23 +1,19 @@
+@using Iceshrimp.Frontend.Core.Services
 @using Iceshrimp.Shared.Schemas.Web
-@inject IJSRuntime Js
-@if (_init) // FIXME: We need to wait for the Component to render once before initializing the Intersection Observer.
-    // With the <IntersectionObserver> Component this is AFAIK only possible by not rendering it until then.
-    // The proper fix for this is to change to the Service Pattern.
-    // But that requires the IntersectionObserver Library to be modified to return what element an observation update is for.
-{
-    @* <IntersectionObserve Options="new IntersectionObserverOptions { Root = Scroller, RootMargin = Margin }" OnChange="@(entry => Change(entry))"> *@
-        <div class="tgt">
-            @if (_isIntersecting)
-            {
-                <TimelineNote Note="Note"/>
-            }
-            else
-            {
-                <div class="placeholder" style="height: @(Height ?? 150)px"></div>
-            }
-        </div>
-    // </IntersectionObserve>
-}
+@inject IJSRuntime          Js;
+@inject IntersectionService Observer;
+@implements IAsyncDisposable
+
+<div @ref="Ref" class="tgt">
+    @if (_isIntersecting)
+    {
+        <TimelineNote Note="Note"/>
+    }
+    else
+    {
+        <div class="placeholder" style="height: @(Height ?? 150)px"></div>
+    }
+</div>
 
 @code {
     [Parameter] [EditorRequired] public required NoteResponse     Note     { get; set; }
@@ -25,47 +21,46 @@
 
     private const string              Margin = "200%";
     private       IJSObjectReference? _module;
+    private       ElementReference    Ref    { get; set; }
     private       int?                Height { get; set; }
     private       bool                _isIntersecting = true;
-    private       bool                _init;
 
     protected override async Task OnAfterRenderAsync(bool firstRender)
     {
         if (firstRender)
         {
+            await Observer.ObserveAsync(Ref, Change);
             _module = await Js.InvokeAsync<IJSObjectReference>("import",
                                                                "./Components/LazyNote.razor.js");
         }
     }
 
-    protected override void OnAfterRender(bool firstRender)
+    private async void Change(IntersectionService.Entry entry)
     {
-        if (firstRender)
+        if (!entry.IsIntersecting)
         {
-            _init = true;
+            Height          = await GetHeight();
+            _isIntersecting = false;
+            StateHasChanged();
+            return;
+        }
+    
+        if (entry.IsIntersecting)
+        {
+            _isIntersecting = true;
         }
     }
-
-    // private async Task Change(IntersectionObserverEntry entry)
-    // {
-    //     if (entry.IsIntersecting == false)
-    //     {
-    //         Height          = await GetHeight();
-    //         _isIntersecting = false;
-    //         StateHasChanged();
-    //         return;
-    //     }
-    //
-    //     if (entry.IsIntersecting)
-    //     {
-    //         _isIntersecting = true;
-    //     }
-    // }
 
     private async Task<int?> GetHeight()
     {
         var height = await (_module ?? throw new Exception("Call to JS module was made before it was loaded, this should not have happened"))
             .InvokeAsync<int?>("getScrollHeight", Note.Id);
         return height;
+    }
+
+    public async ValueTask DisposeAsync()
+    {
+        if (_module != null) await _module.DisposeAsync();
+        await Observer.UnobserveAsync(Ref);
     }
 }
