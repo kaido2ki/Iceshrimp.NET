@@ -749,7 +749,7 @@
         <value>At least 1 keyword is required.</value>
     </data>
     <data name="Settings_Filters_KeywordInfo" xml:space="preserve">
-        <value>Surround keyword with " for whole word matching. Surround keyword with / for regex matching.</value>
+        <value>Separate keywords by new line. Surround keyword with " for whole word matching. Surround keyword with / for regex matching.</value>
     </data>
     <data name="Settings_Filters_RegexInfo" xml:space="preserve">
         <value>Complex regex keywords will slow down your timeline. Your filter won't apply if it takes more than 1.5ms to match.</value>
@@ -1626,5 +1626,17 @@
     </data>
     <data name="Preferences_Heading_UI" xml:space="preserve">
         <value>User interface</value>
+    </data>
+    <data name="Settings_Filters_ExpiresAt_DateTime" xml:space="preserve">
+        <value>Expires at: {0}</value>
+    </data>
+    <data name="Settings_Filters_Heading_Active" xml:space="preserve">
+        <value>Active filters</value>
+    </data>
+    <data name="Settings_Filters_Heading_New" xml:space="preserve">
+        <value>New filter</value>
+    </data>
+    <data name="Settings_Filters_Heading_Edit" xml:space="preserve">
+        <value>Edit filter</value>
     </data>
 </root>

@@ -3260,5 +3260,29 @@ namespace Iceshrimp.Frontend.Localization {
                 return ResourceManager.GetString("Preferences_Heading_UI", resourceCulture);
             }
         }
+        
+        internal static string Settings_Filters_ExpiresAt_DateTime {
+            get {
+                return ResourceManager.GetString("Settings_Filters_ExpiresAt_DateTime", resourceCulture);
+            }
+        }
+        
+        internal static string Settings_Filters_Heading_Active {
+            get {
+                return ResourceManager.GetString("Settings_Filters_Heading_Active", resourceCulture);
+            }
+        }
+        
+        internal static string Settings_Filters_Heading_New {
+            get {
+                return ResourceManager.GetString("Settings_Filters_Heading_New", resourceCulture);
+            }
+        }
+        
+        internal static string Settings_Filters_Heading_Edit {
+            get {
+                return ResourceManager.GetString("Settings_Filters_Heading_Edit", resourceCulture);
+            }
+        }
     }
 }

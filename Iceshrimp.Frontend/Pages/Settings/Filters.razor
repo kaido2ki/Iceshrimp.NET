@@ -9,6 +9,8 @@
 @attribute [Authorize]
 @layout SettingsLayout
 @inject ApiService                     Api;
+@inject GlobalComponentSvc             Global;
+@inject JsService                      Js;
 @inject IStringLocalizer<Localization> Loc;
 
 <HeadTitle Text="@Loc[L.Settings_Filters]"/>
@@ -21,139 +23,115 @@
 <SectionContent SectionName="top-bar">
     @Loc[L.Settings_Filters]
 </SectionContent>
+<SectionContent SectionName="top-bar-actions">
+    @if (State is State.Empty or State.Loaded)
+    {
+        <button class="action" @onclick="NewFilter">
+            <Icon Name="Icons.Plus"/>
+            <span class="label">@Loc[L.Common_Add]</span>
+        </button>
+    }
+</SectionContent>
 
 <div class='body'>
     @if (State is State.Loaded)
     {
-        <div class="filter-list">
-            @foreach (var el in FilterList)
-            {
-                <div class="filter">
-                    <div>
-                        <h3>@Loc[L.Common_Name]</h3>
-                        @el.Name
-                    </div>
-                    <div>
-                        <h3>@Loc[L.Settings_Filters_ExpiresAt]</h3>
-                        @if (el.Expiry != null)
-                        {
-                            @el.Expiry.Value.ToLocalTime().ToString("G")
-                        }
-                        else
-                        {
-                            @Loc[L.Compose_Poll_ExpiresAt_Never]
-                        }
-                    </div>
-                    <div>
-                        <h3>@Loc[L.Settings_Filters_Keywords]</h3>
-                        <ul>
-                            @foreach (var keyword in el.Keywords)
-                            {
-                                <li>@keyword</li>
-                            }
-                        </ul>
-                    </div>
-                    <div>
-                        <h3>@Loc[L.Settings_Filters_Action]</h3>
-                        @el.Action.ToString()
-                    </div>
-                    <div>
-                        <h3>@Loc[L.Settings_Filters_Contexts]</h3>
-                        <ul>
-                            @foreach (var context in el.Contexts)
-                            {
-                                <li>@context</li>
-                            }
-                        </ul>
-                    </div>
+        <h1>@Loc[L.Settings_Filters_Heading_Active]</h1>
+        @foreach (var filter in FilterList)
+        {
+            <article class="card filter">
+                <div id="@filter.Id" class="badge-group">
+                    <h3>@filter.Name</h3>
+                    @if (filter.Action == FilterResponse.FilterAction.Warn)
+                    {
+                        <span class="badge warning">@Loc[L.Settings_Filters_Action_Warn]</span>
+                    }
+                    else
+                    {
+                        <span class="badge danger">@Loc[L.Common_Hide]</span>
+                    }
                 </div>
-                <button class="button" @onclick="() => DeleteFilter(el.Id)">@Loc[L.Common_Delete]</button>
-            }
+                @if (filter.Expiry != null)
+                {
+                    <span>
+                        @Loc[L.Settings_Filters_ExpiresAt_DateTime, filter.Expiry.Value.ToLocalTime().ToString("G")]
+                    </span>
+                }
+                <div>
+                    <span>@Loc[L.Settings_Filters_Keywords]</span>
+                    <ul>
+                        @foreach (var keyword in filter.Keywords)
+                        {
+                            <li>@keyword</li>
+                        }
+                    </ul>
+                </div>
+                <div>
+                    <span>@Loc[L.Settings_Filters_Contexts]</span>
+                    <ul>
+                        @foreach (var context in filter.Contexts)
+                        {
+                            <li>@context</li>
+                        }
+                    </ul>
+                </div>
+                <div class="button-group">
+                    <button class="card-button" @onclick="() => EditFilter(filter)">
+                        <Icon Name="Icons.PencilLine"/>
+                        @Loc[L.Common_Edit]
+                    </button>
+                    <button class="card-button danger" @onclick="() => DeleteFilter(filter.Id)">
+                        <Icon Name="Icons.Trash"/>
+                        @Loc[L.Common_Delete]
+                    </button>
+                </div>
+            </article>
+        }
+    }
+</div>
+
+<dialog closedby="none" class="@(Waiting ? "" : "modal")" @ref="Dialog">
+    @if (Waiting)
+    {
+        <LoadingSpinner/>
+    }
+    else
+    {
+        <div class="dialog-header">
+            @Loc[Editing != null ? L.Settings_Filters_Heading_Edit : L.Settings_Filters_Heading_New]
         </div>
 
-        <div class="add-filter">
-            <div class="name section">
-                <h3>@Loc[L.Common_Name]</h3>
-                @if (_filterNameInvalid)
+        <div class="input-group">
+            <label>
+                @Loc[L.Common_Name]
+                <input required="required" type="text" @bind="Request.Name"/>
+            </label>
+
+            <label>
+                @Loc[L.Settings_Filters_Action]
+                <select @bind="Request.Action">
+                    <option value="@FilterResponse.FilterAction.Warn">
+                        @Loc[L.Settings_Filters_Action_Warn]
+                    </option>
+                    <option value="@FilterResponse.FilterAction.Hide">
+                        @Loc[L.Common_Hide]
+                    </option>
+                </select>
+            </label>
+        </div>
+
+        <div class="input-group">
+            <div class="contexts">
+                <span>@Loc[L.Settings_Filters_Contexts]</span>
+                @foreach (var el in Request.Contexts)
                 {
-                    <span>@Loc[L.Settings_Filters_Error_NameRequired]</span>
-                }
-                <input class="name-input input" required="required" type="text" @bind="FilterName"/>
-            </div>
-            <div class="keywords section">
-                <h3>
-                    @Loc[L.Settings_Filters_Keywords]
-                </h3>
-                @if (_filterKeywordsInvalid)
-                {
-                    <span>@Loc[L.Settings_Filters_Error_KeywordsRequired]</span>
-                }
-                @foreach (var el in FilterKeywords)
-                {
-                    <div>
+                    <div class="context">
                         <span>@el</span>
-                        <button class="button" @onclick="() => FilterKeywords.Remove(el)">
-                            <Icon Name="Icons.X"/>
+                        <button class="button" @onclick="() => Request.Contexts.Remove(el)">
+                            <Icon Name="Icons.Trash"/>
                         </button>
                     </div>
                 }
-                <input class="input" type="text" @bind="Keyword" @bind:event="oninput"/>
-                <span>@Loc[L.Settings_Filters_KeywordInfo]</span>
-                @if (Keyword.StartsWith('/') && Keyword.EndsWith('/'))
-                {
-                    <br/>
-                    <span>@Loc[L.Settings_Filters_RegexInfo]</span>
-                }
-                <button class="button" @onclick="AddKeyword">
-                    <Icon Name="Icons.Plus"/>
-                    <span>@Loc[L.Common_Add]</span>
-                </button>
-            </div>
-            <div class="action section">
-                <h3>@Loc[L.Settings_Filters_Action]</h3>
-                <MenuButton ButtonClass="button">
-                    <ButtonContent>
-                        @switch (FilterAction)
-                        {
-                            case FilterResponse.FilterAction.Hide:
-                                <Icon Name="Icons.EyeClosed"/>
-                                <span>@Loc[L.Common_Hide]</span>
-                                break;
-                            case FilterResponse.FilterAction.Warn:
-                                <Icon Name="Icons.Warning"/>
-                                <span>@Loc[L.Settings_Filters_Action_Warn]</span>
-                                break;
-                            default:
-                                break;
-                        }
-                    </ButtonContent>
-                    <Elements>
-                        <MenuElement Icon="Icons.EyeClosed" OnSelect="() => FilterAction = FilterResponse.FilterAction.Hide">
-                            <Text>@Loc[L.Common_Hide]</Text>
-                        </MenuElement>
-                        <MenuElement Icon="Icons.Warning" OnSelect="() => FilterAction = FilterResponse.FilterAction.Warn">
-                            <Text>@Loc[L.Settings_Filters_Action_Warn]</Text>
-                        </MenuElement>
-                    </Elements>
-                </MenuButton>
-            </div>
-            <div class="contexts section">
-                <h3>@Loc[L.Settings_Filters_Contexts]</h3>
-                @if (_filterContextsInvalid)
-                {
-                    <span>@Loc[L.Settings_Filters_Error_ContextRequired]</span>
-                }
-                <div class="active-contexts">
-                    @foreach (var el in FilterContexts)
-                    {
-                        <div>
-                            <span>@el</span>
-                            <button class="button" @onclick="() => FilterContexts.Remove(el)">
-                                <Icon Name="Icons.X"></Icon>
-                            </button>
-                        </div>
-                    }
-                </div>
                 <MenuButton ButtonClass="button">
                     <ButtonContent>
                         <Icon Name="Icons.Plus"/>
@@ -181,45 +159,56 @@
                     </Elements>
                 </MenuButton>
             </div>
-            <div class="expiry-section">
-                <h3>@Loc[L.Settings_Filters_ExpiresAt]</h3>
+            <div>
                 <label>
                     <input type="checkbox" @bind="TemporaryFilter">
                     @Loc[L.Settings_Filters_ExpiresAt_Enable]
                 </label>
-                <input class="input" @bind="FilterExpiry" type="datetime-local" disabled="@(!TemporaryFilter)"/>
+                <label>
+                    @Loc[L.Settings_Filters_ExpiresAt]
+                    <input @bind="Request.Expiry" type="datetime-local" disabled="@(!TemporaryFilter)"/>
+                </label>
             </div>
-            <StateButton OnClick="TryAddFilter" ExtraClasses="button" @ref="ButtonAddFilter">
-                <Initial><Icon Name="Icons.Plus"/><span>@Loc[L.Common_Add]</span></Initial>
-                <Success><Icon Name="Icons.Check"/></Success>
-                <Loading>
-                    <LoadingSpinner/> 
-                </Loading>
-                <Failed>
-                    <Icon Name="Icons.X"/>@Loc[L.StateButton_Error]
-                </Failed>
-            </StateButton>
+        </div>
+
+        <label>
+            @Loc[L.Settings_Filters_Keywords]
+            <textarea class="full-width" @bind="Keywords" @bind:event="oninput"></textarea>
+        </label>
+        <span>@Loc[L.Settings_Filters_KeywordInfo]</span>
+        @if (Keywords.Split('\n', StringSplitOptions.TrimEntries).Any(l => l.Length > 1 && l.StartsWith('/') && l.EndsWith('/')))
+        {
+            <WarningBanner>@Loc[L.Settings_Filters_RegexInfo]</WarningBanner>
+        }
+
+        <div class="dialog-footer button-group">
+            <button class="button primary-button" @onclick="Submit">
+                @Loc[L.Dialog_Submit]
+            </button>
+            <button class="button" @onclick="() => Js.CloseDialogAsync(Dialog)">
+                @Loc[L.Common_Close]
+            </button>
         </div>
     }
-</div>
+</dialog>
 
 @code {
-    private List<FilterResponse>               FilterList         { get; set; } = [];
-    private State                              State              { get; set; } = State.Loading;
-    private string                             FilterName         { get; set; } = "";
-    private string                             Keyword            { get; set; } = "";
-    private List<string>                       FilterKeywords     { get; }      = [];
-    private bool                               TemporaryFilter    { get; set; }
-    private DateTime?                          FilterExpiry       { get; set; }
-    private FilterResponse.FilterAction        FilterAction       { get; set; }
-    private List<FilterResponse.FilterContext> FilterContexts     { get; }      = [];
+    private List<FilterResponse> FilterList      { get; set; } = [];
+    private State                State           { get; set; } = State.Loading;
+    private string               Keywords        { get; set; } = "";
+    private bool                 TemporaryFilter { get; set; }
+    private ElementReference     Dialog          { get; set; }
+    private bool                 Waiting         { get; set; }
+    private long?                Editing         { get; set; }
 
-    // ReSharper disable once UnusedAutoPropertyAccessor.Local, Justification: this is still work in progress
-    private StateButton ButtonAddFilter { get; set; } = null!;
-
-    private bool _filterNameInvalid;
-    private bool _filterKeywordsInvalid;
-    private bool _filterContextsInvalid;
+    private FilterRequest Request { get; set; } = new FilterRequest
+    {
+        Name     = "",
+        Keywords = [],
+        Action   = FilterResponse.FilterAction.Hide,
+        Contexts = [],
+        Expiry   = null
+    };
 
     protected override async Task OnInitializedAsync()
     {
@@ -247,67 +236,115 @@
         catch (ApiException) { }
     }
 
-    private async Task TryAddFilter()
+    private async Task Submit()
     {
-        var valid = true;
+        if (Waiting) return;
 
-        if (FilterName.Length < 1)
+        Request.Name = Request.Name.Trim();
+
+        if (Request.Name.Length < 1)
         {
-            _filterNameInvalid = true;
-            valid              = false;
+            await Global.NoticeDialog?.Display(Loc[L.Settings_Filters_Error_NameRequired], NoticeDialog.NoticeType.Error)!;
+            return;
         }
 
-        if (FilterKeywords.Count < 1)
+        Request.Keywords = Keywords.Split('\n', StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries).ToList();
+
+        if (Request.Keywords.Count == 0)
         {
-            _filterKeywordsInvalid = true;
-            valid                  = false;
+            await Global.NoticeDialog?.Display(Loc[L.Settings_Filters_Error_KeywordsRequired], NoticeDialog.NoticeType.Error)!;
+            return;
         }
 
-        if (FilterContexts.Count < 1)
+        if (Request.Contexts.Count < 1)
         {
-            _filterContextsInvalid = true;
-            valid                  = false;
+            await Global.NoticeDialog?.Display(Loc[L.Settings_Filters_Error_ContextRequired], NoticeDialog.NoticeType.Error)!;
+            return;
         }
 
-        if (valid)
+        if (!TemporaryFilter)
         {
-            if (!TemporaryFilter)
+            Request.Expiry = null;
+        }
+
+        Waiting = true;
+
+        try
+        {
+            if (Editing is { } id)
             {
-                FilterExpiry = null;
+                await Api.Filters.UpdateFilterAsync(id, Request);
+                FilterList.RemoveAll(p => p.Id == id);
+                FilterList.Add(new FilterResponse
+                {
+                    Id       = id,
+                    Name     = Request.Name,
+                    Keywords = Request.Keywords,
+                    Action   = Request.Action,
+                    Contexts = Request.Contexts,
+                    Expiry   = Request.Expiry
+                });
             }
-            if (FilterExpiry is not null)
+            else
             {
-                FilterExpiry = new DateTimeOffset((DateTime)FilterExpiry, DateTimeOffset.Now.Offset).UtcDateTime;
-            }
-
-            var newFilterRequest = new FilterRequest
-            {
-                Name     = FilterName,
-                Expiry   = FilterExpiry,
-                Keywords = FilterKeywords,
-                Action   = FilterAction,
-                Contexts = FilterContexts
-            };
-            try
-            {
-                var filter = await Api.Filters.CreateFilterAsync(newFilterRequest);
+                var filter = await Api.Filters.CreateFilterAsync(Request);
                 FilterList.Add(filter);
             }
-            catch (ApiException) { }
         }
+        catch (ApiException e)
+        {
+            await Global.NoticeDialog?.DisplayApiError(e)!;
+            Waiting = false;
+            StateHasChanged();
+            return;
+        }
+
+        await Js.CloseDialogAsync(Dialog);
+
+        Waiting = false;
+        StateHasChanged();
     }
 
-    private void AddKeyword()
+    private void ResetState()
     {
-        if (Keyword.Length >= 1)
-            FilterKeywords.Add(Keyword);
+        Request.Name     = "";
+        Request.Keywords = [];
+        Request.Action   = FilterResponse.FilterAction.Hide;
+        Request.Contexts = [];
+        Request.Expiry   = null;
+        Keywords         = "";
+        TemporaryFilter  = false;
+        Editing          = null;
     }
 
     private void AddFilterContext(FilterResponse.FilterContext context)
     {
-        if (FilterContexts.Contains(context) == false)
+        if (!Request.Contexts.Contains(context))
         {
-            FilterContexts.Add(context);
+            Request.Contexts.Add(context);
         }
+    }
+
+    private async Task NewFilter()
+    {
+        ResetState();
+        await Js.ShowDialogAsync(Dialog);
+    }
+
+    private async Task EditFilter(FilterResponse response)
+    {
+        Request = new FilterRequest
+        {
+            Name     = response.Name,
+            Keywords = [],
+            Action   = response.Action,
+            Contexts = response.Contexts,
+            Expiry   = response.Expiry
+        };
+        Keywords        = string.Join('\n', response.Keywords);
+        TemporaryFilter = response.Expiry != null;
+        Editing         = response.Id;
+
+        await Js.ShowDialogAsync(Dialog);
     }
 }
