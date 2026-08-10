@@ -437,6 +437,9 @@ public class ActivityHandlerService(
 		    || (finalTarget.CanBite == User.BiteControl.Followers
 		        && !await db.Followings.AnyAsync(p => p.Followee == finalTarget && p.Follower == resolvedActor)))
 			throw GracefulException.Forbidden("You are not allowed to bite this user");
+		
+		if (await db.Bites.AnyAsync(p => p.Uri == activity.Id))
+			return;
 
 		await db.AddAsync(dbBite);
 		await db.SaveChangesAsync();
