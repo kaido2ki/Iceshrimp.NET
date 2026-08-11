@@ -33,13 +33,14 @@ public class AccountEntity : IIdentifiable
 	[J("attribution_domains")] public          List<string>?          AttributionDomains { get; set; }
 	[J("pleroma")]             public required PleromaUserExtensions? Pleroma            { get; set; }
 	[J("akkoma")]              public required AkkomaUserExtensions?  Akkoma             { get; set; }
+	[J("bite_controls")]       public required BiteControl            BiteControls       { get; set; }
+	[J("can_bite")]            public required bool                   CanBite            { get; set; }
 
 	[J("avatar_description")] public required string AvatarDescription { get; set; }
 	[J("header_description")] public required string HeaderDescription { get; set; }
 	
 	[J("formatted_note")]   public string?      FormattedNote   { get; set; }
 	[J("formatted_fields")] public List<Field>? FormattedFields { get; set; }
-	[J("can_bite")]         public bool         CanBite         { get; set; }
 }
 
 public class Field
@@ -58,7 +59,6 @@ public class AccountSource
 	[J("fields")]                public required List<Field>  Fields             { get; set; }
 	[J("attribution_domains")]   public required List<string> AttributionDomains { get; set; }
 	[J("follow_requests_count")] public required int          FollowRequestCount { get; set; }
-	[J("bite_controls")]         public required BiteControl  BiteControls       { get; set; }
 }
 
 public enum BiteControl

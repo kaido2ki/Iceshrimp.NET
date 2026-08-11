@@ -133,6 +133,12 @@ public class UserRenderer(
 					},
 					PermitFollowback = user.UserSettings?.AutoAcceptFollowed
 				} : null,
+			BiteControls = user.CanBite switch
+			{
+				User.BiteControl.Public    => BiteControl.Public,
+				User.BiteControl.Followers => BiteControl.Followers,
+				_                          => BiteControl.None,
+			},
 			CanBite = canBite
 		};
 
@@ -156,13 +162,7 @@ public class UserRenderer(
 					StatusEntity.EncodeVisibility(user.UserSettings?.DefaultNoteVisibility
 					                              ?? Note.NoteVisibility.Public),
 				Sensitive          = false,
-				FollowRequestCount = await db.FollowRequests.CountAsync(p => p.Followee == user),
-				BiteControls = user.CanBite switch
-				{
-					User.BiteControl.Public    => BiteControl.Public,
-					User.BiteControl.Followers => BiteControl.Followers,
-					_                          => BiteControl.None,
-				}
+				FollowRequestCount = await db.FollowRequests.CountAsync(p => p.Followee == user)
 			};
 		}
 

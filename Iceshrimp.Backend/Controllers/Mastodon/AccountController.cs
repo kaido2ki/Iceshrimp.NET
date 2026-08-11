@@ -93,8 +93,8 @@ public class AccountController(
 		if (request.PermitFollowback.HasValue)
 			user.UserSettings.AutoAcceptFollowed = request.PermitFollowback.Value;
 
-		if (request.Source?.BiteControls != null)
-			user.CanBite = request.Source.BiteControls switch
+		if (request.BiteControls != null)
+			user.CanBite = request.BiteControls switch
 			{
 				BiteControl.Public    => Core.Database.Tables.User.BiteControl.Public,
 				BiteControl.Followers => Core.Database.Tables.User.BiteControl.Followers,

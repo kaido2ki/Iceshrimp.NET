@@ -59,6 +59,10 @@ public abstract class AccountSchemas
 		[B(Name = "permit_followback")]
 		public bool? PermitFollowback { get; set; }
 
+		[J("bite_controls")]
+		[B(Name = "bite_controls")]
+		public BiteControl? BiteControls { get; set; }
+
 		[J("source")] [B(Name = "source")] public AccountUpdateSource? Source { get; set; }
 
 		[B(Name = "avatar")] public IFormFile? Avatar { get; set; }
@@ -82,10 +86,6 @@ public abstract class AccountSchemas
 		[J("sensitive")]
 		[B(Name = "sensitive")]
 		public bool? Sensitive { get; set; }
-
-		[J("bite_controls")]
-		[B(Name = "bite_controls")]
-		public BiteControl? BiteControls { get; set; }
 	}
 
 	public class AccountMuteRequest
