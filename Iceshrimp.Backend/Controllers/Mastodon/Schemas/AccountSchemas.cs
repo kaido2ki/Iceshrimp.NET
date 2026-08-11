@@ -1,3 +1,4 @@
+using Iceshrimp.Backend.Controllers.Mastodon.Schemas.Entities;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.ModelBinding;
 using B = Microsoft.AspNetCore.Mvc.BindPropertyAttribute;
@@ -81,6 +82,10 @@ public abstract class AccountSchemas
 		[J("sensitive")]
 		[B(Name = "sensitive")]
 		public bool? Sensitive { get; set; }
+
+		[J("bite_controls")]
+		[B(Name = "bite_controls")]
+		public BiteControl? BiteControls { get; set; }
 	}
 
 	public class AccountMuteRequest

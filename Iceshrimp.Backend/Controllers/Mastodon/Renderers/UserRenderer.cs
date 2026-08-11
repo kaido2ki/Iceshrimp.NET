@@ -156,7 +156,13 @@ public class UserRenderer(
 					StatusEntity.EncodeVisibility(user.UserSettings?.DefaultNoteVisibility
 					                              ?? Note.NoteVisibility.Public),
 				Sensitive          = false,
-				FollowRequestCount = await db.FollowRequests.CountAsync(p => p.Followee == user)
+				FollowRequestCount = await db.FollowRequests.CountAsync(p => p.Followee == user),
+				BiteControls = user.CanBite switch
+				{
+					User.BiteControl.Public    => BiteControl.Public,
+					User.BiteControl.Followers => BiteControl.Followers,
+					_                          => BiteControl.None,
+				}
 			};
 		}
 

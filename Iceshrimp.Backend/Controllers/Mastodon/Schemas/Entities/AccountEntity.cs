@@ -58,4 +58,12 @@ public class AccountSource
 	[J("fields")]                public required List<Field>  Fields             { get; set; }
 	[J("attribution_domains")]   public required List<string> AttributionDomains { get; set; }
 	[J("follow_requests_count")] public required int          FollowRequestCount { get; set; }
+	[J("bite_controls")]         public required BiteControl  BiteControls       { get; set; }
+}
+
+public enum BiteControl
+{
+	Public,
+	Followers,
+	None
 }
