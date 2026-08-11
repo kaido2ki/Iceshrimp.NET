@@ -47,6 +47,8 @@ public class UserRenderer(
 		                    })
 		                    .ToList() ?? [];
 
+		var canBite = (data?.CanBite ?? await GetCanBiteAsync([user], localUser)).Contains(user.Id);
+
 		var fieldsSource = source
 			? profile?.Fields.Select(p => new Field { Name = p.Name, Value = p.Value }).ToList() ?? []
 			: [];
@@ -130,7 +132,8 @@ public class UserRenderer(
 						}
 					},
 					PermitFollowback = user.UserSettings?.AutoAcceptFollowed
-				} : null
+				} : null,
+			CanBite = canBite
 		};
 
 		if (localUser is null && security.Value.PublicPreview == Enums.PublicPreview.RestrictedNoMedia) //TODO
@@ -206,6 +209,21 @@ public class UserRenderer(
 		               .ToListAsync();
 	}
 
+	private async Task<List<string>> GetCanBiteAsync(IEnumerable<User> users, User? localUser)
+	{
+		if (localUser == null) return [];
+
+		var ids = users.Where(p => p != localUser).Select(p => p.Id).Distinct().ToList();
+		if (ids.Count == 0) return [];
+
+		return await db.Users
+		               .Where(p => ids.Contains(p.Id) && (p.CanBite == User.BiteControl.Public
+		                                                  || (p.CanBite == User.BiteControl.Followers
+		                                                      && p.Followers.Contains(localUser))))
+		               .Select(p => p.Id)
+		               .ToListAsync();
+	}
+
 	public async Task<AccountEntity> RenderAsync(User user, User? localUser)
 	{
 		var data = new UserRendererDto
@@ -213,7 +231,8 @@ public class UserRenderer(
 			Emoji     = await GetEmojiAsync([user]),
 			AvatarAlt = await GetAvatarAltAsync([user]),
 			BannerAlt = await GetBannerAltAsync([user]),
-			Instance  = await GetInstanceAsync([user])
+			Instance  = await GetInstanceAsync([user]),
+			CanBite   = await GetCanBiteAsync([user], localUser)
 		};
 
 		return await RenderAsync(user, user.UserProfile, localUser, data);
@@ -229,7 +248,8 @@ public class UserRenderer(
 			Emoji     = await GetEmojiAsync(userList),
 			AvatarAlt = await GetAvatarAltAsync(userList),
 			BannerAlt = await GetBannerAltAsync(userList),
-			Instance  = await GetInstanceAsync(userList) 
+			Instance  = await GetInstanceAsync(userList),
+			CanBite   = await GetCanBiteAsync(userList, localUser)
 		};
 
 		return await userList.Select(p => RenderAsync(p, p.UserProfile, localUser, data)).AwaitAllAsync();
@@ -241,5 +261,6 @@ public class UserRenderer(
 		public required Dictionary<string, string?> AvatarAlt;
 		public required Dictionary<string, string?> BannerAlt;
 		public required List<Instance>              Instance;
+		public required List<string>                CanBite;
 	}
 }

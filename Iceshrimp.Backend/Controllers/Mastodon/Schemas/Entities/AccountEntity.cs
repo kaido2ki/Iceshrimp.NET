@@ -39,6 +39,7 @@ public class AccountEntity : IIdentifiable
 	
 	[J("formatted_note")]   public string?      FormattedNote   { get; set; }
 	[J("formatted_fields")] public List<Field>? FormattedFields { get; set; }
+	[J("can_bite")]         public bool         CanBite         { get; set; }
 }
 
 public class Field
