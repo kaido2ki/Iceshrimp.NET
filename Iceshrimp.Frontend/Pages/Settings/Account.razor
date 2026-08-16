@@ -53,7 +53,7 @@
                     @Loc[L.Settings_Account_TranslationLanguage]
                     <InputSelect @bind-Value="SettingsForm.TranslationLanguage">
                         <option value="serverDefault">@Loc[L.Settings_Account_TranslationLanguage_ServerDefault, InstanceResponse.DefaultTranslationLanguage]</option>
-                        @foreach (var language in _languages)
+                        @foreach (var language in LocaleHelper.Languages)
                         {
                             <option value="@language.Key">@language.Value</option>
                         }
@@ -181,8 +181,6 @@
     private TwoFactorEnrollmentResponse? TwoFactorResponse  { get; set; }
     private string?                      OtpEnable          { get; set; }
     private string                       AttributionDomains { get; set; } = "";
-    
-    private Dictionary<string, string>   _languages = LanguageHelper.Bcp47Languages;
 
     protected override async Task OnInitializedAsync()
     {
