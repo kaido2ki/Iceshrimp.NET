@@ -90,7 +90,7 @@
     }
 </div>
 
-<dialog closedby="none" class="@(Waiting ? "" : "modal")" @ref="Dialog">
+<dialog closedby="none" class="@(Waiting ? "" : "modal filter-modal")" @ref="Dialog">
     @if (Waiting)
     {
         <LoadingSpinner/>
@@ -101,13 +101,13 @@
             @Loc[Editing != null ? L.Settings_Filters_Heading_Edit : L.Settings_Filters_Heading_New]
         </div>
 
-        <div class="input-group">
+        <div class="filter-form">
             <label>
                 @Loc[L.Common_Name]
-                <input required="required" type="text" @bind="Request.Name"/>
+                <input type="text" required class="full-width" @bind="Request.Name"/>
             </label>
 
-            <label>
+            <label class="contexts">
                 @Loc[L.Settings_Filters_Action]
                 <select @bind="Request.Action">
                     <option value="@FilterResponse.FilterAction.Warn">
@@ -118,9 +118,7 @@
                     </option>
                 </select>
             </label>
-        </div>
 
-        <div class="input-group">
             <div class="contexts">
                 <span>@Loc[L.Settings_Filters_Contexts]</span>
                 @foreach (var el in Request.Contexts)
@@ -159,7 +157,8 @@
                     </Elements>
                 </MenuButton>
             </div>
-            <div>
+
+            <div class="contexts">
                 <label>
                     <input type="checkbox" @bind="TemporaryFilter">
                     @Loc[L.Settings_Filters_ExpiresAt_Enable]
@@ -169,17 +168,19 @@
                     <input @bind="Request.Expiry" type="datetime-local" disabled="@(!TemporaryFilter)"/>
                 </label>
             </div>
-        </div>
 
-        <label>
-            @Loc[L.Settings_Filters_Keywords]
-            <textarea class="full-width" @bind="Keywords" @bind:event="oninput"></textarea>
-        </label>
-        <span>@Loc[L.Settings_Filters_KeywordInfo]</span>
-        @if (Keywords.Split('\n', StringSplitOptions.TrimEntries).Any(l => l.Length > 1 && l.StartsWith('/') && l.EndsWith('/')))
-        {
-            <WarningBanner>@Loc[L.Settings_Filters_RegexInfo]</WarningBanner>
-        }
+            <div class="keywords">
+                <label>
+                    @Loc[L.Settings_Filters_Keywords]
+                    <textarea class="full-width" @bind="Keywords" @bind:event="oninput"></textarea>
+                </label>
+                <span>@Loc[L.Settings_Filters_KeywordInfo]</span>
+                @if (Keywords.Split('\n', StringSplitOptions.TrimEntries).Any(l => l.Length > 1 && l.StartsWith('/') && l.EndsWith('/')))
+                {
+                    <WarningBanner>@Loc[L.Settings_Filters_RegexInfo]</WarningBanner>
+                }
+            </div>
+        </div>
 
         <div class="dialog-footer button-group">
             <button class="button primary-button" @onclick="Submit">
