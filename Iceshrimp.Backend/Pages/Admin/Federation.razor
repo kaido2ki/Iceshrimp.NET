@@ -10,6 +10,41 @@
 @using Microsoft.AspNetCore.Components.Forms
 @inherits AdminComponentBase
 <AdminPageHeader Title="@($"{ModeString} instances")"/>
+
+<h3>Add @ModeString.ToLowerInvariant() instance</h3>
+@if (IsBlocklist)
+{
+    <EditForm FormName="add-host" Model="Model" OnSubmit="@OnSubmit">
+        <label>
+            Host
+            <InputText @bind-Value="@Model.Host" placeholder="example.org" required/>
+        </label>
+        <label>
+            Reason
+            <InputText @bind-Value="@Model.Reason" class="full-width" placeholder="Bad vibes"/>
+        </label>
+        <button class="button @(IsBlocklist ? "danger" : "")" type="submit">Submit</button>
+    </EditForm>
+}
+else
+{
+    <EditForm FormName="add-host" Model="Model" OnSubmit="@OnSubmit">
+        <label>
+            Host
+            <InputText @bind-Value="@Model.Host" placeholder="example.org" required/>
+        </label>
+        <button class="button" type="submit">Submit</button>
+    </EditForm>
+}
+
+@if (IsBlocklist)
+{
+    <h3>Active blocks</h3>
+}
+else
+{
+    <h3>Active allows</h3>
+}
 <table>
     <thead>
     <th>Host</th>
@@ -109,40 +144,20 @@
     </form>
 </div>
 
-<h3>Add @ModeString.ToLowerInvariant() instance</h3>
-@if (IsBlocklist)
-{
-    <EditForm FormName="add-host" Model="Model" OnSubmit="@OnSubmit">
-        <label for="host">Host</label>
-        <InputText @bind-Value="@Model.Host" id="host" placeholder="example.org" required/>
-        <label for="reason">Reason</label>
-        <InputText @bind-Value="@Model.Reason" id="reason" placeholder="Bad vibes"/>
-        <button class="button" type="submit">Submit</button>
-    </EditForm>
-}
-else
-{
-    <EditForm FormName="add-host" Model="Model" OnSubmit="@OnSubmit">
-        <label for="host">Host</label>
-        <InputText @bind-Value="@Model.Host" id="host" placeholder="example.org" required/>
-        <button class="button" type="submit">Submit</button>
-    </EditForm>
-}
-
 <h3>Import/Export</h3>
 @if (IsBlocklist)
 {
-    <div class="inline-flex flex-grow">
+    <div class="button-group">
         <form onsubmit="importBlocklist(event)" class="inline-flex">
             <input type="file" id="blocklist-import-file"/>
-            <button class="button" type="submit">Import blocklist</button>
+            <button class="button danger" type="submit">Import blocklist</button>
         </form>
         <button class="button" role="link" onclick="exportBlocklist()">Export blocklist</button>
     </div>
 }
 else
 {
-    <div class="inline-flex flex-grow">
+    <div class="button-group">
         <form onsubmit="importAllowlist(event)" class="inline-flex">
             <input type="file" id="allowlist-import-file"/>
             <button class="button" type="submit">Import allowlist</button>

@@ -14,7 +14,6 @@
 <p>Here you can adjust basic instance metadata. It gets displayed to all users, including guests.</p>
 
 <EditForm FormName="update-metadata" Model="Model" OnSubmit="@OnSubmit" enctype="multipart/form-data">
-    <label for="icon">Icon</label>
     @if (IconUrl != null)
     {
         <img class="logo" src="@IconUrl" alt="Instance icon"/>
@@ -23,25 +22,38 @@
             Remove icon
         </label>
     }
-    <InputFile name="Model.IconFile" id="icon" accept="image/*"/>
-    <label for="banner">Banner</label>
+    <label>
+        Icon
+        <InputFile name="Model.IconFile" accept="image/*"/>
+    </label>
     @if (BannerUrl != null)
     {
         <img class="banner" src="@BannerUrl" alt="Instance banner"/>
-        <span class="checkbox">
+        <label>
             <InputCheckbox @bind-Value="@Model.RemoveBanner" id="remove-banner"/>
-            <label for="remove-banner">Remove banner</label>
-        </span>
+            Remove banner
+        </label>
     }
-    <InputFile name="Model.BannerFile" id="banner" accept="image/*"/>
-    <label for="name">Instance name</label>
-    <InputText @bind-Value="@Model.Name" id="name" placeholder="@Config.Value.AccountDomain"/>
-    <label for="desc">Instance description</label>
-    <InputTextArea @bind-Value="@Model.Description" id="desc" placeholder="Welcome to my instance!"/>
-    <label for="theme-color">Theme color</label>
-    <InputText @bind-Value="@Model.ThemeColor" id="theme-color" placeholder="#7b74cc"/>
-    <label for="contact">Admin contact email</label>
-    <InputText @bind-Value="@Model.AdminContact" type="email" id="contact" placeholder="webmaster@example.org"/>
+    <label>
+        Banner
+        <InputFile name="Model.BannerFile" id="banner" accept="image/*"/>
+    </label>
+    <label>
+        Instance name
+        <InputText @bind-Value="@Model.Name" placeholder="@Config.Value.AccountDomain"/>
+    </label>
+    <label>
+        Instance description
+        <InputTextArea @bind-Value="@Model.Description" class="full-width resize-v" id="desc" placeholder="Welcome to my instance!"/>
+    </label>
+    <label>
+        Theme color
+        <InputText @bind-Value="@Model.ThemeColor" placeholder="#7b74cc"/>
+    </label>
+    <label>
+        Admin contact email
+        <InputText @bind-Value="@Model.AdminContact" type="email" placeholder="webmaster@example.org"/>
+    </label>
     <button class="button" type="submit">Submit</button>
 </EditForm>
 

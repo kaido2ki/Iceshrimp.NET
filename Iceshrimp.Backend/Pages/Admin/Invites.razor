@@ -44,7 +44,7 @@ Registrations = Invite</code></pre>
             <td>@invite.CreatedAt.ToDisplayString()</td>
             <td>@createdBy</td>
             <td>
-                <a class="fake-link" onclick="revokeInvite('@invite.Code', event.target)">Revoke</a>
+                <a class="fake-link danger" onclick="revokeInvite('@invite.Code', event.target)">Revoke</a>
             </td>
         </tr>
     }

@@ -16,6 +16,16 @@
     <p><strong>Warning:</strong> The configuration option <code>AcceptLdSignatures</code> is not enabled. Activities received from relays will be rejected.</p>
 }
 
+<h3>Subscribe to new relay</h3>
+<EditForm FormName="add-host" Model="Model" OnSubmit="@OnSubmit">
+    <label>
+        Inbox URI
+        <InputText @bind-Value="@Model.InboxUri" placeholder="https://relay.example.org/inbox" class="width30" required/>
+    </label>
+    <button class="button" type="submit">Submit</button>
+</EditForm>
+
+<h3>Subscribed relays</h3>
 <table>
     <thead>
     <th>URI</th>
@@ -31,7 +41,7 @@
                 <i>@(relay.Status.ToString())</i>
             </td>
             <td>
-                <a class="fake-link" onclick="removeRelay('@relay.Id', event.target)">Unsubscribe</a>
+                <a class="fake-link danger" onclick="removeRelay('@relay.Id', event.target)">Unsubscribe</a>
             </td>
         </tr>
     }
@@ -42,14 +52,6 @@
 {
     <i>No relays configured.</i>
 }
-
-<h3>Subscribe to new relay</h3>
-
-<EditForm FormName="add-host" Model="Model" OnSubmit="@OnSubmit">
-    <label for="inbox">Inbox URI</label>
-    <InputText @bind-Value="@Model.InboxUri" id="inbox" placeholder="https://relay.example.org/inbox" class="width30" required/>
-    <button class="button" type="submit">Submit</button>
-</EditForm>
 
 @code {
     [Inject]                  public required IOptionsSnapshot<Config.SecuritySection> Options      { get; set; }

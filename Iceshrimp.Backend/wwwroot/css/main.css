@@ -321,6 +321,10 @@ a {
     color: var(--link-color);
 }
 
+a.danger {
+    color: var(--danger-color);
+}
+
 .fake-link {
     color: var(--link-color);
     cursor: pointer;

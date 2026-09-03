@@ -10,17 +10,23 @@
 <AdminPageHeader Title="Edit Rule"/>
 
 <EditForm FormName="edit-rule" Model="Model" OnSubmit="OnSubmit">
-    <label for="order">Order</label>
-    <InputSelect @bind-Value="@Model.Order" id="order" disabled="@(_count == 1)">
-        @for (var i = 1; i <= _count; i++)
-        {
-            <option value="@i">@i</option>
-        }
-    </InputSelect>
-    <label for="text">Text</label>
-    <InputText @bind-Value="@Model.Text" id="text" class="width30" placeholder="Short rule" required/>
-    <label for="description">Description</label>
-    <InputText @bind-Value="@Model.Description" id="description" class="width30" placeholder="Longer rule description"/>
+    <label>
+        Order
+        <InputSelect @bind-Value="@Model.Order" disabled="@(_count == 1)">
+            @for (var i = 1; i <= _count; i++)
+            {
+                <option value="@i">@i</option>
+            }
+        </InputSelect>
+    </label>
+    <label>
+        Text
+        <InputText @bind-Value="@Model.Text" class="width30" placeholder="Short rule" required/>
+    </label>
+    <label>
+        Description
+        <InputText @bind-Value="@Model.Description" class="width30" placeholder="Longer rule description"/>
+    </label>
     <button class="button" type="submit">Submit</button>
 </EditForm>
 

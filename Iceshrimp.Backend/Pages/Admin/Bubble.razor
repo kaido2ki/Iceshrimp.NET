@@ -9,6 +9,17 @@
 @inherits AdminComponentBase
 @inject EventService EventService
 <AdminPageHeader Title="Bubble instances"/>
+
+<h3>Add bubble instance</h3>
+<EditForm FormName="add-host" Model="Model" OnSubmit="@OnSubmit">
+    <label>
+        Host
+        <InputText @bind-Value="@Model.Host" placeholder="example.org" required/>
+    </label>
+    <button class="button" type="submit">Submit</button>
+</EditForm>
+
+<h3>Instances</h3>
 <table>
     <thead>
     <th>Host</th>
@@ -25,7 +36,7 @@
             }
             <td>@host</td>
             <td>
-                <a class="fake-link" onclick="debubbleInstance('@instance.Host', event.target)">Remove</a>
+                <a class="fake-link danger" onclick="debubbleInstance('@instance.Host', event.target)">Remove</a>
             </td>
         </tr>
     }
@@ -66,13 +77,6 @@
         <input type="text" id="search" name="q" placeholder="Search..." class="flex-grow" value="@(Query ?? "")"/>
     </form>
 </div>
-
-<h3>Add bubble instance</h3>
-<EditForm FormName="add-host" Model="Model" OnSubmit="@OnSubmit">
-    <label for="host">Host</label>
-    <InputText @bind-Value="@Model.Host" id="host" placeholder="example.org" required/>
-    <button class="button" type="submit">Submit</button>
-</EditForm>
 
 @code {
     [SupplyParameterFromQuery(Name = "q")] public  string?    Query  { get; set; }

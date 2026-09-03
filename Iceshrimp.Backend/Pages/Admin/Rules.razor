@@ -33,8 +33,8 @@
                 }
             </td>
             <td>
-                <NavLink href="@($"/admin/rules/{rule.Id}")">Edit</NavLink>
-                | <a class="fake-link" onclick="removeRule('@rule.Id', event.target)">Remove</a>
+                <NavLink href="@($"/admin/rules/{rule.Id}")" class="fake-link">Edit</NavLink>
+                | <a class="fake-link danger" onclick="removeRule('@rule.Id', event.target)">Remove</a>
             </td>
         </tr>
     }
@@ -46,10 +46,14 @@
 }
 
 <EditForm FormName="add-rule" Model="Model" OnSubmit="OnSubmit">
-    <label for="text">Text</label>
-    <InputText @bind-Value="@Model.Text" id="text" class="width30" placeholder="Short rule" required/>
-    <label for="description">Description</label>
-    <InputText @bind-Value="@Model.Description" id="description" class="width30" placeholder="Longer rule description"/>
+    <label>
+        Text
+        <InputText @bind-Value="@Model.Text" class="width30" placeholder="Short rule" required/>
+    </label>
+    <label>
+        Description
+        <InputText @bind-Value="@Model.Description" class="width30" placeholder="Longer rule description"/>
+    </label>
     <button class="button" type="submit">Submit</button>
 </EditForm>
 
