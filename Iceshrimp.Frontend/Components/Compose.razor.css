@@ -131,6 +131,14 @@ input[type="number"] {
     }
 }
 
+.header ::deep .avatar {
+    margin-left: auto;
+}
+
+.header ::deep .avatar + .post-btn {
+    margin-left: 0;
+}
+
 ::deep {
     .btn[disabled],
     .post-btn[disabled] {

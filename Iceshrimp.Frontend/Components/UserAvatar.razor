@@ -9,7 +9,7 @@
     </div>
 }
 
-<img class="avatar"
+<img class="avatar@(OnClick.HasDelegate ? " clickable" : "")"
      style="--size: @Size;"
      src="@(LoadError ? $"/identicon/{User.Id}" : User.AvatarUrl)"
      alt="@(User.AvatarAlt ?? FallbackAlt())"

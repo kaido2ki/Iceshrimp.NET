@@ -10,8 +10,11 @@
     color: transparent;
     z-index: 1;
     position: sticky;
-    cursor: pointer;
     user-select: none;
+}
+
+.avatar.clickable {
+    cursor: pointer;
 }
  
 .cat-ears {

@@ -28,6 +28,10 @@
             <Dropdown Id="compose-visibility" TBind="NoteVisibility" Elements="@DropDownCreate()"
                       @bind-Value="NoteDraft.Visibility"/>
         }
+        @if (SessionService.Current != null)
+        {
+            <UserAvatar Size="2em" User="SessionService.Current"/>
+        }
         <StateButton OnClick="SendNote" @ref="SendButton" ExtraClasses="post-btn" AriaLabel="post"
                      Disabled="@SendingDisabled()">
             <Initial>
