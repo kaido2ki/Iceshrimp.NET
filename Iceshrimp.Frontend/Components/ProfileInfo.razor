@@ -21,20 +21,30 @@
     }
     <div class="top-row">
         <div class="badge-group">
+            @if (UserProfile.Relations.HasFlag(Relations.FollowedBy))
+            {
+                <span class="badge accent">
+                    <Icon Name="Icons.HandWaving" Size="1.3em"/>
+                    @Loc[L.User_Badge_FollowedBy]
+                </span>
+            }
             @if (UserProfile.Lang != null && (UserProfile.Pronouns?.TryGetValue(UserProfile.Lang, out var pronouns) ?? false))
             {
-                <span class="badge">@pronouns</span>
+                <span class="badge notice">
+                    <Icon Name="Icons.IdentificationCard" Size="1.3em"/>
+                    @pronouns
+                </span>
             }
             @switch (UserProfile.Role)
             {
                 case Role.Moderator:
-                    <span class="badge">
+                    <span class="badge success">
                         <Icon Name="Icons.Shield" Size="1.3em"/>
                         @Loc[L.User_Badge_ModeratorRole]
                     </span>
                     break;
                 case Role.Admin:
-                    <span class="badge">
+                    <span class="badge success">
                         <Icon Name="Icons.ShieldStar" Size="1.3em"/>
                         @Loc[L.User_Badge_AdminRole]
                     </span>
@@ -46,26 +56,20 @@
             }
             @if (User.IsBot)
             {
-                <span class="badge">
+                <span class="badge notice">
                     <Icon Name="Icons.Robot" Size="1.3em"/>
                     @Loc[L.User_Badge_IsBot]
                 </span>
             }
             @if (UserProfile.IsLocked)
             {
-                <span class="badge">
+                <span class="badge warning">
                     <Icon Name="Icons.Lock" Size="1.3em"/>
                     @Loc[L.User_Badge_IsLocked]
                 </span>
             }
-            @if (UserProfile.Relations.HasFlag(Relations.FollowedBy))
-            {
-                <span class="badge">
-                    @Loc[L.User_Badge_FollowedBy]
-                </span>
-            }
         </div>
-        <div class="button-group profile-buttons">
+        <div class="button-group">
             <FollowButton User="User" UserProfile="UserProfile"/>
             <MenuButton ButtonClass="button context-button">
                 <ButtonContent>
@@ -201,7 +205,7 @@
         <details class="memo-details">
             <summary>@Loc[L.User_Memo]</summary>
             <EditForm OnSubmit="SetMemo" Model="MemoForm">
-                <textarea class="input memo" @bind="@MemoForm.Text" @bind:event="oninput" @bind:after="ResetMemoButton" rows="5"></textarea>
+                <textarea class="full-width memo resize-v" @bind="@MemoForm.Text" @bind:event="oninput" @bind:after="ResetMemoButton" rows="5"></textarea>
                 <StateButton ExtraClasses="button" @ref="@MemoButton" OnClick="SetMemo">
                     <Initial>@Loc[L.StateButton_SaveChanges]</Initial>
                     <Success>@Loc[L.StateButton_Saved]</Success>

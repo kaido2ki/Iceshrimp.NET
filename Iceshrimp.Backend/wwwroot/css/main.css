@@ -475,6 +475,11 @@ details.card::details-content {
     border-color: var(--danger-color);
 }
 
+.badge.accent {
+    color: var(--accent-secondary-color);
+    border-color: var(--accent-primary-color);
+}
+
 
 /*Blazor stuff, Fix Later*/
 .validation-message {

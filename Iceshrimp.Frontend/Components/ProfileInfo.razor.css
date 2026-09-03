@@ -63,19 +63,20 @@
     margin: 0.5rem 0;
 }
 
-.badge-group, .profile-buttons {
-    align-items: start;
+.top-row .badge-group {
+    flex: 1 1 0;
+}
+
+.top-row .button-group {
+    flex: 1 1 0;
+    justify-content: end;
 }
 
 ::deep {
     /* For some reason ph-lock aligns differently than the other icons. This fixes that */
     .badge .icon-wrapper:has(.ph-lock) {
-        align-self: center;
+        align-self: end;
     }
-}
-
-.profile-buttons {
-    align-items: center;
 }
 
 .context-button {
@@ -91,17 +92,11 @@
 .memo {
     box-sizing: border-box;
     margin: 0.5em 0 0;
-    resize: vertical;
 }
 
 @media screen and (width < 600px) {
     .top-row {
-        flex-direction: column;
         align-items: start;
-    }
-
-    .profile-buttons {
-        align-self: end;
     }
 
     ::deep .field {
