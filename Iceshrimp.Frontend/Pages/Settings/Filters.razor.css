@@ -45,7 +45,6 @@
     .filter-modal {
         max-width: unset;
         min-height: 100vh;
-        padding-top: 0;
         border: none;
         border-radius: 0;
         text-align: start;
