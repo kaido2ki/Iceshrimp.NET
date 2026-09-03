@@ -25,7 +25,7 @@
             <div class="badge-group">
                 @foreach (var badge in _badges)
                 {
-                    <span class="badge">
+                    <span class="badge @(badge.Class ?? "")">
                         <Icon Name="badge.Icon" Size="1.3em"/>
                         @badge.Label
                     </span>

@@ -32,7 +32,7 @@ public partial class UserPreview(
 	private string?      _birthday;
 	private bool         ShowMedia => security.Value.PublicPreview > Enums.PublicPreview.RestrictedNoMedia;
 
-	private List<(IconName Icon, string Label)>                 _badges = [];
+	private List<(IconName Icon, string Label, string? Class)>  _badges = [];
 	private List<(string Name, string Value, bool? IsVerified)> _fields = [];
 
 	private List<PreviewNote> _pinnedNotes = [];
@@ -102,10 +102,10 @@ public partial class UserPreview(
 		if (user is { UserProfile: not null })
 			_fields = user.UserProfile.Fields.Select(p => (p.Name, p.Value, p.IsVerified)).ToList();
 
-		if (user?.IsAdmin ?? false) _badges.Add((Icons.ShieldStar, "Admin"));
-		if (user?.IsModerator ?? false) _badges.Add((Icons.Shield, "Moderator"));
-		if (user?.IsBot ?? false) _badges.Add((Icons.Robot, "Automated"));
-		if (user?.IsLocked ?? false) _badges.Add((Icons.Lock, "Private"));
+		if (user?.IsAdmin ?? false) _badges.Add((Icons.ShieldStar, "Admin", "success"));
+		if (user?.IsModerator ?? false) _badges.Add((Icons.Shield, "Moderator", "success"));
+		if (user?.IsBot ?? false) _badges.Add((Icons.Robot, "Automated", "notice"));
+		if (user?.IsLocked ?? false) _badges.Add((Icons.Lock, "Private", "warning"));
 
 		if (user is { IsLocalUser: true, UserSettings.PrivateMode: false })
 		{
