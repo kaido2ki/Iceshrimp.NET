@@ -37,6 +37,10 @@
     overflow-wrap: break-word;
 }
 
+.cw-field {
+    width: 100%;
+}
+
 .cw-button {
     font-size: 0.75em;
     padding: 0.1em 0.25em;
