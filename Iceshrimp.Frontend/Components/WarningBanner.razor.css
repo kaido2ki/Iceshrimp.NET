@@ -6,7 +6,7 @@
     border-radius: 0.5rem;
 }
 
-.warning-banner a {
+.warning-banner ::deep a, .warning-banner ::deep a:visited {
     color: contrast-color(var(--warning-color));
     font-weight: bold;
 }
