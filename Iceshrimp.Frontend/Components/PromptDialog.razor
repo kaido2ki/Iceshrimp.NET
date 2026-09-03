@@ -12,7 +12,7 @@
         <div class="dialog-header">@Text</div>
         @if (MultiLine)
         {
-            <textarea class="prompt" @bind="Input" @bind:event="oninput" rows="5" placeholder="@Placeholder" autofocus></textarea>
+            <textarea class="full-width resize" @bind="Input" @bind:event="oninput" rows="5" placeholder="@Placeholder" autofocus></textarea>
         }
         else
         {
