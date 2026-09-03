@@ -34,8 +34,8 @@
 @if (State is State.Empty or State.Error or State.Loaded)
 {
     <div class="emoji-search">
-        <input @bind="EmojiFilter" class="search" type="text" placeholder="@Loc[L.Common_Name]" aria-label="search name"/>
-        <input @bind="HostFilter" class="search" type="text" placeholder="@Loc[L.User_Host]" aria-label="search host"/>
+        <input @bind="EmojiFilter" class="full-width" type="text" placeholder="@Loc[L.Common_Name]" aria-label="search name"/>
+        <input @bind="HostFilter" class="full-width" type="text" placeholder="@Loc[L.User_Host]" aria-label="search host"/>
         <button @onclick="Search" class="button">@Loc[L.Search]</button>
     </div>
 }

@@ -1,16 +1,11 @@
 .emoji-search {
     display: flex;
     margin-top: 1rem;
-
-    button {
-        margin-right: 0;
-    }
+    gap: 0.5rem;
 }
 
-.search {
-    display: inline-block;
-    width: 100%;
-    margin-left: 0;
+.emoji-search ::deep button {
+    margin: 0;
 }
 
 .category-name {
@@ -37,6 +32,10 @@
 }
 
 @media screen and (width < 600px) {
+    .emoji-search {
+        flex-direction: column;
+    }
+
     .emoji-list {
         flex-direction: column;
     }
