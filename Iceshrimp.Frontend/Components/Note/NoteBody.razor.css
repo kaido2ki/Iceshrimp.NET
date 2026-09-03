@@ -96,6 +96,14 @@
     white-space: normal;
 }
 
+.quote.shallow {
+    color: var(--notice-color);
+}
+
+.quote.inaccessible {
+    color: var(--danger-color);
+}
+
 .clickable {
     cursor: pointer;
 }

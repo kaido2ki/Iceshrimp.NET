@@ -67,15 +67,15 @@
         }
         else if (NoteBase.QuoteId != null)
         {
-            <div @onclick="OpenQuote" @onclick:stopPropagation="true" class="quote">
+            <div @onclick="OpenQuote" @onclick:stopPropagation="true" class="quote shallow">
                 <Icon Name="Icons.Quotes"/>
                 @Loc[L.Note_OpenQuote]
             </div>
         }
         else if (NoteBase is NoteWithQuote { QuoteInaccessible: true })
         {
-            <div class="quote">
-                <Icon Name="Icons.Quotes"/>
+            <div class="quote inaccessible">
+                <Icon Name="Icons.Question"/>
                 @Loc[L.Note_QuoteInaccessible]
             </div>
         }
