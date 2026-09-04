@@ -64,7 +64,7 @@ public class NoteRenderer(
 
 		res.Quote             = quote;
 		res.QuoteId           = note.RenoteId;
-		res.QuoteInaccessible = note.Renote == null && (note.ReplyId != null || note.RenoteUri != null);
+		res.QuoteInaccessible = note.Renote == null && (note.RenoteId != null || note.RenoteUri != null);
 
 		return res;
 	}
