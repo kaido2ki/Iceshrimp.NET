@@ -50,7 +50,7 @@ public class PollController(
 	}
 
 	[HttpPost("votes")]
-	[Authorize("read:statuses")]
+	[Authorize("write:statuses")]
 	[ProducesResults(HttpStatusCode.OK)]
 	[ProducesErrors(HttpStatusCode.BadRequest, HttpStatusCode.NotFound)]
 	public async Task<PollEntity> VotePoll(string id, [FromHybrid] PollSchemas.PollVoteRequest request)

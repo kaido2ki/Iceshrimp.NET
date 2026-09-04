@@ -23,7 +23,7 @@ namespace Iceshrimp.Backend.Controllers.Pleroma;
 public class NotificationController(DatabaseContext db, NotificationRenderer notificationRenderer) : ControllerBase
 {
 	[HttpPost("/api/v1/pleroma/notifications/read")]
-	[Authorize("read:notifications")]
+	[Authorize("write:notifications")]
 	[ProducesResults(HttpStatusCode.OK)]
 	public async Task<List<NotificationEntity>> MarkNotificationsAsRead(
 		[FromHybrid] PleromaNotificationSchemas.ReadNotificationsRequest request

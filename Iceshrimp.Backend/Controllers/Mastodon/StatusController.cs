@@ -375,7 +375,7 @@ public class StatusController(
 	}
 
 	[HttpPost("{id}/reblog")]
-	[Authorize("write:favourites")]
+	[Authorize("write:statuses")]
 	[ProducesResults(HttpStatusCode.OK)]
 	[ProducesErrors(HttpStatusCode.NotFound)]
 	public async Task<IPostNotePayload> Renote(string id, [FromHybrid] StatusSchemas.ReblogRequest? request)
@@ -412,7 +412,7 @@ public class StatusController(
 	}
 
 	[HttpPost("{id}/unreblog")]
-	[Authorize("write:favourites")]
+	[Authorize("write:statuses")]
 	[ProducesResults(HttpStatusCode.OK)]
 	[ProducesErrors(HttpStatusCode.NotFound)]
 	public async Task<StatusEntity> UndoRenote(string id)
