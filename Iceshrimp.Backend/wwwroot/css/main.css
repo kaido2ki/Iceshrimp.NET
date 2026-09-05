@@ -211,6 +211,36 @@ dialog .dialog-footer {
     }
 }
 
+.popover-menu[popover] {
+    margin: 0;
+    inset: auto;
+    background-color: var(--foreground-color);
+    border: var(--border-color) solid 0.1rem;
+    border-radius: 0.5rem;
+    box-shadow: 0 0 1rem var(--shadow-color);
+}
+
+/* Prefer to use position-area if it is available */
+@supports (position-area: end span-all) {
+    @position-try --popover-menu-top {
+        position-area: start span-all;
+    }
+
+    .popover-menu[popover] {
+        position-area: end span-all;
+        position-try: most-height --popover-menu-top;
+    }
+}
+
+/* Fall back to anchor() if position-area is unavailable */
+@supports not (position-area: end span-all) {
+    .popover-menu[popover] {
+        position-anchor: auto;
+        top: anchor(bottom);
+        justify-self: anchor-center;
+    }
+}
+
 button {
     border-radius: 8px;
     border: 0;
