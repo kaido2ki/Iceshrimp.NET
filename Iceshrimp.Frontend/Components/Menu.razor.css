@@ -1,13 +1,6 @@
 .menu {
-    margin: 0;
-    inset: auto;
-    position-area: bottom center;
-    background-color: var(--foreground-color);
-    border-radius: 0.5rem;
-    border: var(--border-color) solid 0.1rem;
     width: 15rem;
     max-width: 20rem;
-    box-shadow: 0 0 1rem var(--shadow-color);
 }
 
 .elements {
@@ -34,6 +27,7 @@
         left: 0;
         position: fixed;
         position-area: none;
+        position-try: unset;
         width: 100vw;
         max-width: 100vw;
         border-bottom: none;

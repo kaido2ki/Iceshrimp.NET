@@ -1,7 +1,7 @@
 @using Iceshrimp.Frontend.Core.Services
 @inject JsService Js;
 
-<div @ref="Popover" class="menu" id="@Id" popover="auto">
+<div @ref="Popover" class="popover-menu menu" id="@Id" popover="auto">
     <div class="elements" @onclick="Close">
         @ChildContent
     </div>

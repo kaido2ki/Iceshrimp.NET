@@ -9,7 +9,7 @@
 @inject ISyncLocalStorageService       LocalStorage;
 @inject MetadataService                Meta;
 
-<div @ref="Popover" class="emoji-picker" popover="auto">
+<div @ref="Popover" class="popover-menu emoji-picker" popover="auto">
     <div class="controls">
         <button class="close" @onclick="Close"><Icon Name="Icons.X"/></button>
         <input @bind="EmojiFilter" @bind:event="oninput" @bind:after="FilterEmojis" class="search" type="text" placeholder="Search" aria-label="search"/>
