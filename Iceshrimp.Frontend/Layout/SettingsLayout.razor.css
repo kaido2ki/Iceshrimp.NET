@@ -28,6 +28,13 @@
     }
 }
 
+.body .loading {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding-top: 25vh;
+}
+
 @media screen and (width < 840px) {
     .sidebar {
         display: none;

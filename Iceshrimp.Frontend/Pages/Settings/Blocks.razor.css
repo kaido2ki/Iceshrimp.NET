@@ -1,0 +1,6 @@
+.block ::deep .profile-card {
+    margin: 0;
+    padding: 0;
+    max-width: unset;
+    background-color: unset;
+}

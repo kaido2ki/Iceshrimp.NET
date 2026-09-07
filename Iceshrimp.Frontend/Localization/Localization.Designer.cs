@@ -3308,5 +3308,17 @@ namespace Iceshrimp.Frontend.Localization {
                 return ResourceManager.GetString("Preferences_Push_Disable", resourceCulture);
             }
         }
+        
+        internal static string Settings_Blocks {
+            get {
+                return ResourceManager.GetString("Settings_Blocks", resourceCulture);
+            }
+        }
+        
+        internal static string Settings_Blocks_Empty {
+            get {
+                return ResourceManager.GetString("Settings_Blocks_Empty", resourceCulture);
+            }
+        }
     }
 }

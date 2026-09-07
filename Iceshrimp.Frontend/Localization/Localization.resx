@@ -1651,4 +1651,10 @@
     <data name="Preferences_Push_Disable" xml:space="preserve">
         <value>Disable push notifications</value>
     </data>
+    <data name="Settings_Blocks" xml:space="preserve">
+        <value>Blocks</value>
+    </data>
+    <data name="Settings_Blocks_Empty" xml:space="preserve">
+        <value>No blocks were found.</value>
+    </data>
 </root>

@@ -1,3 +1,4 @@
+using Iceshrimp.Frontend.Core.Miscellaneous;
 using Iceshrimp.Frontend.Core.Services;
 using Iceshrimp.Shared.Schemas.Web;
 using Microsoft.AspNetCore.Components.Forms;
@@ -20,6 +21,9 @@ internal class SettingsControllerModel(ApiClient api)
 
 	public Task DisableTwoFactorAsync(TwoFactorRequest request) =>
 		api.CallAsync(HttpMethod.Post, "settings/2fa/disable", data: request);
+
+	public Task<List<UserResponse>> GetBlockingAsync(PaginationQuery pq) =>
+		api.CallAsync<List<UserResponse>>(HttpMethod.Get, "settings/blocking", pq);
 
 	public Task<DriveFileResponse> ExportBlockingAsync() =>
 		api.CallAsync<DriveFileResponse>(HttpMethod.Post, "settings/export/blocking");

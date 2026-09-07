@@ -1,0 +1,109 @@
+@page "/settings/blocks"
+@using Iceshrimp.Assets.PhosphorIcons
+@using Iceshrimp.Frontend.Components
+@using Iceshrimp.Frontend.Core.Miscellaneous
+@using Iceshrimp.Frontend.Core.Services
+@using Iceshrimp.Shared.Schemas.Web
+@using Microsoft.AspNetCore.Authorization
+@using Microsoft.AspNetCore.Components.Sections
+@attribute [Authorize]
+@layout SettingsLayout
+@inject ApiService                     Api;
+@inject GlobalComponentSvc             Global;
+@inject IStringLocalizer<Localization> Loc;
+
+<HeadTitle Text="@Loc[L.Settings_Blocks]"/>
+<SectionContent SectionName="top-bar-icon">
+    <a class="action mobile-back" href="/settings">
+        <Icon Name="Icons.ArrowLeft"/>
+    </a>
+    <Icon Name="Icons.Prohibit"/>
+</SectionContent>
+<SectionContent SectionName="top-bar">
+    @Loc[L.Settings_Blocks]
+</SectionContent>
+<SectionContent SectionName="top-bar-actions">
+</SectionContent>
+
+<div class="body">
+    @if (State == State.Loaded)
+    {
+        @foreach (var user in Users)
+        {
+            <article id="@user.Id" class="card block">
+                <UserProfileCard User="user"/>
+                <button @onclick="() => Unblock(user)" class="card-button danger">
+                    <Icon Name="Icons.X"/>
+                    @Loc[L.User_Menu_Block_Remove]
+                </button>
+            </article>
+        }
+        <ScrollEnd IntersectionChange="LoadMore" ManualLoad="LoadMore"/>
+    }
+    else if (State == State.Empty)
+    {
+        <i>@Loc[L.Settings_Blocks_Empty]</i>
+    }
+    else if (State == State.Loading)
+    {
+        <div class="loading">
+            <LoadingSpinner Scale="2"/>
+        </div>
+    }
+</div>
+
+@code {
+    private State              State { get; set; }
+    private List<UserResponse> Users { get; set; } = [];
+    private string?            MinId { get; set; }
+
+    protected override async Task OnInitializedAsync()
+    {
+        State = State.Loading;
+
+        try
+        {
+            Users = await Api.Settings.GetBlockingAsync(new PaginationQuery());
+            MinId = Users.LastOrDefault()?.Id;
+
+            State = Users.Count != 0 ? State.Loaded : State.Empty;
+        }
+        catch (ApiException e)
+        {
+            await Global.NoticeDialog?.DisplayApiError(e)!;
+            State = State.Error;
+        }
+
+        StateHasChanged();
+    }
+
+    private async Task LoadMore()
+    {
+        try
+        {
+            var res = await Api.Settings.GetBlockingAsync(new PaginationQuery { MinId = MinId });
+            Users.AddRange(res);
+            MinId = Users.LastOrDefault()?.Id;
+        }
+        catch (ApiException e)
+        {
+            await Global.NoticeDialog?.DisplayApiError(e)!;
+        }
+    }
+
+    private async Task Unblock(UserResponse user)
+    {
+        try
+        {
+            await Api.Users.UnblockUserAsync(user.Id);
+            Users.Remove(user);
+            await Global.NoticeDialog?.Display(Loc[L.User_UnblockDialog_Notice, user.DisplayName ?? user.Username])!;
+        }
+        catch (ApiException e)
+        {
+            await Global.NoticeDialog?.DisplayApiError(e)!;
+        }
+
+        StateHasChanged();
+    }
+}

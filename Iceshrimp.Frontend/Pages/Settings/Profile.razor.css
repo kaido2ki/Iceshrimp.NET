@@ -23,13 +23,6 @@
     }
 }
 
-.loading {
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    padding-top: 25vh;
-}
-
 .title {
     font-size: 0.9rem;
 }
