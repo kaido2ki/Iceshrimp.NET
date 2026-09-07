@@ -147,6 +147,7 @@ public class InstanceController(
 
 	[HttpGet("/api/v1/instance/bubble_domains")]
 	[Authenticate]
+	[Authorize]
 	[ProducesResults(HttpStatusCode.OK)]
 	public async Task<List<string>> GetBubbleDomains()
 	{
@@ -155,6 +156,7 @@ public class InstanceController(
 
 	[HttpGet("/api/v1/instance/peers")]
 	[Authenticate]
+	[Authorize]
 	[ProducesResults(HttpStatusCode.OK)]
 	public async Task<List<string>> GetPeers()
 	{
@@ -163,6 +165,7 @@ public class InstanceController(
 
 	[HttpGet("/api/v1/instance/domain_blocks")]
 	[Authenticate]
+	[Authorize]
 	[ProducesResults(HttpStatusCode.OK)]
 	public async Task<List<string>> GetDomainBlocks()
 	{
