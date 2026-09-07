@@ -2,6 +2,8 @@ using System.Net;
 using System.Net.Mime;
 using System.Text;
 using Iceshrimp.Backend.Controllers.Shared.Attributes;
+using Iceshrimp.Backend.Controllers.Shared.Schemas;
+using Iceshrimp.Backend.Controllers.Web.Renderers;
 using Iceshrimp.Backend.Core.Configuration;
 using Iceshrimp.Backend.Core.Database;
 using Iceshrimp.Backend.Core.Database.Tables;
@@ -33,6 +35,7 @@ public class SettingsController(
 	DatabaseContext db,
 	DriveService driveSvc,
 	ImportExportService importExportSvc,
+	UserRenderer userRenderer,
 	MetaService meta,
 	IOptions<Config.InstanceSection> instance
 ) : ControllerBase
@@ -218,6 +221,26 @@ public class SettingsController(
 		settings.TwoFactorTempSecret = null;
 
 		await db.SaveChangesAsync();
+	}
+
+	/// <summary>
+	/// List blocked users
+	/// </summary>
+	[HttpGet("blocking")]
+	[ProducesResults(HttpStatusCode.OK)]
+	[RestPagination(20, 40)]
+	public async Task<List<UserResponse>> GetBlocking(PaginationQuery pq)
+	{
+		var user = HttpContext.GetUserOrFail();
+
+		var blocking = await db.Blockings
+		                       .Where(p => p.Blocker == user)
+		                       .Include(p => p.Blockee.UserProfile)
+		                       .Select(p => p.Blockee)
+		                       .Paginate(pq, ControllerContext)
+		                       .ToListAsync();
+
+		return await userRenderer.RenderManyAsync(blocking).ToListAsync();
 	}
 
 	/// <summary>
