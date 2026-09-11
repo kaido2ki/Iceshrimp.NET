@@ -146,7 +146,9 @@ public class ObjectStorageService(IOptions<Config.StorageSection> config, HttpCl
 
 	private string GetKeyWithPrefix(string filename)
 	{
-		return !string.IsNullOrWhiteSpace(_prefix) ? _prefix + "/" + filename : filename;
+		if (string.IsNullOrWhiteSpace(_prefix)) return filename;
+		var prefixSlash = _prefix + "/";
+		return filename.StartsWith(prefixSlash) ? filename : prefixSlash + filename;
 	}
 
 	private class EmptyBlob(string key, Stream stream, IReadOnlyDictionary<string, string> properties) : IBlob
