@@ -41,7 +41,7 @@ public static class WebApplicationStaticAssetsExtensions
 			try
 			{
 				ctx.Response.Headers.ContentLength   = length;
-				ctx.Response.Headers.ContentEncoding = "plain";
+				ctx.Response.Headers.ContentEncoding = [];
 
 				await using var brotli = new BrotliStream(compressed, CompressionMode.Decompress);
 				compressed.Seek(0, SeekOrigin.Begin);
