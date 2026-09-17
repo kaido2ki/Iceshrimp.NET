@@ -30,15 +30,15 @@
     {
         @foreach (var user in Users)
         {
-            <article id="@user.Id" class="card block">
+            <article @key="user.Id" id="@user.Id" class="card block">
                 <UserProfileCard User="user"/>
-                <button @onclick="() => Unblock(user)" class="card-button danger">
+                <button @onclick="() => UnblockAsync(user)" class="card-button danger">
                     <Icon Name="Icons.X"/>
                     @Loc[L.User_Menu_Block_Remove]
                 </button>
             </article>
         }
-        <ScrollEnd IntersectionChange="LoadMore" ManualLoad="LoadMore"/>
+        <ScrollEnd IntersectionChange="LoadMoreAsync" ManualLoad="LoadMoreAsync"/>
     }
     else if (State == State.Empty)
     {
@@ -77,12 +77,12 @@
         StateHasChanged();
     }
 
-    private async Task LoadMore()
+    private async Task LoadMoreAsync()
     {
         try
         {
             var res = await Api.Settings.GetBlockingAsync(new PaginationQuery { MinId = MinId });
-            Users.AddRange(res);
+            Users.AddRange(res.Where(r => Users.All(p => p.Id != r.Id)));
             MinId = Users.LastOrDefault()?.Id;
         }
         catch (ApiException e)
@@ -91,7 +91,7 @@
         }
     }
 
-    private async Task Unblock(UserResponse user)
+    private async Task UnblockAsync(UserResponse user)
     {
         try
         {
