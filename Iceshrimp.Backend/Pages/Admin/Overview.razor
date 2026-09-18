@@ -31,7 +31,7 @@
         <td>@_activeInstances</td>
     </tr>
     <tr>
-        <td>Total notes</td>
+        <td>Total notes (estimate)</td>
         <td>@_totalNotes</td>
     </tr>
     <tr>
@@ -66,7 +66,7 @@
     {
         _totalInstances    = await Cache.FetchValueAsync("stats:totalInstances", TimeSpan.FromHours(1), () => Database.Instances.CountAsync());
         _activeInstances   = await Cache.FetchValueAsync("stats:activeInstances", TimeSpan.FromHours(1), () => Database.Instances.CountAsync(p => !p.IsNotResponding));
-        _totalNotes        = await Cache.FetchValueAsync("stats:totalNotes", TimeSpan.FromHours(1), () => Database.Notes.CountAsync());
+        _totalNotes        = await Cache.FetchValueAsync("stats:totalNotes", TimeSpan.FromHours(1), () => Database.GetRowEstimateAsync("note"));
         _localNotes        = await Cache.FetchValueAsync("stats:localNotes", TimeSpan.FromHours(1), () => Database.Notes.CountAsync(p => p.User.IsLocalUser));
         _totalNotesLastDay = await Cache.FetchValueAsync("stats:totalNotesLastDay", TimeSpan.FromHours(1), () => Database.Notes.CountAsync(p => p.CreatedAt > DateTime.UtcNow - TimeSpan.FromDays(1)));
         _localNotesLastDay = await Cache.FetchValueAsync("stats:localNotesLastDay", TimeSpan.FromHours(1), () => Database.Notes.CountAsync(p => p.CreatedAt > DateTime.UtcNow - TimeSpan.FromDays(1) && p.User.IsLocalUser));

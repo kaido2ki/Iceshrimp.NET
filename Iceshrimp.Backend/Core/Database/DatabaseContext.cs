@@ -272,6 +272,12 @@ public class DatabaseContext(DbContextOptions<DatabaseContext> options)
 	public Task<int> GetJobQueuedCountAsync(string queue, CancellationToken token) =>
 		Jobs.CountAsync(p => p.Queue == queue && p.Status == Job.JobStatus.Queued, token);
 
+	public Task<int> GetRowEstimateAsync(string tableName) =>
+		Database.SqlQuery<int>($"""
+		                         SELECT "reltuples"::int AS "Value" FROM "pg_class" WHERE "relname" = {tableName}
+		                         """)
+		        .SingleAsync();
+
 	[SuppressMessage("ReSharper", "ClassNeverInstantiated.Global", Justification = "Instantiated by EF")]
 	public record DelayedDeliverTarget(string Host, int Count);
 	
