@@ -34,6 +34,7 @@ public class TranslationController(
 		var user = HttpContext.GetUserOrFail();
 		var note = await db.Notes
 		                   .Where(p => p.Id == id)
+		                   .Include(p => p.Poll)
 		                   .IncludeCommonProperties()
 		                   .FilterHidden(user, db, false, false,
 		                                 filterMentions: false)
