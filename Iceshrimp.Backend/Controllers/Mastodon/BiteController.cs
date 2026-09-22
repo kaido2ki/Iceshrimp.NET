@@ -39,6 +39,7 @@ public class BiteController(DatabaseContext db, BiteService biteSvc) : Controlle
 	}
 
 	[HttpPost("accounts/{id}/bite")]
+	[HttpPost("users/{id}/bite")]    // DEPRECATED, use "accounts" instead of "users"
 	[Authenticate("write:bites")]
 	[ProducesResults(HttpStatusCode.OK)]
 	[ProducesErrors(HttpStatusCode.BadRequest, HttpStatusCode.NotFound)]
