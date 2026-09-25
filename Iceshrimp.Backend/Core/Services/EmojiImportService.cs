@@ -22,7 +22,7 @@ public class EmojiZipEntry
 
 public class EmojiZipMeta
 {
-	public required ushort          MetaVersion { get; set; }
+	public          ushort?         MetaVersion { get; set; }
 	public required EmojiZipEntry[] Emojis      { get; set; }
 }
 
