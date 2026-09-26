@@ -227,6 +227,8 @@ public sealed class Config : IServiceConfiguration
 
 		[Range(0, 128)] public int ImageProcessorConcurrency { get; init; } = 8;
 
+		public bool VipsGammaCorrectLinearScaling { get; init; } = true;
+
 		public bool VipsAllowUntrustedJxl { get; init; } = false;
 		public bool VipsAllowUntrustedJ2k { get; init; } = false;
 		public bool VipsAllowUntrustedSvg { get; init; } = false;

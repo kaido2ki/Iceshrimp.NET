@@ -14,6 +14,7 @@ public class VipsProcessor : ImageProcessorBase, IImageProcessor,
                              ISingletonService, IConditionalService<Config>, IService<IImageProcessor>
 {
 	private readonly ILogger<VipsProcessor> _logger;
+	private readonly IOptions<Config.MediaProcessingSection> _config;
 
 	public bool CanIdentify         => true;
 	public bool CanGenerateBlurhash => true;
@@ -28,6 +29,7 @@ public class VipsProcessor : ImageProcessorBase, IImageProcessor,
 	) : base("LibVips", 0)
 	{
 		_logger = logger;
+		_config = config;
 
 		//TODO: Implement something similar to https://github.com/lovell/sharp/blob/da655a1859744deec9f558effa5c9981ef5fd6d3/lib/utility.js#L153C5-L158
 		NetVips.NetVips.Concurrency = 1;
@@ -134,7 +136,7 @@ public class VipsProcessor : ImageProcessorBase, IImageProcessor,
 		return new VipsImageInfo(image, mime);
 	}
 
-	private static MemoryStream EncodeWebp(byte[] buf, ImageFormat.Webp opts)
+	private MemoryStream EncodeWebp(byte[] buf, ImageFormat.Webp opts)
 	{
 		using var image  = Thumbnail(buf, opts.TargetRes);
 		var       stream = new MemoryStream();
@@ -143,7 +145,7 @@ public class VipsProcessor : ImageProcessorBase, IImageProcessor,
 		return stream;
 	}
 
-	private static MemoryStream EncodeAvif(byte[] buf, ImageFormat.Avif opts)
+	private MemoryStream EncodeAvif(byte[] buf, ImageFormat.Avif opts)
 	{
 		using var image  = Thumbnail(buf, opts.TargetRes);
 		var       stream = new MemoryStream();
@@ -153,7 +155,7 @@ public class VipsProcessor : ImageProcessorBase, IImageProcessor,
 		return stream;
 	}
 
-	private static MemoryStream EncodeJxl(byte[] buf, ImageFormat.Jxl opts)
+	private MemoryStream EncodeJxl(byte[] buf, ImageFormat.Jxl opts)
 	{
 		using var image  = Thumbnail(buf, opts.TargetRes);
 		var       stream = new MemoryStream();
@@ -162,7 +164,7 @@ public class VipsProcessor : ImageProcessorBase, IImageProcessor,
 		return stream;
 	}
 
-	private static MemoryStream EncodePng(byte[] buf, ImageFormat.Png opts)
+	private MemoryStream EncodePng(byte[] buf, ImageFormat.Png opts)
 	{
 		using var image  = Thumbnail(buf, opts.TargetRes);
 		var       stream = new MemoryStream();
@@ -183,9 +185,9 @@ public class VipsProcessor : ImageProcessorBase, IImageProcessor,
 		});
 	}
 
-	private static Image Thumbnail(byte[] buf, int targetRes)
+	private Image Thumbnail(byte[] buf, int targetRes)
 	{
-		using var image = Image.ThumbnailBuffer(buf, targetRes, height: targetRes, size: Enums.Size.Down);
+		using var image = Image.ThumbnailBuffer(buf, targetRes, height: targetRes, size: Enums.Size.Down, linear: _config.Value.VipsGammaCorrectLinearScaling);
 		return StripMetadata(image);
 	}
 
