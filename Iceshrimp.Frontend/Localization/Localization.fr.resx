@@ -435,7 +435,7 @@
         <value>Citez cette note !</value>
     </data>
     <data name="Update_Notice" xml:space="preserve">
-        <value>Mise à jour requise !</value>
+        <value>Mise à jour du client requise !</value>
     </data>
     <data name="Update_Codename" xml:space="preserve">
         <value>Nom de code</value>

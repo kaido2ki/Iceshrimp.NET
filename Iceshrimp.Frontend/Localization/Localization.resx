@@ -449,7 +449,7 @@
         <value>Quote this note!</value>
     </data>
     <data name="Update_Notice" xml:space="preserve">
-        <value>Update required!</value>
+        <value>Client update required!</value>
     </data>
     <data name="Update_Codename" xml:space="preserve">
         <value>Codename</value>
