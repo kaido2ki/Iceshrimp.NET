@@ -29,7 +29,7 @@
         <PackageReference Include="EntityFrameworkCore.Exceptions.PostgreSQL" Version="10.0.1" />
         <PackageReference Include="EntityFrameworkCore.Projectables" Version="[5.0.2]" />
         <PackageReference Include="FlexLabs.EntityFrameworkCore.Upsert" Version="10.0.0" />
-        <PackageReference Include="Iceshrimp.Assets.Fonts" Version="1.2.0" />
+        <PackageReference Include="Iceshrimp.Assets.Fonts" Version="1.2.1" />
         <PackageReference Include="Iceshrimp.EntityFrameworkCore.Extensions" Version="1.1.0" />
         <PackageReference Include="Iceshrimp.ObjectStorage.S3" Version="0.35.0" />
         <PackageReference Include="Isopoh.Cryptography.Argon2" Version="2.0.0" />
