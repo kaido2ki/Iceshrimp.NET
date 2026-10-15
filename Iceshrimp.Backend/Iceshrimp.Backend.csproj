@@ -34,16 +34,16 @@
         <PackageReference Include="Iceshrimp.ObjectStorage.S3" Version="0.35.0" />
         <PackageReference Include="Isopoh.Cryptography.Argon2" Version="2.0.0" />
         <PackageReference Include="JetBrains.Annotations" Version="2026.2.0" />
-        <PackageReference Include="Microsoft.AspNetCore.Components.WebAssembly.Server" Version="10.0.10" />
-        <PackageReference Include="Microsoft.AspNetCore.DataProtection.EntityFrameworkCore" Version="10.0.10" />
-        <PackageReference Include="Microsoft.AspNetCore.Mvc.NewtonsoftJson" Version="10.0.10" />
-        <PackageReference Include="Microsoft.AspNetCore.SignalR.Protocols.MessagePack" Version="10.0.10" />
-        <PackageReference Include="Microsoft.EntityFrameworkCore" Version="10.0.10" />
-        <PackageReference Include="Microsoft.EntityFrameworkCore.Design" Version="10.0.10">
+        <PackageReference Include="Microsoft.AspNetCore.Components.WebAssembly.Server" Version="10.0.13" />
+        <PackageReference Include="Microsoft.AspNetCore.DataProtection.EntityFrameworkCore" Version="10.0.13" />
+        <PackageReference Include="Microsoft.AspNetCore.Mvc.NewtonsoftJson" Version="10.0.13" />
+        <PackageReference Include="Microsoft.AspNetCore.SignalR.Protocols.MessagePack" Version="10.0.13" />
+        <PackageReference Include="Microsoft.EntityFrameworkCore" Version="10.0.13" />
+        <PackageReference Include="Microsoft.EntityFrameworkCore.Design" Version="10.0.13">
             <PrivateAssets>all</PrivateAssets>
             <IncludeAssets>runtime; build; native; analyzers; buildtransitive</IncludeAssets>
         </PackageReference>
-        <PackageReference Include="Microsoft.EntityFrameworkCore.Relational" Version="10.0.10" />
+        <PackageReference Include="Microsoft.EntityFrameworkCore.Relational" Version="10.0.13" />
         <PackageReference Include="Microsoft.OpenApi" Version="[2.11.0]" />
         <PackageReference Include="Npgsql.EntityFrameworkCore.PostgreSQL" Version="10.0.3" />
         <PackageReference Include="Npgsql.OpenTelemetry" Version="10.0.3" />
@@ -56,9 +56,9 @@
         <PackageReference Include="QRCoder" Version="1.8.0" />
         <PackageReference Include="Scalar.AspNetCore" Version="[2.12.45]" />
         <PackageReference Include="SixLabors.ImageSharp.Drawing" Version="2.1.7" />
-        <PackageReference Include="SixLabors.ImageSharp" Version="3.1.13-iceshrimp" />
+        <PackageReference Include="SixLabors.ImageSharp" Version="3.2.1-iceshrimp" />
         <PackageReference Include="Swashbuckle.AspNetCore" Version="10.2.3" />
-        <PackageReference Include="System.IO.Hashing" Version="10.0.10" />
+        <PackageReference Include="System.IO.Hashing" Version="10.0.13" />
         <PackageReference Include="Ulid" Version="1.4.1" />
         <PackageReference Include="Iceshrimp.Assets.Branding" Version="1.1.0" />
         <PackageReference Include="Iceshrimp.AssemblyUtils" Version="1.1.0" />
@@ -68,6 +68,15 @@
         <PackageReference Include="Iceshrimp.MimeTypes" Version="1.0.1" />
         <PackageReference Include="Iceshrimp.WebPush" Version="2.2.0" />
         <PackageReference Include="NetVips" Version="3.2.0" />
+    </ItemGroup>
+
+    <!-- Supress erroneous ImageSharp v3 security advisories that have received backported bugfixes -->
+    <ItemGroup>
+        <NuGetAuditSuppress Include="https://github.com/advisories/GHSA-gwg2-r3hj-4w44" />
+        <NuGetAuditSuppress Include="https://github.com/advisories/GHSA-j3p4-wp97-rph4" />
+        <NuGetAuditSuppress Include="https://github.com/advisories/GHSA-j9gm-c75j-xc9q" />
+        <NuGetAuditSuppress Include="https://github.com/advisories/GHSA-jjfr-hcj7-qf5w" />
+        <NuGetAuditSuppress Include="https://github.com/advisories/GHSA-wmxv-xphr-5c9g" />
     </ItemGroup>
 
     <!-- If the build flag BundleNativeDeps is set, reference the LibVips native dependecy -->
