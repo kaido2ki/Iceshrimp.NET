@@ -66,4 +66,9 @@
         <EmccLinkOptimizationFlag>-O3</EmccLinkOptimizationFlag>
         <WasmBitcodeCompileOptimizationFlag>-O3</WasmBitcodeCompileOptimizationFlag>
     </PropertyGroup>
+
+    <!-- OSS license key for ImageSharp & ImageSharp.Drawing, valid until 2028-01-13, for the assemblies Iceshrimp.Backend, Iceshrimp.Frontend, Iceshrimp.Shared & Iceshrimp.Tests -->
+    <PropertyGroup>
+        <SixLaborsLicenseKey>Id=ctm_01m50vewt7byc2te48s00hzjr2;Kind=Community;ExpiryDateUtc=2028-01-13T22:38:24.2140385Z;Key=Assembly:u58lkGDbyS69fStpG7J+bR5ZEVnKp0uj6H3cJntfiZ2bIPZ4IkORZW86BeOSZUdvFdhHwrnPLF7NPiLAzCTdXA==|ToFpAHcF0Ye6yGOiR9n2Av4Z5cidwBdkSLH87GwRgQeg/B29aXauKR8z84iscjcSDscsV/wpdeLzV0MjXHz8wg==|ff8v8ItgbOxuSYECxwIaoL/2K9pmCwHbiqMlaL3WB9GYox1Vsz10hVmZpKZynwga932JT2Lrf+pVRDYkUSDo5Q==|akwnw7UynRSL4wDjLQkegWZb+q5SP1SagVckZNi+cbk54DinUWVq0EoFx76o4fcgOE4vzhPAH6I66cJO+VLWAg==</SixLaborsLicenseKey>
+    </PropertyGroup>
 </Project>

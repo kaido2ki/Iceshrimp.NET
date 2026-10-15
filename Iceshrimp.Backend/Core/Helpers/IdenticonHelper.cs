@@ -19,7 +19,7 @@ public static class IdenticonHelper
 		var gradient = new LinearGradientBrush(new Point(0, 0), new Point(Size, Size), GradientRepetitionMode.None,
 		                                       new ColorStop(0, color.start), new ColorStop(1, color.end));
 
-		image.Mutate(p => p.Fill(gradient));
+		image.Mutate(ctx => ctx.Paint(p => p.Fill(gradient)));
 
 		var paint = new SolidBrush(Color.White);
 
@@ -58,7 +58,7 @@ public static class IdenticonHelper
 				var actualX = Margin + CellSize * i;
 				var actualY = Margin + CellSize * j;
 
-				image.Mutate(p => p.Fill(paint, new Rectangle(actualX, actualY, CellSize, CellSize)));
+				image.Mutate(ctx => ctx.Paint(p => p.Fill(paint, new Rectangle(actualX, actualY, CellSize, CellSize))));
 			}
 		}
 
@@ -79,41 +79,41 @@ public static class IdenticonHelper
 
 	private static readonly List<(Color start, Color end)> Colors =
 	[
-		(new Color(new Rgb24(235, 111, 146)), new Color(new Rgb24(180, 99, 122))),
-		(new Color(new Rgb24(246, 193, 119)), new Color(new Rgb24(234, 157, 52))),
-		(new Color(new Rgb24(235, 188, 186)), new Color(new Rgb24(215, 130, 126))),
-		(new Color(new Rgb24(156, 207, 216)), new Color(new Rgb24(86, 148, 159))),
-		(new Color(new Rgb24(196, 167, 231)), new Color(new Rgb24(144, 122, 169))),
-		(new Color(new Rgb24(235, 111, 146)), new Color(new Rgb24(246, 193, 119))),
-		(new Color(new Rgb24(235, 111, 146)), new Color(new Rgb24(235, 188, 186))),
-		(new Color(new Rgb24(235, 111, 146)), new Color(new Rgb24(49, 116, 143))),
-		(new Color(new Rgb24(235, 111, 146)), new Color(new Rgb24(156, 207, 216))),
-		(new Color(new Rgb24(235, 111, 146)), new Color(new Rgb24(196, 167, 231))),
-		(new Color(new Rgb24(246, 193, 119)), new Color(new Rgb24(235, 111, 146))),
-		(new Color(new Rgb24(246, 193, 119)), new Color(new Rgb24(235, 188, 186))),
-		(new Color(new Rgb24(246, 193, 119)), new Color(new Rgb24(49, 116, 143))),
-		(new Color(new Rgb24(246, 193, 119)), new Color(new Rgb24(156, 207, 216))),
-		(new Color(new Rgb24(246, 193, 119)), new Color(new Rgb24(196, 167, 231))),
-		(new Color(new Rgb24(235, 188, 186)), new Color(new Rgb24(235, 111, 146))),
-		(new Color(new Rgb24(235, 188, 186)), new Color(new Rgb24(246, 193, 119))),
-		(new Color(new Rgb24(235, 188, 186)), new Color(new Rgb24(49, 116, 143))),
-		(new Color(new Rgb24(235, 188, 186)), new Color(new Rgb24(156, 207, 216))),
-		(new Color(new Rgb24(235, 188, 186)), new Color(new Rgb24(196, 167, 231))),
-		(new Color(new Rgb24(49, 116, 143)), new Color(new Rgb24(235, 111, 146))),
-		(new Color(new Rgb24(49, 116, 143)), new Color(new Rgb24(246, 193, 119))),
-		(new Color(new Rgb24(49, 116, 143)), new Color(new Rgb24(235, 188, 186))),
-		(new Color(new Rgb24(49, 116, 143)), new Color(new Rgb24(156, 207, 216))),
-		(new Color(new Rgb24(49, 116, 143)), new Color(new Rgb24(196, 167, 231))),
-		(new Color(new Rgb24(156, 207, 216)), new Color(new Rgb24(235, 111, 146))),
-		(new Color(new Rgb24(156, 207, 216)), new Color(new Rgb24(246, 193, 119))),
-		(new Color(new Rgb24(156, 207, 216)), new Color(new Rgb24(235, 188, 186))),
-		(new Color(new Rgb24(156, 207, 216)), new Color(new Rgb24(49, 116, 143))),
-		(new Color(new Rgb24(156, 207, 216)), new Color(new Rgb24(196, 167, 231))),
-		(new Color(new Rgb24(196, 167, 231)), new Color(new Rgb24(235, 111, 146))),
-		(new Color(new Rgb24(196, 167, 231)), new Color(new Rgb24(246, 193, 119))),
-		(new Color(new Rgb24(196, 167, 231)), new Color(new Rgb24(235, 188, 186))),
-		(new Color(new Rgb24(196, 167, 231)), new Color(new Rgb24(49, 116, 143))),
-		(new Color(new Rgb24(196, 167, 231)), new Color(new Rgb24(156, 207, 216)))
+		(Color.FromPixel(new Rgb24(235, 111, 146)), Color.FromPixel(new Rgb24(180, 99, 122))),
+		(Color.FromPixel(new Rgb24(246, 193, 119)), Color.FromPixel(new Rgb24(234, 157, 52))),
+		(Color.FromPixel(new Rgb24(235, 188, 186)), Color.FromPixel(new Rgb24(215, 130, 126))),
+		(Color.FromPixel(new Rgb24(156, 207, 216)), Color.FromPixel(new Rgb24(86, 148, 159))),
+		(Color.FromPixel(new Rgb24(196, 167, 231)), Color.FromPixel(new Rgb24(144, 122, 169))),
+		(Color.FromPixel(new Rgb24(235, 111, 146)), Color.FromPixel(new Rgb24(246, 193, 119))),
+		(Color.FromPixel(new Rgb24(235, 111, 146)), Color.FromPixel(new Rgb24(235, 188, 186))),
+		(Color.FromPixel(new Rgb24(235, 111, 146)), Color.FromPixel(new Rgb24(49, 116, 143))),
+		(Color.FromPixel(new Rgb24(235, 111, 146)), Color.FromPixel(new Rgb24(156, 207, 216))),
+		(Color.FromPixel(new Rgb24(235, 111, 146)), Color.FromPixel(new Rgb24(196, 167, 231))),
+		(Color.FromPixel(new Rgb24(246, 193, 119)), Color.FromPixel(new Rgb24(235, 111, 146))),
+		(Color.FromPixel(new Rgb24(246, 193, 119)), Color.FromPixel(new Rgb24(235, 188, 186))),
+		(Color.FromPixel(new Rgb24(246, 193, 119)), Color.FromPixel(new Rgb24(49, 116, 143))),
+		(Color.FromPixel(new Rgb24(246, 193, 119)), Color.FromPixel(new Rgb24(156, 207, 216))),
+		(Color.FromPixel(new Rgb24(246, 193, 119)), Color.FromPixel(new Rgb24(196, 167, 231))),
+		(Color.FromPixel(new Rgb24(235, 188, 186)), Color.FromPixel(new Rgb24(235, 111, 146))),
+		(Color.FromPixel(new Rgb24(235, 188, 186)), Color.FromPixel(new Rgb24(246, 193, 119))),
+		(Color.FromPixel(new Rgb24(235, 188, 186)), Color.FromPixel(new Rgb24(49, 116, 143))),
+		(Color.FromPixel(new Rgb24(235, 188, 186)), Color.FromPixel(new Rgb24(156, 207, 216))),
+		(Color.FromPixel(new Rgb24(235, 188, 186)), Color.FromPixel(new Rgb24(196, 167, 231))),
+		(Color.FromPixel(new Rgb24(49, 116, 143)), Color.FromPixel(new Rgb24(235, 111, 146))),
+		(Color.FromPixel(new Rgb24(49, 116, 143)), Color.FromPixel(new Rgb24(246, 193, 119))),
+		(Color.FromPixel(new Rgb24(49, 116, 143)), Color.FromPixel(new Rgb24(235, 188, 186))),
+		(Color.FromPixel(new Rgb24(49, 116, 143)), Color.FromPixel(new Rgb24(156, 207, 216))),
+		(Color.FromPixel(new Rgb24(49, 116, 143)), Color.FromPixel(new Rgb24(196, 167, 231))),
+		(Color.FromPixel(new Rgb24(156, 207, 216)), Color.FromPixel(new Rgb24(235, 111, 146))),
+		(Color.FromPixel(new Rgb24(156, 207, 216)), Color.FromPixel(new Rgb24(246, 193, 119))),
+		(Color.FromPixel(new Rgb24(156, 207, 216)), Color.FromPixel(new Rgb24(235, 188, 186))),
+		(Color.FromPixel(new Rgb24(156, 207, 216)), Color.FromPixel(new Rgb24(49, 116, 143))),
+		(Color.FromPixel(new Rgb24(156, 207, 216)), Color.FromPixel(new Rgb24(196, 167, 231))),
+		(Color.FromPixel(new Rgb24(196, 167, 231)), Color.FromPixel(new Rgb24(235, 111, 146))),
+		(Color.FromPixel(new Rgb24(196, 167, 231)), Color.FromPixel(new Rgb24(246, 193, 119))),
+		(Color.FromPixel(new Rgb24(196, 167, 231)), Color.FromPixel(new Rgb24(235, 188, 186))),
+		(Color.FromPixel(new Rgb24(196, 167, 231)), Color.FromPixel(new Rgb24(49, 116, 143))),
+		(Color.FromPixel(new Rgb24(196, 167, 231)), Color.FromPixel(new Rgb24(156, 207, 216)))
 	];
 
 	#endregion
