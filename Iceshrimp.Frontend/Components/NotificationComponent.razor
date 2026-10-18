@@ -105,9 +105,7 @@
                 <Timestamp Date="@DateTime.Parse(NotificationResponse.CreatedAt)"/>
                 @if (!NotificationResponse.Read)
                 {
-                    <button class="mark-as-read" @onclick="MarkAsRead" title="@Loc[L.Notification_MarkRead]">
-                        <Icon Name="Icons.Check"/>
-                    </button>
+                    @MarkAsReadButton
                 }
             </span>
         </div>
@@ -116,7 +114,10 @@
     @if (NotificationResponse is { Note: not null })
     {
         <div class="@(NotificationResponse is not { Type: NotificationType.Mention or NotificationType.Reply } ? "notification-note" : "")" @onclick="MarkAsRead">
-            <NoteComponent Note="NotificationResponse.Note" AsQuote="@(NotificationResponse is not { Type: NotificationType.Mention } and not { Type: NotificationType.Reply })" OpenNote="true"/>
+            <NoteComponent Note="NotificationResponse.Note"
+                           AsQuote="@(NotificationResponse is not { Type: NotificationType.Mention } and not { Type: NotificationType.Reply })"
+                           OpenNote="true"
+                           TickerOverride="@(NotificationResponse.Read ? null : MarkAsReadButton)"/>
         </div>
     }
 
@@ -135,6 +136,11 @@
 
 @code {
     [Parameter] public required NotificationResponse NotificationResponse { get; set; }
+
+    private RenderFragment MarkAsReadButton =>
+        @<button class="mark-as-read" @onclick="MarkAsRead" title="@Loc[L.Notification_MarkRead]">
+            <Icon Name="Icons.Check"/>
+        </button>;
 
     private void OpenProfile()
     {

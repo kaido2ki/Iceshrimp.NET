@@ -32,23 +32,31 @@
             }
         </span>
     </span>
-    <span class="ticker"  style="@(InstanceColor != null ? "--color: " + InstanceColor + "CC;" : "")" title="@InstanceName">
-        @if (InstanceIcon != null)
-        {
-            <img class="icon" src="@InstanceIcon" alt="icon"/>
-        }
-        @if (InstanceName != null)
-        {
-            <span class="instance">@InstanceName</span>
-        }
-    </span>
+    @if (TickerOverride != null)
+    {
+        @TickerOverride
+    }
+    else
+    {
+        <span class="ticker" style="@(InstanceColor != null ? "--color: " + InstanceColor + "CC;" : "")" title="@InstanceName">
+            @if (InstanceIcon != null)
+            {
+                <img class="icon" src="@InstanceIcon" alt="icon"/>
+            }
+            @if (InstanceName != null)
+            {
+                <span class="instance">@InstanceName</span>
+            }
+        </span>
+    }
 </div>
 
 @code {
-    [Parameter] [EditorRequired] public required DateTime       CreatedAt     { get; set; }
-    [Parameter] [EditorRequired] public required NoteVisibility Visibility    { get; set; }
-    [Parameter]                  public          string?        InstanceName  { get; set; }
-    [Parameter]                  public          string?        InstanceIcon  { get; set; }
-    [Parameter]                  public          string?        InstanceColor { get; set; }
-    [Parameter]                  public          string?        OpenNoteId    { get; set; }
+    [Parameter] [EditorRequired] public required DateTime        CreatedAt      { get; set; }
+    [Parameter] [EditorRequired] public required NoteVisibility  Visibility     { get; set; }
+    [Parameter]                  public          string?         InstanceName   { get; set; }
+    [Parameter]                  public          string?         InstanceIcon   { get; set; }
+    [Parameter]                  public          string?         InstanceColor  { get; set; }
+    [Parameter]                  public          string?         OpenNoteId     { get; set; }
+    [Parameter]                  public          RenderFragment? TickerOverride { get; set; }
 }

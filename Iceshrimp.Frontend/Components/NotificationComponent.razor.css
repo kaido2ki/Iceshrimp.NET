@@ -150,11 +150,11 @@
     margin-right: 0.5rem;
 }
 
-.mark-as-read {
+.notification ::deep .mark-as-read {
     padding: 0;
 }
 
-.mark-as-read:hover {
+.notification ::deep .mark-as-read:hover {
     transition: 250ms;
     background-color: var(--hover-color);
 }

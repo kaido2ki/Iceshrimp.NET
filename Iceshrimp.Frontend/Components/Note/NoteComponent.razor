@@ -16,6 +16,7 @@
                 InstanceColor="@Note.User.InstanceColor"
                 CreatedAt="DateTime.Parse(Note.CreatedAt)"
                 OpenNoteId="@(OpenNote ? Note.Id : null)"
+                TickerOverride="TickerOverride"
             />
         </div>
         <NoteBody NoteBase="Note" Indented="Indented" ReplyInaccessible="ReplyInaccessible" Quote="Quote" ClickOpenNote="OpenNote"/>
@@ -41,14 +42,15 @@
 </CascadingValue>
 
 @code {
-    [Parameter] [EditorRequired] public required NoteBase     Note              { get; set; }
-    [Parameter] [EditorRequired] public required bool         OpenNote          { get; set; }
-    [Parameter]                  public          bool         Indented          { get; set; }
-    [Parameter]                  public          NoteBase?    Quote             { get; set; }
-    [Parameter]                  public          bool         AsQuote           { get; set; }
-    [Parameter]                  public          bool         ReplyInaccessible { get; set; }
-    [Parameter]                  public          bool         RootNote          { get; set; }
-    private                                      IDisposable? _noteChangedHandler;
+    [Parameter] [EditorRequired] public required NoteBase        Note              { get; set; }
+    [Parameter] [EditorRequired] public required bool            OpenNote          { get; set; }
+    [Parameter]                  public          bool            Indented          { get; set; }
+    [Parameter]                  public          NoteBase?       Quote             { get; set; }
+    [Parameter]                  public          bool            AsQuote           { get; set; }
+    [Parameter]                  public          bool            ReplyInaccessible { get; set; }
+    [Parameter]                  public          bool            RootNote          { get; set; }
+    [Parameter]                  public          RenderFragment? TickerOverride    { get; set; }
+    private                                      IDisposable?    _noteChangedHandler;
 
     
     [CascadingParameter(Name="Provider")] NoteMessageProvider? Provider { get; set; }
