@@ -61,6 +61,8 @@
     private IJSObjectReference       Module         { get; set; } = null!;
     private Dictionary<string, bool> PushRegistered { get; set; } = null!;
 
+    [SupplyParameterFromQuery(Name = "notification")] public string? NotificationId { get; set; }
+
     protected override async Task OnInitializedAsync()
     {
         if (Session.Current == null)
@@ -127,6 +129,22 @@
         if (firstRender)
         {
             Module = await Js.InvokeAsync<IJSObjectReference>("import", "./push.js");
+        }
+    }
+
+    protected override async Task OnParametersSetAsync()
+    {
+        if (Session.Current == null) return;
+
+        if (NotificationId != null)
+        {
+            try
+            {
+                await Api.Notifications.MarkNotificationAsReadAsync(NotificationId);
+            }
+            catch (ApiException)
+            {
+            }
         }
     }
 }
