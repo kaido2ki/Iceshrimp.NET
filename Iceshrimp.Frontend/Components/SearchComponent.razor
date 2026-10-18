@@ -14,8 +14,8 @@
 
 <form class="search" @onsubmit="Search" role="search">
     <section class="fields">
-        <input @bind="SearchString" class="input" aria-label=""/>
-        <InputSelect @bind-Value="@SearchType">
+        <input @bind="SearchString" class="input full-width" aria-label=""/>
+        <InputSelect class="search-type" @bind-Value="@SearchType">
             @foreach (var type in Enum.GetValues(typeof(SearchTypeEnum)))
             {
                 <option value="@type">@type</option>

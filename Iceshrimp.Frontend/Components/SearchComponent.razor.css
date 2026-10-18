@@ -10,7 +10,13 @@
     display: flex;
     justify-content: center;
     align-items: center;
-    flex-wrap: wrap;
+    flex-wrap: nowrap;
+    gap: 0.5rem;
+    width: 100%;
+}
+
+.search ::deep .button {
+    margin: 0;
 }
 
 .search-filters {
@@ -61,6 +67,15 @@
 }
 
 @media screen and (width < 600px) {
+    .fields {
+        flex-wrap: wrap;
+    }
+
+    .search-filters {
+        margin: 0.5rem;
+        width: 100%;
+    }
+
     .filter-groups {
         flex-direction: column;
         justify-content: start;
