@@ -30,6 +30,7 @@ self.addEventListener('push', (event) => {
         options.data.url = `/@${payload.notifierUsername}`;
         if (payload.noteId) options.data.url = `/notes/${payload.noteId}`;
         if (payload.reportId) options.data.url = `/mod/reports/${payload.reportId}`;
+        options.data.url += `?notification=${payload.id}`;
         options.navigate = options.data.url;
 
         // TODO: hook this into localization instead of hardcoding the bodies
