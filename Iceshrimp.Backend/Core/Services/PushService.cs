@@ -216,14 +216,20 @@ public class PushService(
 
 			if (!string.IsNullOrWhiteSpace(notification.Note?.Cw))
 			{
-				var text = notification.Note.Cw.Trim();
+				var text = notification.Note.Cw.Trim().ReplaceLineEndings("  ");
 				notePreview = text.Length > notePreviewLength ? text[..notePreviewLength] + '…' : text;
 			}
 			else if (!string.IsNullOrWhiteSpace(notification.Note?.Text))
 			{
-				var text = notification.Note.Text.Trim();
+				var text = notification.Note.Text.Trim().ReplaceLineEndings("  s");
 				notePreview = text.Length > notePreviewLength ? text[..notePreviewLength] + '…' : text;
 			}
+
+			if (!string.IsNullOrWhiteSpace(notification.Reaction)
+			    && notification.Reaction.StartsWith(':')
+			    && notification.Reaction.EndsWith(':'))
+				notification.Reaction =
+					$":{notification.Reaction.Trim(':').Split('@', 2, StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries).FirstOrDefault()}:";
 
 			var res = new WebPushNotification
 			{
@@ -243,7 +249,7 @@ public class PushService(
 						: notification.Notifier?.Username,
 				NoteId      = notification.Note?.Id,
 				NotePreview = notePreview,
-				Reaction    = notification.Reaction?.Split('@', 2).FirstOrDefault(),
+				Reaction    = notification.Reaction,
 				ReportId    = notification.Report?.Id
 			};
 	
