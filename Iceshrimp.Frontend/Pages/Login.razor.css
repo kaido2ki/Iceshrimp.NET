@@ -9,6 +9,12 @@
     display: flex;
     flex-direction: column;
     align-items: center;
+    width: 100%;
+    padding: 0 1rem;
+}
+
+.login-input {
+    margin: 0.5rem;
 }
 
 .logo {
@@ -49,4 +55,14 @@
 
 .register-link {
     margin-top: 2rem;
+}
+
+@media screen and (width < 600px) {
+    .login-input {
+        width: 100%;
+    }
+
+    .user-picker {
+        flex-direction: column;
+    }
 }

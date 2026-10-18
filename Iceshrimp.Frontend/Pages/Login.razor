@@ -23,9 +23,9 @@
         <h3>@Loc[L.Auth_Login_Header, Name]</h3></span>
     <div class="login-form">
         <input placeholder="@Loc[L.User_Username]" autocomplete="username" name="username" required="required"
-               @bind="@Username"/>
+               @bind="@Username" class="login-input"/>
         <input type="password" placeholder="@Loc[L.Auth_Password]" autocomplete="current-password" name="current-password"
-               required="required"
+               required="required" class="login-input"
                @bind="@Password"/>
         <button class="button" @onclick="Submit" disabled="@Loading">@Loc[L.Auth_Login]</button>
     </div>

@@ -46,13 +46,13 @@
             {
                 <div class="register-form">
                     <input placeholder="@Loc[L.User_Username]" autocomplete="username" name="username" required="required"
-                           @bind="@Username"/>
+                           @bind="@Username" class="register-input"/>
                     <input type="password" autocomplete="new-password" name="new-password" required="required"
                            placeholder="@Loc[L.Auth_Password]"
-                           @bind="@Password"/>
+                           @bind="@Password" class="register-input"/>
                     @if (RegistrationAvailability is Registrations.Invite)
                     {
-                        <input required="required" placeholder="@Loc[L.Auth_Register_Invite]" @bind="@Invite"/>
+                        <input required="required" placeholder="@Loc[L.Auth_Register_Invite]" @bind="@Invite" class="register-input"/>
                     }
                     <StateButton @ref="@LoginButton" ExtraClasses="button" OnClick="Submit">
                         <Initial>@Loc[L.Auth_Register]</Initial>
