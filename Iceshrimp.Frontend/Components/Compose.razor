@@ -69,9 +69,9 @@
                aria-label="content warning"/>
         <hr class="separator"/>
     }
-    <textarea @ref="Textarea" @bind="NoteDraft.Text" @bind:event="oninput" class="full-width"
+    <textarea @ref="Textarea" @bind="NoteDraft.Text" @bind:event="oninput" class="full-width resize-v"
               placeholder="@Loc[TextPlaceholder ?? L.Compose_BodyPlaceholder_Note]"
-              cols="35" autofocus="autofocus" aria-label="note text"
+              autofocus="autofocus" aria-label="note text"
               data-quote="@((NoteDraft.RenoteId != null || AttachedQuote != null).ToString())"></textarea>
     <div class="footer">
         <div class="buttons">
