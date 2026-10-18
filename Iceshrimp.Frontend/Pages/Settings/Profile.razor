@@ -74,7 +74,7 @@
             </label>
             <label>
                 @Loc[L.User_Bio]
-                <textarea class="full-width" @ref="Description" @bind="@UserProfile.Description" rows="5"></textarea>
+                <textarea class="full-width resize-v" @ref="Description" @bind="@UserProfile.Description" rows="5"></textarea>
             </label>
             <button @ref="EmojiButton" class="button" title="@Loc[L.Common_Emojis]" @onclick="ToggleEmojiPicker"
                     aria-label="emoji">
