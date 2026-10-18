@@ -1639,4 +1639,7 @@
     <data name="Settings_Filters_Heading_Edit" xml:space="preserve">
         <value>Edit filter</value>
     </data>
+    <data name="Notification_Banner_EnablePush" xml:space="preserve">
+        <value>Click to enable push notifications</value>
+    </data>
 </root>

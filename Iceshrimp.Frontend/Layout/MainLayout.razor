@@ -1,17 +1,22 @@
-﻿@using Iceshrimp.Frontend.Core.Miscellaneous
+﻿@using Blazored.LocalStorage
+@using Iceshrimp.Frontend.Components
+@using Iceshrimp.Frontend.Core.Miscellaneous
 @using Iceshrimp.Frontend.Core.Schemas
 @using Iceshrimp.Frontend.Core.Services
 @using Iceshrimp.Shared.Schemas.Web
 @using Microsoft.AspNetCore.Components.Authorization
 @using Microsoft.AspNetCore.Components.Sections
 @inherits LayoutComponentBase
-@inject ApiService          Api;
-@inject IJSRuntime          Js;
-@inject ILogger<MainLayout> Logger;
-@inject MetadataService     Metadata;
-@inject NavigationManager   Nav;
-@inject SessionService      Session;
-@inject SettingsService     Settings;
+@inject ApiService                     Api;
+@inject GlobalComponentSvc             Global;
+@inject IJSRuntime                     Js;
+@inject IStringLocalizer<Localization> Loc;
+@inject ILocalStorageService           LocalStorage;
+@inject ILogger<MainLayout>            Logger;
+@inject MetadataService                Metadata;
+@inject NavigationManager              Nav;
+@inject SessionService                 Session;
+@inject SettingsService                Settings;
 
 <HeadContent>
     @if (!string.IsNullOrWhiteSpace(Settings.Preferences.CustomCss))
@@ -51,6 +56,11 @@
 </div>
 
 @code {
+    const string PushRegisteredKey = "push_registered";
+
+    private IJSObjectReference       Module         { get; set; } = null!;
+    private Dictionary<string, bool> PushRegistered { get; set; } = null!;
+
     protected override async Task OnInitializedAsync()
     {
         if (Session.Current == null)
@@ -65,11 +75,24 @@
             Nav.NavigateTo("/login");
         }
 
+        PushRegistered = await LocalStorage.GetItemAsync<Dictionary<string, bool>>(PushRegisteredKey) ?? new Dictionary<string, bool>();
+
+        if (PushRegistered.ContainsKey(Session.Current.Id)) return;
+
+        Global.BannerComponent?.AddBanner(new BannerContainer.Banner
+        {
+            Text    = Loc[L.Notification_Banner_EnablePush],
+            OnClose = DeclinePushAsync,
+            OnTap   = SubscribePushAsync
+        });
+    }
+
+    private async Task SubscribePushAsync()
+    {
         PushSubscriptionJson? subscription;
         try
         {
-            var module = (IJSInProcessObjectReference)await Js.InvokeAsync<IJSObjectReference>("import", "./push.js");
-            subscription = await module.InvokeAsync<PushSubscriptionJson?>("setupPush", (await Metadata.Instance.Value).VapidKey);
+            subscription = await Module.InvokeAsync<PushSubscriptionJson?>("setupPush", (await Metadata.Instance.Value).VapidKey);
         }
         catch (JSException e)
         {
@@ -86,6 +109,24 @@
         catch (ApiException e)
         {
             Logger.LogWarning("Failed to subscribe to push notifications: {Message}", e.Response?.Message ?? e.Response?.StatusCode.ToString() ?? "HTTP error");
+            return;
+        }
+
+        PushRegistered.Add(Session.Current!.Id, true);
+        await LocalStorage.SetItemAsync(PushRegisteredKey, PushRegistered);
+    }
+
+    private async Task DeclinePushAsync()
+    {
+        PushRegistered.Add(Session.Current!.Id, false);
+        await LocalStorage.SetItemAsync(PushRegisteredKey, PushRegistered);
+    }
+
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        if (firstRender)
+        {
+            Module = await Js.InvokeAsync<IJSObjectReference>("import", "./push.js");
         }
     }
 }

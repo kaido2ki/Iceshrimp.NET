@@ -3284,5 +3284,11 @@ namespace Iceshrimp.Frontend.Localization {
                 return ResourceManager.GetString("Settings_Filters_Heading_Edit", resourceCulture);
             }
         }
+        
+        internal static string Notification_Banner_EnablePush {
+            get {
+                return ResourceManager.GetString("Notification_Banner_EnablePush", resourceCulture);
+            }
+        }
     }
 }
