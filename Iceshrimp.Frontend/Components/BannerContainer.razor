@@ -6,10 +6,10 @@
         @foreach (var banner in CurrentBanners)
         {
             <div class="banner">
-                <div class="banner-body" @onclick="() => { banner.OnTap?.Invoke();}">
+                <div class="banner-body" @onclick="() => { banner.OnTap?.Invoke(); Close(banner, false); }">
                     @banner.Text
                 </div>
-                <button class="button" @onclick="() => { Close(banner); }">
+                <button class="button close" @onclick="() => { Close(banner); }">
                     <Icon Name="Icons.X"/>
                 </button>
             </div>

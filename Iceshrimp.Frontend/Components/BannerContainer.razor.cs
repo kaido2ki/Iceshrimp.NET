@@ -28,17 +28,17 @@ public partial class BannerContainer : ComponentBase
 		StateHasChanged();
 	}
 
-	private void Close(Banner banner)
+	private void Close(Banner banner, bool invoke = true)
 	{
-		banner.OnClose?.Invoke();
+		if (invoke) banner.OnClose?.Invoke();
 		CurrentBanners.Remove(banner);
 		FillBanners();
 	}
 
 	public class Banner
 	{
-		public required string  Text    { get; set; }
-		public Action? OnClose { get; set; }
-		public Action? OnTap   { get; set; }
+		public required string      Text    { get; set; }
+		public          Func<Task>? OnClose { get; set; }
+		public          Func<Task>? OnTap   { get; set; }
 	}
 }
