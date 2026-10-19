@@ -188,13 +188,13 @@ public class NotificationController(DatabaseContext db, MetaService metaSvc, Not
 	/// <remarks>Unsubscribe the current session from push notifications.</remarks>
 	[HttpDelete("push")]
 	[ProducesResults(HttpStatusCode.OK)]
-	[ProducesErrors(HttpStatusCode.NotFound)]
 	public async Task UnsubscribePush()
 	{
 		var session = HttpContext.GetSessionOrFail();
 
-		var subscription = await db.SwSubscriptions.FirstOrDefaultAsync(p => p.SessionId == session.Id)
-		                   ?? throw GracefulException.RecordNotFound();
+		var subscription = await db.SwSubscriptions.FirstOrDefaultAsync(p => p.SessionId == session.Id);
+
+		if (subscription == null) return;
 
 		db.Remove(subscription);
 		await db.SaveChangesAsync();
