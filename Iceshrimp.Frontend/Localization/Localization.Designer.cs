@@ -3290,5 +3290,23 @@ namespace Iceshrimp.Frontend.Localization {
                 return ResourceManager.GetString("Notification_Banner_EnablePush", resourceCulture);
             }
         }
+        
+        internal static string Preferences_Push {
+            get {
+                return ResourceManager.GetString("Preferences_Push", resourceCulture);
+            }
+        }
+        
+        internal static string Preferences_Push_Enable {
+            get {
+                return ResourceManager.GetString("Preferences_Push_Enable", resourceCulture);
+            }
+        }
+        
+        internal static string Preferences_Push_Disable {
+            get {
+                return ResourceManager.GetString("Preferences_Push_Disable", resourceCulture);
+            }
+        }
     }
 }

@@ -5,12 +5,18 @@
 @using Iceshrimp.Frontend.Core.Services
 @using Iceshrimp.Frontend.Core.Miscellaneous
 @using Iceshrimp.Frontend.Core.Schemas
+@using Iceshrimp.Shared.Schemas.Web
 @using Microsoft.AspNetCore.Authorization
 @using Microsoft.AspNetCore.Components.Sections
 @attribute [Authorize]
 @layout SettingsLayout
+@inject ApiService                     Api;
+@inject GlobalComponentSvc             Global;
+@inject IJSRuntime                     Js;
 @inject IStringLocalizer<Localization> Loc;
 @inject ISyncLocalStorageService       LocalStorage;
+@inject MetadataService                Metadata;
+@inject SessionService                 Session;
 @inject SettingsService                Settings;
 
 <HeadTitle Text="@Loc[L.Preferences]"/>
@@ -25,6 +31,19 @@
 </SectionContent>
 
 <div class="body">
+    <h1>@Loc[L.Preferences_Push]</h1>
+    @if (PushEnabled)
+    {
+        <button class="button danger" @onclick="UnsubscribePushAsync">
+            @Loc[L.Preferences_Push_Disable]
+        </button>
+    }
+    else
+    {
+        <button class="button" @onclick="SubscribePushAsync">
+            @Loc[L.Preferences_Push_Enable]
+        </button>
+    }
     <EditForm OnSubmit="Submit" Model="Preferences">
         <h1>@Loc[L.Preferences_Heading_UI]</h1>
         <label>
@@ -63,14 +82,23 @@
 </div>
 
 @code {
-    private StateButton       SaveButton  { get; set; } = null!;
-    private ClientPreferences Preferences { get; set; } = null!;
-    private string            Theme       { get; set; } = "";
+    const string PushRegisteredKey = "push_registered";
+
+    private IJSObjectReference Module      { get; set; } = null!;
+    private StateButton        SaveButton  { get; set; } = null!;
+    private ClientPreferences  Preferences { get; set; } = null!;
+    private string             Theme       { get; set; } = "";
+    
+    private Dictionary<string, bool> PushRegistered { get; set; } = null!;
+    private bool                     PushEnabled    { get; set; }
 
     protected override void OnInitialized()
     {
         Preferences = Settings.Preferences;
         Theme       = LocalStorage.GetItemAsString("theme") ?? "system";
+
+        PushRegistered = LocalStorage.GetItem<Dictionary<string, bool>>(PushRegisteredKey) ?? new Dictionary<string, bool>();
+        PushEnabled    = Session.Current != null && PushRegistered.TryGetValue(Session.Current.Id, out var enabled) && enabled;
     }
 
     private void Submit()
@@ -84,5 +112,62 @@
 
         SaveButton.State = StateButton.StateEnum.Success;
         StateHasChanged();
+    }
+
+    private async Task SubscribePushAsync()
+    {
+        PushSubscriptionJson? subscription;
+        try
+        {
+            subscription = await Module.InvokeAsync<PushSubscriptionJson?>("setupPush", (await Metadata.Instance.Value).VapidKey);
+        }
+        catch (JSException)
+        {
+            return;
+        }
+
+        // TODO: Improve error handling with union response after net11 migration
+        if (subscription == null) return;
+
+        try
+        {
+            await Api.Notifications.SubscribePushAsync(new WebPushSubscriptionRequest { Endpoint = subscription.Endpoint, PublicKey = subscription.Keys.P256Dh, AuthSecret = subscription.Keys.Auth });
+        }
+        catch (ApiException e)
+        {
+            await Global.NoticeDialog?.DisplayApiError(e)!;
+            return;
+        }
+
+        PushRegistered.Remove(Session.Current!.Id);
+        PushRegistered.Add(Session.Current!.Id, true);
+        LocalStorage.SetItem(PushRegisteredKey, PushRegistered);
+        PushEnabled = true;
+    }
+
+    private async Task UnsubscribePushAsync()
+    {
+        try
+        {
+            await Api.Notifications.UnsubscribePushAsync();
+        }
+        catch (ApiException e)
+        {
+            await Global.NoticeDialog?.DisplayApiError(e)!;
+            return;
+        }
+
+        PushRegistered.Remove(Session.Current!.Id);
+        PushRegistered.Add(Session.Current!.Id, false);
+        LocalStorage.SetItem(PushRegisteredKey, PushRegistered);
+        PushEnabled = false;
+    }
+
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        if (firstRender)
+        {
+            Module = await Js.InvokeAsync<IJSObjectReference>("import", "./push.js");
+        }
     }
 }

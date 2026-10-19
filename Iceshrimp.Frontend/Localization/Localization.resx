@@ -1642,4 +1642,13 @@
     <data name="Notification_Banner_EnablePush" xml:space="preserve">
         <value>Click to enable push notifications</value>
     </data>
+    <data name="Preferences_Push" xml:space="preserve">
+        <value>Push notifications</value>
+    </data>
+    <data name="Preferences_Push_Enable" xml:space="preserve">
+        <value>Enable push notifications</value>
+    </data>
+    <data name="Preferences_Push_Disable" xml:space="preserve">
+        <value>Disable push notifications</value>
+    </data>
 </root>
