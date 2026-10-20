@@ -72,4 +72,22 @@ public static class Constants
 		"application/x-shockwave-flash",
 		"application/octet-stream"
 	];
+	
+	// the permission bitmasks here include only permissions relevant to what Iceshrimp supports.
+	// if we add more mod/admin functions it would be a good idea to check if this needs updating.
+	// for a full list of flags see https://github.com/mastodon/mastodon/blob/main/app/models/user_role.rb#L19
+	public const int MastodonModeratorRolePermissions =
+		(1 << 4)  + // manage_reports
+		(1 << 10) + // manage_users
+		(1 << 13) + // manage_announcements
+		(1 << 14) + // manage_custom_emojis
+		(1 << 19);  // delete_user_data
+	
+	public const int MastodonAdminRolePermissions =
+		(1 << 3)  + // view_dashboard
+		(1 << 5)  + // manage_federation
+		(1 << 6)  + // manage_settings
+		(1 << 11) + // manage_invites
+		(1 << 12) + // manage_rules
+		MastodonModeratorRolePermissions;
 }

@@ -1,4 +1,5 @@
 using Iceshrimp.Backend.Controllers.Pleroma.Schemas.Entities;
+using Iceshrimp.Backend.Core.Configuration;
 using Iceshrimp.Shared.Helpers;
 using J = System.Text.Json.Serialization.JsonPropertyNameAttribute;
 
@@ -78,19 +79,16 @@ public class UserRole
 	[J("permissions")] public int    Permissions { get; set; } = 0;
 }
 
-// the permission bitmasks here include only permissions relevant to what Iceshrimp supports.
-// if we add more mod/admin functions it would be a good idea to check if this needs updating.
-// for a full list of flags see https://github.com/mastodon/mastodon/blob/main/app/models/user_role.rb#L19
 public class ModeratorRole : UserRole
 {
 	[J("id")]          public new string Id          { get; set; } = "moderator";
 	[J("name")]        public new string Name        { get; set; } = "moderator";
-	[J("permissions")] public new int    Permissions { get; set; } = 549904;
+	[J("permissions")] public new int    Permissions { get; set; } = Constants.MastodonModeratorRolePermissions;
 }
 
 public class AdminRole : UserRole
 {
 	[J("id")]          public new string Id          { get; set; } = "admin";
 	[J("name")]        public new string Name        { get; set; } = "admin";
-	[J("permissions")] public new int    Permissions { get; set; } = 556152;
+	[J("permissions")] public new int    Permissions { get; set; } = Constants.MastodonAdminRolePermissions;
 }
