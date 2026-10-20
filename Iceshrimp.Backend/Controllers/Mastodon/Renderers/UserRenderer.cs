@@ -139,7 +139,12 @@ public class UserRenderer(
 				User.BiteControl.Followers => BiteControl.Followers,
 				_                          => BiteControl.None,
 			},
-			CanBite = canBite
+			CanBite = canBite,
+			Role = user.IsAdmin
+				? new AdminRole()
+				: user.IsModerator
+					? new ModeratorRole()
+					: new UserRole()
 		};
 
 		if (localUser is null && security.Value.PublicPreview == Enums.PublicPreview.RestrictedNoMedia) //TODO

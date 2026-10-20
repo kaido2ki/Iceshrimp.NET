@@ -35,6 +35,7 @@ public class AccountEntity : IIdentifiable
 	[J("akkoma")]              public required AkkomaUserExtensions?  Akkoma             { get; set; }
 	[J("bite_controls")]       public required BiteControl            BiteControls       { get; set; }
 	[J("can_bite")]            public required bool                   CanBite            { get; set; }
+	[J("role")]                public required UserRole               Role               { get; set; }
 
 	[J("avatar_description")] public required string AvatarDescription { get; set; }
 	[J("header_description")] public required string HeaderDescription { get; set; }
@@ -66,4 +67,30 @@ public enum BiteControl
 	Public,
 	Followers,
 	None
+}
+
+public class UserRole
+{
+	[J("id")]          public string Id          { get; set; } = "user";
+	[J("name")]        public string Name        { get; set; } = "user";
+	[J("color")]       public string Color       { get; set; } = "";
+	[J("highlighted")] public bool   Highlighted { get; set; } = false;
+	[J("permissions")] public int    Permissions { get; set; } = 0;
+}
+
+// the permission bitmasks here include only permissions relevant to what Iceshrimp supports.
+// if we add more mod/admin functions it would be a good idea to check if this needs updating.
+// for a full list of flags see https://github.com/mastodon/mastodon/blob/main/app/models/user_role.rb#L19
+public class ModeratorRole : UserRole
+{
+	[J("id")]          public new string Id          { get; set; } = "moderator";
+	[J("name")]        public new string Name        { get; set; } = "moderator";
+	[J("permissions")] public new int    Permissions { get; set; } = 549904;
+}
+
+public class AdminRole : UserRole
+{
+	[J("id")]          public new string Id          { get; set; } = "admin";
+	[J("name")]        public new string Name        { get; set; } = "admin";
+	[J("permissions")] public new int    Permissions { get; set; } = 556152;
 }
