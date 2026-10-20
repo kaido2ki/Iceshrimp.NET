@@ -140,11 +140,13 @@ public class UserRenderer(
 				_                          => BiteControl.None,
 			},
 			CanBite = canBite,
-			Role = user.IsAdmin
-				? new AdminRole()
-				: user.IsModerator
-					? new ModeratorRole()
-					: new UserRole()
+			Role = user == localUser
+				? user.IsAdmin
+					? new AdminRole()
+					: user.IsModerator
+						? new ModeratorRole()
+						: new UserRole()
+				: null
 		};
 
 		if (localUser is null && security.Value.PublicPreview == Enums.PublicPreview.RestrictedNoMedia) //TODO

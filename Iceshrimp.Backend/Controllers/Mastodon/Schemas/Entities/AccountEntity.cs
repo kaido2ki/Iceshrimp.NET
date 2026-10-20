@@ -35,7 +35,7 @@ public class AccountEntity : IIdentifiable
 	[J("akkoma")]              public required AkkomaUserExtensions?  Akkoma             { get; set; }
 	[J("bite_controls")]       public required BiteControl            BiteControls       { get; set; }
 	[J("can_bite")]            public required bool                   CanBite            { get; set; }
-	[J("role")]                public required UserRole               Role               { get; set; }
+	[J("role")]                public          UserRole?              Role               { get; set; }
 
 	[J("avatar_description")] public required string AvatarDescription { get; set; }
 	[J("header_description")] public required string HeaderDescription { get; set; }
