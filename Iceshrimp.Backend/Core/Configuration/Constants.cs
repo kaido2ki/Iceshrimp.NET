@@ -72,22 +72,38 @@ public static class Constants
 		"application/x-shockwave-flash",
 		"application/octet-stream"
 	];
-	
-	// the permission bitmasks here include only permissions relevant to what Iceshrimp supports.
-	// if we add more mod/admin functions it would be a good idea to check if this needs updating.
-	// for a full list of flags see https://github.com/mastodon/mastodon/blob/main/app/models/user_role.rb#L19
-	public const int MastodonModeratorRolePermissions =
-		(1 << 4)  + // manage_reports
-		(1 << 10) + // manage_users
-		(1 << 13) + // manage_announcements
-		(1 << 14) + // manage_custom_emojis
-		(1 << 19);  // delete_user_data
-	
-	public const int MastodonAdminRolePermissions =
-		(1 << 3)  + // view_dashboard
-		(1 << 5)  + // manage_federation
-		(1 << 6)  + // manage_settings
-		(1 << 11) + // manage_invites
-		(1 << 12) + // manage_rules
-		MastodonModeratorRolePermissions;
+
+	[Flags]
+	public enum MastodonRolePermissions
+	{
+		// this list is from mastodon source code: https://github.com/mastodon/mastodon/blob/main/app/models/user_role.rb#L19
+		Administrator            = 1 << 0,
+		ViewDevops               = 1 << 1,
+		ViewAuditLog             = 1 << 2,
+		ViewDashboard            = 1 << 3,
+		ManageReports            = 1 << 4,
+		ManageFederation         = 1 << 5,
+		ManageSettings           = 1 << 6,
+		ManageBlocks             = 1 << 7,
+		ManageTaxonomies         = 1 << 8,
+		ManageAppeals            = 1 << 9,
+		ManageUsers              = 1 << 10,
+		ManageInvites            = 1 << 11,
+		ManageRules              = 1 << 12,
+		ManageAnnouncements      = 1 << 13,
+		ManageCustomEmojis       = 1 << 14,
+		ManageWebhooks           = 1 << 15,
+		InviteUsers              = 1 << 16,
+		ManageRoles              = 1 << 17,
+		ManageUserAccess         = 1 << 18,
+		DeleteUserData           = 1 << 19,
+		ViewFeeds                = 1 << 20,
+		InviteBypassApproval     = 1 << 21,
+		ManageEmailSubscriptions = 1 << 22,
+		
+		// these permissions approximate mod/admin roles based off what Iceshrimp currently supports.
+		// if we add more mod/admin functions it would be a good idea to check if these needs updating.
+		ModeratorRole = ManageReports | ManageUsers | ManageAnnouncements | ManageCustomEmojis | DeleteUserData,
+		AdminRole = ViewDashboard | ManageFederation | ManageSettings | ManageInvites | ManageRules | ModeratorRole
+	}
 }

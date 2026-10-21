@@ -83,12 +83,12 @@ public class ModeratorRole : UserRole
 {
 	[J("id")]          public override string Id          => "moderator";
 	[J("name")]        public override string Name        => "moderator";
-	[J("permissions")] public override int    Permissions => Constants.MastodonModeratorRolePermissions;
+	[J("permissions")] public override int    Permissions => (int)Constants.MastodonRolePermissions.ModeratorRole;
 }
 
 public class AdminRole : UserRole
 {
 	[J("id")]          public override string Id          => "admin";
 	[J("name")]        public override string Name        => "admin";
-	[J("permissions")] public override int    Permissions => Constants.MastodonAdminRolePermissions;
+	[J("permissions")] public override int    Permissions => (int)Constants.MastodonRolePermissions.AdminRole;
 }
