@@ -59,6 +59,7 @@ RUN --mount=type=cache,target=/root/.nuget \
 # https://github.com/dotnet/dotnet-docker/blob/main/samples/enable-globalization.md
 # final stage/image
 FROM mcr.microsoft.com/dotnet/aspnet:10.0-alpine-composite AS image
+RUN apk add --no-cache --no-progress ca-certificates
 WORKDIR /app
 COPY --from=builder /app .
 USER app
