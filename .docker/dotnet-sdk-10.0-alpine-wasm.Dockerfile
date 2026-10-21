@@ -1,6 +1,6 @@
 FROM mcr.microsoft.com/dotnet/sdk:10.0-alpine
 RUN dotnet workload install wasm-tools
-RUN apk add --no-cache --no-progress bash python3 ca-certificates
+RUN apk add --no-cache --no-progress bash python3
 
 # Workaround for https://github.com/dotnet/sdk/issues/44933
 RUN apk add --no-cache --no-progress go
