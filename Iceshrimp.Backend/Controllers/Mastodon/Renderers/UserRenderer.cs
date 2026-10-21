@@ -142,9 +142,9 @@ public class UserRenderer(
 			CanBite = canBite,
 			Role = user == localUser
 				? user.IsAdmin
-					? new AdminRole()
+					? UserRole.Admin()
 					: user.IsModerator
-						? new ModeratorRole()
+						? UserRole.Moderator()
 						: new UserRole()
 				: null
 		};

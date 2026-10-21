@@ -72,23 +72,29 @@ public enum BiteControl
 
 public class UserRole
 {
-	[J("id")]          public virtual string Id          { get; set; } = "user";
-	[J("name")]        public virtual string Name        { get; set; } = "user";
-	[J("color")]       public         string Color       { get; set; } = "";
-	[J("highlighted")] public         bool   Highlighted { get; set; } = false;
-	[J("permissions")] public virtual int    Permissions { get; set; } = 0;
-}
+	[J("id")]          public string Id          { get; set; } = "user";
+	[J("name")]        public string Name        { get; set; } = "user";
+	[J("color")]       public string Color       { get; set; } = "";
+	[J("highlighted")] public bool   Highlighted { get; set; } = false;
+	[J("permissions")] public int    Permissions { get; set; } = 0;
 
-public class ModeratorRole : UserRole
-{
-	[J("id")]          public override string Id          => "moderator";
-	[J("name")]        public override string Name        => "moderator";
-	[J("permissions")] public override int    Permissions => (int)Constants.MastodonRolePermissions.ModeratorRole;
-}
+	public static UserRole Moderator()
+	{
+		return new UserRole
+		{
+			Id          = "moderator",
+			Name        = "moderator",
+			Permissions = (int)Constants.MastodonRolePermissions.ModeratorRole
+		};
+	}
 
-public class AdminRole : UserRole
-{
-	[J("id")]          public override string Id          => "admin";
-	[J("name")]        public override string Name        => "admin";
-	[J("permissions")] public override int    Permissions => (int)Constants.MastodonRolePermissions.AdminRole;
+	public static UserRole Admin()
+	{
+		return new UserRole
+		{
+			Id          = "admin",
+			Name        = "admin",
+			Permissions = (int)Constants.MastodonRolePermissions.AdminRole
+		};
+	}
 }
