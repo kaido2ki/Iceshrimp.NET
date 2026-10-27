@@ -1,4 +1,4 @@
-FROM mcr.microsoft.com/dotnet/aspnet:10.0-alpine-composite
+FROM mcr.microsoft.com/dotnet/aspnet:10.0-alpine3.24-composite
 ARG TARGETARCH
 WORKDIR /app
 COPY linux-musl-$TARGETARCH/ .

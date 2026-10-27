@@ -58,7 +58,7 @@ RUN --mount=type=cache,target=/root/.nuget \
 # Enable globalization and time zones:
 # https://github.com/dotnet/dotnet-docker/blob/main/samples/enable-globalization.md
 # final stage/image
-FROM mcr.microsoft.com/dotnet/aspnet:10.0-alpine-composite AS image
+FROM mcr.microsoft.com/dotnet/aspnet:10.0-alpine3.24-composite AS image
 WORKDIR /app
 COPY --from=builder /app .
 USER app
