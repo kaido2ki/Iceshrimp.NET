@@ -18,22 +18,18 @@
   </Folder>
   <Folder Name="/build/misc/docker/">
     <File Path=".docker/build.sh" />
-    <File Path=".docker/ci-env-dotnet10-wasm.Dockerfile" />
     <File Path=".docker/ci-env-dotnet10.Dockerfile" />
-    <File Path=".docker/ci-env-dotnet8-wasm.Dockerfile" />
-    <File Path=".docker/ci-env-dotnet8.Dockerfile" />
-    <File Path=".docker/ci-env-dotnet9-wasm.Dockerfile" />
-    <File Path=".docker/ci-env-dotnet9.Dockerfile" />
+    <File Path=".docker/ci-env-dotnet10-wasm.Dockerfile" />
+    <File Path=".docker/ci-env-dotnet11.Dockerfile" />
+    <File Path=".docker/ci-env-dotnet11-wasm.Dockerfile" />
     <File Path=".docker/dotnet-runner-10.0.Dockerfile" />
-    <File Path=".docker/dotnet-runner-8.0.Dockerfile" />
-    <File Path=".docker/dotnet-runner-9.0.Dockerfile" />
+    <File Path=".docker/dotnet-runner-11.0.Dockerfile" />
     <File Path=".docker/dotnet-sdk-10.0-alpine-wasm.Dockerfile" />
     <File Path=".docker/dotnet-sdk-10.0-alpine.Dockerfile" />
-    <File Path=".docker/dotnet-sdk-8.0-alpine.Dockerfile" />
-    <File Path=".docker/dotnet-sdk-8.0-wasm.Dockerfile" />
-    <File Path=".docker/dotnet-sdk-9.0-alpine-wasm.Dockerfile" />
-    <File Path=".docker/dotnet-sdk-9.0-alpine.Dockerfile" />
-    <File Path=".docker\dotnet-sdk-10.0-wasm.Dockerfile" />
+    <File Path=".docker/dotnet-sdk-10.0-wasm.Dockerfile" />
+    <File Path=".docker/dotnet-sdk-11.0-alpine-wasm.Dockerfile" />
+    <File Path=".docker/dotnet-sdk-11.0-alpine.Dockerfile" />
+    <File Path=".docker/dotnet-sdk-11.0-wasm.Dockerfile" />
   </Folder>
   <Folder Name="/build/tasks/">
     <Project Path="Iceshrimp.Build/Iceshrimp.Build.csproj" />
