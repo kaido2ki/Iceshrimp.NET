@@ -549,6 +549,12 @@ public class UserService(
 
 		if (actor.PublicKey?.PublicKey == null)
 			throw new Exception("Failed to update user public key: Invalid or missing public key");
+		if (!Uri.TryCreate(actor.PublicKey.Id, UriKind.Absolute, out var keyIdUri))
+			throw new Exception("Failed to update user public key: Invalid key id");
+		if (!Uri.TryCreate(key.User.Uri, UriKind.Absolute, out var userUri))
+			throw new Exception("Failed to update user public key: Invalid user uri");
+		if (keyIdUri.IdnHost != userUri.IdnHost)
+			throw new Exception("Failed to update user public key: Key id doesn't match user host");
 
 		key.KeyId  = actor.PublicKey.Id;
 		key.KeyPem = actor.PublicKey.PublicKey;
@@ -567,6 +573,13 @@ public class UserService(
 			throw new Exception("Failed to update user public key: Invalid or missing public key");
 
 		var key = await db.UserPublickeys.FirstOrDefaultAsync(p => p.User == user) ?? new UserPublickey { User = user };
+
+		if (!Uri.TryCreate(actor.PublicKey.Id, UriKind.Absolute, out var keyIdUri))
+			throw new Exception("Failed to update user public key: Invalid key id");
+		if (!Uri.TryCreate(user.Uri, UriKind.Absolute, out var userUri))
+			throw new Exception("Failed to update user public key: Invalid user uri");
+		if (keyIdUri.IdnHost != userUri.IdnHost)
+			throw new Exception("Failed to update user public key: Key id doesn't match user host");
 
 		var insert = key.KeyId == null!;
 
