@@ -154,6 +154,12 @@ internal class TimelineStore : NoteMessageProvider, IAsyncDisposable, IStreaming
 		}
 	}
 
+	public void ClearTimeline(Timeline timeline)
+	{
+		Timelines.Remove(timeline.Key);
+		Timelines.Add(timeline.Key, new TimelineState());
+	}
+
 	public async Task<List<NoteResponse>?> GetTimelineAsync(Timeline timeline, Cursor cs)
 	{
 		
