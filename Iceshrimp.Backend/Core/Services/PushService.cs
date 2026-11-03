@@ -221,7 +221,7 @@ public class PushService(
 			}
 			else if (!string.IsNullOrWhiteSpace(notification.Note?.Text))
 			{
-				var text = notification.Note.Text.Trim().ReplaceLineEndings("  s");
+				var text = notification.Note.Text.Trim().ReplaceLineEndings("  ");
 				notePreview = text.Length > notePreviewLength ? text[..notePreviewLength] + '…' : text;
 			}
 
