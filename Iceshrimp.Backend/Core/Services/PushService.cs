@@ -232,8 +232,9 @@ public class PushService(
 				var reaction = notification.Reaction.Trim(':')
 				                           .Split('@', 2,
 				                                  StringSplitOptions.RemoveEmptyEntries
-				                                  | StringSplitOptions.TrimEntries);
-				notification.Reaction = $":{reaction.FirstOrDefault()}:";
+				                                  | StringSplitOptions.TrimEntries)
+				                           .First();
+				notification.Reaction = $":{reaction}:";
 			}
 
 			var res = new WebPushNotification
