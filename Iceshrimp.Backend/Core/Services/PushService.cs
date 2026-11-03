@@ -228,8 +228,13 @@ public class PushService(
 			if (!string.IsNullOrWhiteSpace(notification.Reaction)
 			    && notification.Reaction.StartsWith(':')
 			    && notification.Reaction.EndsWith(':'))
-				notification.Reaction =
-					$":{notification.Reaction.Trim(':').Split('@', 2, StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries).FirstOrDefault()}:";
+			{
+				var reaction = notification.Reaction.Trim(':')
+				                           .Split('@', 2,
+				                                  StringSplitOptions.RemoveEmptyEntries
+				                                  | StringSplitOptions.TrimEntries);
+				notification.Reaction = $":{reaction.FirstOrDefault()}:";
+			}
 
 			var res = new WebPushNotification
 			{
