@@ -117,7 +117,7 @@
             <NoteComponent Note="NotificationResponse.Note"
                            AsQuote="@(NotificationResponse is not { Type: NotificationType.Mention } and not { Type: NotificationType.Reply })"
                            OpenNote="true"
-                           TickerOverride="@(NotificationResponse.Read ? null : MarkAsReadButton)"/>
+                           TickerOverride="@(NotificationResponse is { Read: false, Type: NotificationType.Mention or NotificationType.Reply } ? MarkAsReadButton : null)"/>
         </div>
     }
 
