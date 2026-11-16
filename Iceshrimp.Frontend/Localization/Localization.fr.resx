@@ -696,7 +696,7 @@ Fournir ces journaux aux développeurs sur demande peut aider au débogage.</val
     <data name="Settings_Account_2fa_CodePlaceholder" xml:space="preserve">
         <value>Code de l'application d'authentification</value>
     </data>
-    <data name="Settings_Account_2fa_EnrolInfo" xml:space="preserve">
+    <data name="Settings_Account_2fa_EnrollInfo" xml:space="preserve">
         <value>Utilisez le QR code, le secret ou l'URL suivants pour ajouter votre compte à votre application d'authentification. Ensuite, saisissez le code fourni par votre application d'authentification pour terminer l'inscription.</value>
     </data>
     <data name="Settings_Debug" xml:space="preserve">

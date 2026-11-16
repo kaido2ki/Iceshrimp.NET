@@ -126,10 +126,10 @@ public class SettingsController(
 	}
 
 	/// <summary>
-	/// Enrol two-factor authentication
+	/// Enroll two-factor authentication
 	/// </summary>
-	/// <remarks>Enrol a two-factor authenticator.</remarks>
-	/// <response code="200">Two-factor authentication enrolment information</response>
+	/// <remarks>Enroll a two-factor authenticator.</remarks>
+	/// <response code="200">Two-factor authentication enrollment information</response>
 	[HttpPost("2fa/enroll")]
 	[EnableRateLimiting("auth")]
 	[ProducesResults(HttpStatusCode.OK)]
@@ -150,7 +150,7 @@ public class SettingsController(
 	/// </summary>
 	/// <remarks>Replace the current two-factor authenticator with a new authenticator.</remarks>
 	/// <param name="request">Two-factor authentication</param>
-	/// <response code="200">Two-factor authentication enrolment information</response>
+	/// <response code="200">Two-factor authentication enrollment information</response>
 	[HttpPost("2fa/reenroll")]
 	[EnableRateLimiting("auth")]
 	[ProducesResults(HttpStatusCode.OK)]
@@ -173,7 +173,7 @@ public class SettingsController(
 	/// <summary>
 	/// Confirm two-factor authentication
 	/// </summary>
-	/// <remarks>Confirm that the two-factor authentication enrolment is valid.</remarks>
+	/// <remarks>Confirm that the two-factor authentication enrollment is valid.</remarks>
 	/// <param name="request">Two-factor authentication</param>
 	[HttpPost("2fa/confirm")]
 	[EnableRateLimiting("auth")]

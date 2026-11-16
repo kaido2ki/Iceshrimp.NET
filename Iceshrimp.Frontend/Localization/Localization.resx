@@ -715,8 +715,8 @@
     <data name="Settings_Account_2fa_CodePlaceholder" xml:space="preserve">
         <value>Code from authenticator</value>
     </data>
-    <data name="Settings_Account_2fa_EnrolInfo" xml:space="preserve">
-        <value>Use the following QR code, secret or URL to add your account to your authenticator app. Afterwards enter the code provided by your authenticator app to finish the enrolment.</value>
+    <data name="Settings_Account_2fa_EnrollInfo" xml:space="preserve">
+        <value>Use the following QR code, secret or URL to add your account to your authenticator app. Afterwards enter the code provided by your authenticator app to finish the enrollment.</value>
     </data>
     <data name="Settings_Debug" xml:space="preserve">
         <value>Debug</value>

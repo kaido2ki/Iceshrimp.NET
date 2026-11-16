@@ -1437,9 +1437,9 @@ namespace Iceshrimp.Frontend.Localization {
             }
         }
         
-        internal static string Settings_Account_2fa_EnrolInfo {
+        internal static string Settings_Account_2fa_EnrollInfo {
             get {
-                return ResourceManager.GetString("Settings_Account_2fa_EnrolInfo", resourceCulture);
+                return ResourceManager.GetString("Settings_Account_2fa_EnrollInfo", resourceCulture);
             }
         }
         
