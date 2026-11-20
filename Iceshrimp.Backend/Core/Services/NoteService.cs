@@ -1617,7 +1617,7 @@ public class NoteService(
 			await db.Notes.Where(p => p.Id == note.Id)
 			        .ExecuteUpdateAsync(p => p.SetProperty(n => n.LikeCount, n => n.LikeCount + 1));
 
-			if (user.IsLocalUser && note.UserHost != null)
+			if (user.IsLocalUser)
 			{
 				var recipients = await deliverSvc.GetRecipientsAsync(note);
 				var activity   = activityRenderer.RenderLike(like, recipients);
