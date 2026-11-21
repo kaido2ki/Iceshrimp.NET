@@ -198,6 +198,12 @@ The app <span class="app_name">@_app.Name</span> requests the following permissi
 			if (!AuthHelpers.ComparePassword(Model.Password, userSettings.Password))
 				throw Forbidden();
 
+			if (AuthHelpers.isLegacyHash(userSettings.Password))
+			{
+				userSettings.Password = AuthHelpers.HashPassword(Model.Password);
+				await Database.SaveChangesAsync();
+			}
+
 			if (userSettings.TwoFactorEnabled)
 			{
 				if (!string.IsNullOrWhiteSpace(Model.OneTimePassword))

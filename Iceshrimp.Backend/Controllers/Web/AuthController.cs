@@ -74,6 +74,12 @@ public class AuthController(DatabaseContext db, UserService userSvc, UserRendere
 		if (!AuthHelpers.ComparePassword(request.Password, settings.Password))
 			throw GracefulException.Forbidden("Invalid username or password");
 
+		if (AuthHelpers.isLegacyHash(settings.Password))
+		{
+			settings.Password = AuthHelpers.HashPassword(request.Password);
+			await db.SaveChangesAsync();
+		}
+
 		var session = HttpContext.GetSession();
 		if (session == null)
 		{
