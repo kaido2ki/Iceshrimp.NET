@@ -1,9 +1,10 @@
+using System.Text.Json;
 using Iceshrimp.Backend.Controllers.Mastodon.Schemas.Entities;
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.AspNetCore.Mvc.ModelBinding;
 using B = Microsoft.AspNetCore.Mvc.BindPropertyAttribute;
 using J = System.Text.Json.Serialization.JsonPropertyNameAttribute;
-using JI = System.Text.Json.Serialization.JsonIgnoreAttribute;
+using JIgnore = System.Text.Json.Serialization.JsonIgnoreAttribute;
+using JInclude = System.Text.Json.Serialization.JsonIncludeAttribute;
 
 namespace Iceshrimp.Backend.Controllers.Mastodon.Schemas;
 
@@ -45,15 +46,33 @@ public abstract class AccountSchemas
 		[B(Name = "attribution_domains")]
 		public List<string>? AttributionDomains { get; set; }
 
-		[B(Name = "fields_attributes")]
-		[JI]
-		public List<AccountUpdateField>? Fields { get; set; }
-		
-		/// Note that the integer index does not actually matter -- fields will be populated by the order in which they are provided.
-		/// https://github.com/mastodon/mastodon/issues/22174
+		// this is a little bit of a hack to allow serializing two different object types (hash / array) into the same variable
+		// with .NET 11's union types this could likely be a lot cleaner
+		[JInclude]
 		[J("fields_attributes")]
-		[BindNever]
-		public OrderedDictionary<string, AccountUpdateField>? JsonFields { get; set; }
+		[B(Name = "fields_attributes")]
+		private JsonElement? FieldsRaw { get; set; }
+
+		[JIgnore]
+		public IEnumerable<AccountUpdateField>? Fields
+		{
+			get
+			{
+				if (FieldsRaw is { ValueKind: JsonValueKind.Array })
+				{
+					return FieldsRaw.Value.Deserialize<IEnumerable<AccountUpdateField>>();
+				}
+
+				// Note that the integer index does not actually matter -- fields will be populated by the order in which they are provided.
+				// https://github.com/mastodon/mastodon/issues/22174
+				if (FieldsRaw is { ValueKind: JsonValueKind.Object })
+				{
+					return FieldsRaw.Value.Deserialize<OrderedDictionary<string, AccountUpdateField>>()?.Values;
+				}
+
+				return null;
+			}
+		}
 
 		[J("permit_followback")]
 		[B(Name = "permit_followback")]

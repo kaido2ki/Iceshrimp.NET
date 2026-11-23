@@ -101,10 +101,7 @@ public class AccountController(
 				_                     => null,
 			};
 
-		var requestFields = request.JsonFields?.Values as IEnumerable<AccountSchemas.AccountUpdateField> 
-		             ?? request.Fields;
-
-		if (requestFields?.Where(p => p is { Name: not null, Value: not null }).ToList() is { Count: > 0 } fields)
+		if (request.Fields?.Where(p => p is { Name: not null, Value: not null }).ToList() is { Count: > 0 } fields)
 		{
 			user.UserProfile.Fields =
 				fields.Select(p => new UserProfile.Field
