@@ -1,5 +1,6 @@
 using System.Text.Json;
 using Iceshrimp.Backend.Controllers.Mastodon.Schemas.Entities;
+using Iceshrimp.Backend.Core.Middleware;
 using Microsoft.AspNetCore.Mvc;
 using B = Microsoft.AspNetCore.Mvc.BindPropertyAttribute;
 using J = System.Text.Json.Serialization.JsonPropertyNameAttribute;
@@ -58,6 +59,8 @@ public abstract class AccountSchemas
 		{
 			get
 			{
+				if (FieldsRaw == null) return null;
+
 				if (FieldsRaw is { ValueKind: JsonValueKind.Array })
 				{
 					return FieldsRaw.Value.Deserialize<IEnumerable<AccountUpdateField>>();
@@ -70,7 +73,7 @@ public abstract class AccountSchemas
 					return FieldsRaw.Value.Deserialize<OrderedDictionary<string, AccountUpdateField>>()?.Values;
 				}
 
-				return null;
+				throw GracefulException.UnprocessableEntity("fields_attributes must be either an array or a hash");
 			}
 		}
 
